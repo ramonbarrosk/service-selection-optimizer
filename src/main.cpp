@@ -1,6 +1,10 @@
+#include "basic/Allocation.h"
 #include <iostream>
 
-int main(int argc, char* argv[]) {
-    std::cout << "Service Selection Optimizer" << std::endl;
+using std::cout;
+using std::endl;
+
+int main() {
+    cout << "Service Selection Optimizer" << endl;
     return 0;
 }

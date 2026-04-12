@@ -1,13 +1,12 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
+CXXFLAGS = -std=c++17 -Wall -Wextra
 TARGET = build/service-selection-optimizer
-SRCS = $(wildcard src/*.cpp)
 
 all: $(TARGET)
 
-$(TARGET): $(SRCS)
+$(TARGET): src/main.cpp
 	@mkdir -p build
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $<
 
 run: $(TARGET)
 	@./$(TARGET)
