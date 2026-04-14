@@ -4,26 +4,12 @@
 #include <vector>
 #include "Task.h"
 #include "Service.h"
+#include "InstanceMatrix.cpp"
 
 using std::vector;
 using std::unordered_map;
 
 // Stub mínimo de InstanceMatrix — será expandido quando o módulo instance for criado
-class InstanceMatrix {
-public:
-    int getTaskCost(int taskId, int servId) const { return costMatrix_[taskId][servId]; }
-    int getVres() const { return vRes_; }
-
-    void setTaskCost(int taskIdx, int servIdx, int cost) { costMatrix_[taskIdx][servIdx] = cost; }
-    void setVres(int vRes) { vRes_ = vRes; }
-    void resize(int tasks, int services) {
-        costMatrix_.assign(tasks, vector<int>(services, 0));
-    }
-
-private:
-    vector<vector<int>> costMatrix_;
-    int vRes_ = 0;
-};
 
 class Allocation {
 public:
