@@ -10,4 +10,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
+    src/validator/SolutionValidator.cpp
+    src/util/MathOperations.hpp
+    src/util/RandomUtil.cpp
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/basic
+    ${CMAKE_SOURCE_DIR}/src/enum
+    ${CMAKE_SOURCE_DIR}/src/instance
+    ${CMAKE_SOURCE_DIR}/src/util
+    ${CMAKE_SOURCE_DIR}/src/validator
 )

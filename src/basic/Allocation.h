@@ -4,7 +4,7 @@
 #include <vector>
 #include "Task.h"
 #include "Service.h"
-#include "InstanceMatrix.cpp"
+#include "InstanceMatrix.hpp"
 
 using std::vector;
 using std::unordered_map;

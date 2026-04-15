@@ -131,20 +131,25 @@ public:
         return maxCost;
     }
 
+
+    //  "Quais serviços posso usar para essa tarefa sem ultrapassar o custo máximo?"
+
     vector<Service> getServicesWithMaxCost(int taskId, double maxCost) const {
         vector<Service> services;
         for (int i = 0; i < (int)costMatrix.at(taskId).size(); ++i) {
-            if (costMatrix.at(taskId).at(i) == maxCost)
+            if (costMatrix.at(taskId).at(i) <= maxCost)
             services.emplace_back(i, costMatrix.at(taskId).at(i));
         }
         return services;
     }
 
+    //  "Quais serviço com custo mínimo para essa tarefa?"
+
     Service getServiceWithLowestCost(int taskId) const {
         int minCost = std::numeric_limits<int>::max();
         int bestServiceId = -1;
         for (int i = 0; i < (int)costMatrix.at(taskId).size(); ++i) {
-            if (costMatrix.at(taskId).at(i) < minCost) {
+            if (costMatrix.at(taskId).at(i) <= minCost) {
                 minCost = costMatrix.at(taskId).at(i);
                 bestServiceId = i;
             }
@@ -152,11 +157,13 @@ public:
         return Service(bestServiceId, minCost);
     }
 
+    // "Quais serviço com menor probabilidade de violação de SLA para essa tarefa?"
+
     Service getServiceWithLowestProbability(int taskId) const {
         double minProb = std::numeric_limits<double>::max();
         int bestServiceId = -1;
         for (int i = 0; i < (int)probabilityPerService.size(); ++i) {
-            if (probabilityPerService.at(i) < minProb) {
+            if (probabilityPerService.at(i) <= minProb) {
                 minProb = probabilityPerService.at(i);
                 bestServiceId = i;
             }
