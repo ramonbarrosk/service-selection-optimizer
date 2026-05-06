@@ -36,9 +36,11 @@ public:
                             }
                         } else if (scenario == ProbabilityScenario::Ps) {
                             if (verifyProbRestriction) {
+
+                                // IMPORTANTE: PODEMOS REAPROVEITAR DE ALGUMA FORMA A LÓGICA DE CÁLCULO DE PROBABILIDADE DE VIOLAÇÃO DO SLA QUE ESTÁ IMPLEMENTADA NO SOLUTION VALIDATOR PARA VER SE A SOLUÇÃO É VIÁVEL OU NÃO, AO INVÉS DE CALCULAR A PROBABILIDADE DE VIOLAÇÃO DO SLA APENAS PARA VER SE A SOLUÇÃO É VIÁVEL, PODERÍAMOS CALCULAR ESSA PROBABILIDADE E USAR ESSA INFORMAÇÃO PARA ORIENTAR O PROCESSO DE BUSCA? POR EXEMPLO, AO INVÉS DE ACEITAR QUALQUER MOVIMENTO QUE MELHORE O CUSTO, SÓ ACEITAR MOVIMENTOS QUE MELHOREM O CUSTO E TAMBÉM REDUZAM A PROBABILIDADE DE VIOLAÇÃO DO SLA?
                                 int vMax = instance.getVmax();
                                 int numberOfTasks = instance.getNumberOfTasks();
-                                const std::vector<double>& probabilities = instance.getProbabilityPerService();
+                                const vector<double>& probabilities = instance.getProbabilityPerService();
 
                                 //Matriz de programção dinâmica para armazenar as probabilidades acumuladas
                                 // i = número de tarefas consideradas, k = número de violações de SLA
@@ -61,7 +63,7 @@ public:
                                     for (int k = 0; k <= vMax; ++k) {
                                         if (i == 0 && k == 0) {
                                             dinamicPrograming[i][k] = 1.0; // Probabilidade de 0 tarefas violarem o SLA é 1
-                                        } else if (i == 0) {
+                                        } else if (k > i) {
                                             dinamicPrograming[i][k] = 0.0; // Probabilidade de mais de 0 tarefas violarem o SLA é 0
                                         } else if (k == 0) {
                                             dinamicPrograming[i][k] = dinamicPrograming[i - 1][k] * (1 - probi_1); // Nenhuma tarefa viola o SLA

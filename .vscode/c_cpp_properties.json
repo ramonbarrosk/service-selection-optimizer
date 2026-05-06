@@ -7,13 +7,13 @@
                 "${workspaceFolder}/src/enum",
                 "${workspaceFolder}/src/instance",
                 "${workspaceFolder}/src/util",
-                "${workspaceFolder}/src/validator"
+                "${workspaceFolder}/src/validator",
+                "${workspaceFolder}/src/search"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "linux-gcc-x64",
-            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+            "intelliSenseMode": "linux-gcc-x64"
         }
     ],
     "version": 4

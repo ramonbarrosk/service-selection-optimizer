@@ -1,3 +1,4 @@
+#pragma once
 #include <random>
 #include "Service.h"
 #include <vector>
@@ -5,8 +6,16 @@ using std::random_device;
 using std::mt19937;
 using std::uniform_int_distribution;
 using std::vector;
+
 class RandomUtil {
 public:
+    static int getRandomInt(int min, int max) {
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<> dis(min, max);
+        return dis(gen);
+    }
+
     static Service getRandomService(int numberofServices) {
         random_device rd;
         mt19937 gen(rd());
@@ -41,6 +50,4 @@ public:
         uniform_int_distribution<> dis(0, static_cast<int>(taskIds.size()) - 1);
         return taskIds[dis(gen)];
     }
-
-
 };

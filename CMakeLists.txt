@@ -10,9 +10,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
-    src/validator/SolutionValidator.cpp
     src/util/MathOperations.hpp
-    src/util/RandomUtil.cpp
+    src/util/RandomUtil.hpp
+    src/validator/SolutionValidator.hpp
+    src/search/GenericSearcher.h
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -21,4 +22,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/instance
     ${CMAKE_SOURCE_DIR}/src/util
     ${CMAKE_SOURCE_DIR}/src/validator
+    ${CMAKE_SOURCE_DIR}/src/search
 )
