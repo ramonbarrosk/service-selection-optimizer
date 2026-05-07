@@ -14,6 +14,7 @@ add_executable(${PROJECT_NAME}
     src/util/RandomUtil.hpp
     src/validator/SolutionValidator.hpp
     src/search/GenericSearcher.h
+    src/metaheuristic/ILS.hpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -23,4 +24,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/util
     ${CMAKE_SOURCE_DIR}/src/validator
     ${CMAKE_SOURCE_DIR}/src/search
+    ${CMAKE_SOURCE_DIR}/src/metaheuristic
 )

@@ -1,0 +1,247 @@
+[34m[Instance]
+Type = 2
+|T| = 100
+|S| = 100
+Vmax =  40
+pmax = 0.210212
+Smax = 45
+Vres = 29
+[36mCreating SSuS module with 100 x 100
+[0mCPXPARAM_TimeLimit                               900
+Lazy constraint(s) or lazy constraint callback is present.
+    Disabling dual reductions (CPX_PARAM_REDUCE) in presolve.
+    Disabling non-linear reductions (CPX_PARAM_PRELINEAR) in presolve.
+         Disabling repeat represolve because of lazy constraint/incumbent callback.
+Tried aggregator 1 time.
+Reduced MIP has 10201 rows, 10100 columns, and 40200 nonzeros.
+Reduced MIP has 10100 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.05 sec. (44.71 ticks)
+Probing time = 0.01 sec. (4.59 ticks)
+Clique table members: 15150.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: traditional branch-and-cut.
+Parallel mode: none, using 1 thread.
+Root relaxation solution time = 0.04 sec. (32.97 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap         Variable B NodeID Parent  Depth
+
+      0     0      101.0000     2                    101.0000      279         
+[92mFeasible solution with prob = 2.2048e-08
+[0m*     0+    0                          101.0000      101.0000             0.00%
+      0     0        cutoff            101.0000      101.0000      279    0.00%                        0             0
+Elapsed time = 0.51 sec. (1077.08 ticks, tree = 0.01 MB, solutions = 1)
+
+Root node processing (before b&c):
+  Real time             =    0.51 sec. (1077.61 ticks)
+Sequential b&c:
+  Real time             =    0.00 sec. (0.00 ticks)
+                          ------------
+Total (root+branch&cut) =    0.51 sec. (1077.61 ticks)
+Status = Optimal
+Objective Value = 101
+[92mFeasible solution with prob = 2.2048e-08
+[0m[31mProbabilty violation = 2.2048e-08
+# of violation cuts 0
+[0mSolution:
+(s,t) - 1 31
+(s,t) - 1 40
+(s,t) - 1 44
+(s,t) - 1 60
+(s,t) - 1 66
+(s,t) - 1 77
+(s,t) - 1 82
+(s,t) - 1 86
+(s,t) - 2 41
+(s,t) - 2 71
+(s,t) - 2 73
+(s,t) - 2 94
+(s,t) - 3 10
+(s,t) - 3 29
+(s,t) - 3 35
+(s,t) - 3 74
+(s,t) - 3 81
+(s,t) - 3 99
+(s,t) - 7 34
+(s,t) - 7 43
+(s,t) - 7 75
+(s,t) - 7 95
+(s,t) - 8 9
+(s,t) - 8 33
+(s,t) - 8 48
+(s,t) - 8 65
+(s,t) - 10 3
+(s,t) - 10 20
+(s,t) - 12 17
+(s,t) - 13 47
+(s,t) - 13 97
+(s,t) - 18 5
+(s,t) - 18 16
+(s,t) - 18 90
+(s,t) - 18 91
+(s,t) - 20 83
+(s,t) - 22 50
+(s,t) - 22 55
+(s,t) - 22 88
+(s,t) - 23 15
+(s,t) - 23 46
+(s,t) - 23 89
+(s,t) - 24 8
+(s,t) - 24 38
+(s,t) - 24 59
+(s,t) - 24 64
+(s,t) - 24 100
+(s,t) - 25 13
+(s,t) - 25 51
+(s,t) - 25 57
+(s,t) - 25 80
+(s,t) - 29 98
+(s,t) - 30 28
+(s,t) - 30 61
+(s,t) - 30 63
+(s,t) - 31 7
+(s,t) - 31 32
+(s,t) - 31 76
+(s,t) - 32 45
+(s,t) - 39 42
+(s,t) - 39 56
+(s,t) - 42 12
+(s,t) - 42 72
+(s,t) - 43 4
+(s,t) - 43 18
+(s,t) - 43 70
+(s,t) - 45 24
+(s,t) - 45 53
+(s,t) - 45 67
+(s,t) - 49 25
+(s,t) - 49 27
+(s,t) - 49 96
+(s,t) - 50 54
+(s,t) - 51 84
+(s,t) - 51 92
+(s,t) - 53 19
+(s,t) - 53 21
+(s,t) - 54 68
+(s,t) - 54 79
+(s,t) - 55 62
+(s,t) - 61 1
+(s,t) - 61 6
+(s,t) - 63 23
+(s,t) - 63 36
+(s,t) - 63 58
+(s,t) - 63 69
+(s,t) - 64 11
+(s,t) - 64 85
+(s,t) - 64 87
+(s,t) - 66 14
+(s,t) - 70 39
+(s,t) - 70 52
+(s,t) - 70 93
+(s,t) - 74 2
+(s,t) - 89 26
+(s,t) - 89 30
+(s,t) - 93 37
+(s,t) - 93 78
+(s,t) - 98 22
+(s,t) - 98 49
+s1 -- 29 of 29
+s2 -- 20 of 29
+s3 -- 22 of 29
+s4 -- 0 of 29
+s5 -- 0 of 29
+s6 -- 0 of 29
+s7 -- 28 of 29
+s8 -- 17 of 29
+s9 -- 0 of 29
+s10 -- 15 of 29
+s11 -- 0 of 29
+s12 -- 6 of 29
+s13 -- 12 of 29
+s14 -- 0 of 29
+s15 -- 0 of 29
+s16 -- 0 of 29
+s17 -- 0 of 29
+s18 -- 23 of 29
+s19 -- 0 of 29
+s20 -- 5 of 29
+s21 -- 0 of 29
+s22 -- 18 of 29
+s23 -- 20 of 29
+s24 -- 26 of 29
+s25 -- 29 of 29
+s26 -- 0 of 29
+s27 -- 0 of 29
+s28 -- 0 of 29
+s29 -- 7 of 29
+s30 -- 21 of 29
+s31 -- 26 of 29
+s32 -- 3 of 29
+s33 -- 0 of 29
+s34 -- 0 of 29
+s35 -- 0 of 29
+s36 -- 0 of 29
+s37 -- 0 of 29
+s38 -- 0 of 29
+s39 -- 14 of 29
+s40 -- 0 of 29
+s41 -- 0 of 29
+s42 -- 14 of 29
+s43 -- 14 of 29
+s44 -- 0 of 29
+s45 -- 16 of 29
+s46 -- 0 of 29
+s47 -- 0 of 29
+s48 -- 0 of 29
+s49 -- 21 of 29
+s50 -- 10 of 29
+s51 -- 14 of 29
+s52 -- 0 of 29
+s53 -- 4 of 29
+s54 -- 11 of 29
+s55 -- 3 of 29
+s56 -- 0 of 29
+s57 -- 0 of 29
+s58 -- 0 of 29
+s59 -- 0 of 29
+s60 -- 0 of 29
+s61 -- 13 of 29
+s62 -- 0 of 29
+s63 -- 14 of 29
+s64 -- 16 of 29
+s65 -- 0 of 29
+s66 -- 2 of 29
+s67 -- 0 of 29
+s68 -- 0 of 29
+s69 -- 0 of 29
+s70 -- 14 of 29
+s71 -- 0 of 29
+s72 -- 0 of 29
+s73 -- 0 of 29
+s74 -- 5 of 29
+s75 -- 0 of 29
+s76 -- 0 of 29
+s77 -- 0 of 29
+s78 -- 0 of 29
+s79 -- 0 of 29
+s80 -- 0 of 29
+s81 -- 0 of 29
+s82 -- 0 of 29
+s83 -- 0 of 29
+s84 -- 0 of 29
+s85 -- 0 of 29
+s86 -- 0 of 29
+s87 -- 0 of 29
+s88 -- 0 of 29
+s89 -- 8 of 29
+s90 -- 0 of 29
+s91 -- 0 of 29
+s92 -- 0 of 29
+s93 -- 15 of 29
+s94 -- 0 of 29
+s95 -- 0 of 29
+s96 -- 0 of 29
+s97 -- 0 of 29
+s98 -- 14 of 29
+s99 -- 0 of 29
+s100 -- 0 of 29
+Probabilty violation 2.2047987e-08 Pmax = 0.210212 Cost = 101

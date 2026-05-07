@@ -1,0 +1,254 @@
+[34m[Instance]
+Type = 2
+|T| = 100
+|S| = 100
+Vmax =  37
+pmax = 0.0952759
+Smax = 37
+Vres = 22
+[36mCreating SSuS module with 100 x 100
+[0mCPXPARAM_TimeLimit                               900
+Lazy constraint(s) or lazy constraint callback is present.
+    Disabling dual reductions (CPX_PARAM_REDUCE) in presolve.
+    Disabling non-linear reductions (CPX_PARAM_PRELINEAR) in presolve.
+         Disabling repeat represolve because of lazy constraint/incumbent callback.
+Tried aggregator 1 time.
+Reduced MIP has 10201 rows, 10100 columns, and 40200 nonzeros.
+Reduced MIP has 10100 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.05 sec. (44.71 ticks)
+Probing time = 0.01 sec. (4.59 ticks)
+Clique table members: 15150.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: traditional branch-and-cut.
+Parallel mode: none, using 1 thread.
+Root relaxation solution time = 0.09 sec. (54.41 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap         Variable B NodeID Parent  Depth
+
+      0     0      101.0000   116                    101.0000      436         
+[92mFeasible solution with prob = 1.33764e-06
+[0m*     0+    0                          111.0000      101.0000             9.01%
+[92mFeasible solution with prob = 1.24924e-06
+[0m*     0     0      integral     0      101.0000       Cuts: 7      438    0.00%
+      0     0        cutoff            101.0000      101.0000      438    0.00%                        0             0
+Elapsed time = 1.13 sec. (2256.30 ticks, tree = 0.01 MB, solutions = 2)
+
+Cover cuts applied:  2
+Mixed integer rounding cuts applied:  1
+Zero-half cuts applied:  1
+Gomory fractional cuts applied:  3
+
+Root node processing (before b&c):
+  Real time             =    1.13 sec. (2256.91 ticks)
+Sequential b&c:
+  Real time             =    0.00 sec. (0.00 ticks)
+                          ------------
+Total (root+branch&cut) =    1.13 sec. (2256.91 ticks)
+Status = Optimal
+Objective Value = 101
+[92mFeasible solution with prob = 1.24924e-06
+[0m[31mProbabilty violation = 1.24924e-06
+# of violation cuts 0
+[0mSolution:
+(s,t) - 2 11
+(s,t) - 2 73
+(s,t) - 2 76
+(s,t) - 4 53
+(s,t) - 4 56
+(s,t) - 4 89
+(s,t) - 5 4
+(s,t) - 5 71
+(s,t) - 7 54
+(s,t) - 7 74
+(s,t) - 7 93
+(s,t) - 7 95
+(s,t) - 7 96
+(s,t) - 9 3
+(s,t) - 9 21
+(s,t) - 9 46
+(s,t) - 9 77
+(s,t) - 13 5
+(s,t) - 13 20
+(s,t) - 14 12
+(s,t) - 14 55
+(s,t) - 14 78
+(s,t) - 14 92
+(s,t) - 15 39
+(s,t) - 15 66
+(s,t) - 15 67
+(s,t) - 17 2
+(s,t) - 17 17
+(s,t) - 17 24
+(s,t) - 20 22
+(s,t) - 20 48
+(s,t) - 20 79
+(s,t) - 20 84
+(s,t) - 22 33
+(s,t) - 22 91
+(s,t) - 28 30
+(s,t) - 28 82
+(s,t) - 28 97
+(s,t) - 29 8
+(s,t) - 29 18
+(s,t) - 29 28
+(s,t) - 29 63
+(s,t) - 31 10
+(s,t) - 31 42
+(s,t) - 31 64
+(s,t) - 39 43
+(s,t) - 39 52
+(s,t) - 39 87
+(s,t) - 40 16
+(s,t) - 40 31
+(s,t) - 40 50
+(s,t) - 40 65
+(s,t) - 41 37
+(s,t) - 41 57
+(s,t) - 46 47
+(s,t) - 46 61
+(s,t) - 47 13
+(s,t) - 47 19
+(s,t) - 47 29
+(s,t) - 48 7
+(s,t) - 48 59
+(s,t) - 51 27
+(s,t) - 54 41
+(s,t) - 54 88
+(s,t) - 55 23
+(s,t) - 55 40
+(s,t) - 62 14
+(s,t) - 62 25
+(s,t) - 67 60
+(s,t) - 68 1
+(s,t) - 68 6
+(s,t) - 70 38
+(s,t) - 70 94
+(s,t) - 70 99
+(s,t) - 71 62
+(s,t) - 71 69
+(s,t) - 71 86
+(s,t) - 72 36
+(s,t) - 72 44
+(s,t) - 72 81
+(s,t) - 79 26
+(s,t) - 79 35
+(s,t) - 79 45
+(s,t) - 83 49
+(s,t) - 83 75
+(s,t) - 84 34
+(s,t) - 85 51
+(s,t) - 85 58
+(s,t) - 85 90
+(s,t) - 87 80
+(s,t) - 93 15
+(s,t) - 93 98
+(s,t) - 94 68
+(s,t) - 94 70
+(s,t) - 94 72
+(s,t) - 94 83
+(s,t) - 94 85
+(s,t) - 95 9
+(s,t) - 95 32
+(s,t) - 95 100
+s1 -- 0 of 22
+s2 -- 21 of 22
+s3 -- 0 of 22
+s4 -- 13 of 22
+s5 -- 14 of 22
+s6 -- 0 of 22
+s7 -- 21 of 22
+s8 -- 0 of 22
+s9 -- 22 of 22
+s10 -- 0 of 22
+s11 -- 0 of 22
+s12 -- 0 of 22
+s13 -- 11 of 22
+s14 -- 19 of 22
+s15 -- 9 of 22
+s16 -- 0 of 22
+s17 -- 21 of 22
+s18 -- 0 of 22
+s19 -- 0 of 22
+s20 -- 18 of 22
+s21 -- 0 of 22
+s22 -- 14 of 22
+s23 -- 0 of 22
+s24 -- 0 of 22
+s25 -- 0 of 22
+s26 -- 0 of 22
+s27 -- 0 of 22
+s28 -- 20 of 22
+s29 -- 21 of 22
+s30 -- 0 of 22
+s31 -- 18 of 22
+s32 -- 0 of 22
+s33 -- 0 of 22
+s34 -- 0 of 22
+s35 -- 0 of 22
+s36 -- 0 of 22
+s37 -- 0 of 22
+s38 -- 0 of 22
+s39 -- 10 of 22
+s40 -- 16 of 22
+s41 -- 15 of 22
+s42 -- 0 of 22
+s43 -- 0 of 22
+s44 -- 0 of 22
+s45 -- 0 of 22
+s46 -- 13 of 22
+s47 -- 22 of 22
+s48 -- 6 of 22
+s49 -- 0 of 22
+s50 -- 0 of 22
+s51 -- 4 of 22
+s52 -- 0 of 22
+s53 -- 0 of 22
+s54 -- 12 of 22
+s55 -- 10 of 22
+s56 -- 0 of 22
+s57 -- 0 of 22
+s58 -- 0 of 22
+s59 -- 0 of 22
+s60 -- 0 of 22
+s61 -- 0 of 22
+s62 -- 12 of 22
+s63 -- 0 of 22
+s64 -- 0 of 22
+s65 -- 0 of 22
+s66 -- 0 of 22
+s67 -- 6 of 22
+s68 -- 20 of 22
+s69 -- 0 of 22
+s70 -- 21 of 22
+s71 -- 13 of 22
+s72 -- 16 of 22
+s73 -- 0 of 22
+s74 -- 0 of 22
+s75 -- 0 of 22
+s76 -- 0 of 22
+s77 -- 0 of 22
+s78 -- 0 of 22
+s79 -- 16 of 22
+s80 -- 0 of 22
+s81 -- 0 of 22
+s82 -- 0 of 22
+s83 -- 17 of 22
+s84 -- 3 of 22
+s85 -- 13 of 22
+s86 -- 0 of 22
+s87 -- 5 of 22
+s88 -- 0 of 22
+s89 -- 0 of 22
+s90 -- 0 of 22
+s91 -- 0 of 22
+s92 -- 0 of 22
+s93 -- 14 of 22
+s94 -- 10 of 22
+s95 -- 16 of 22
+s96 -- 0 of 22
+s97 -- 0 of 22
+s98 -- 0 of 22
+s99 -- 0 of 22
+s100 -- 0 of 22
+Probabilty violation 1.2492385e-06 Pmax = 0.0952759 Cost = 101
