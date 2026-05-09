@@ -17,92 +17,81 @@ using std::vector;
 class SolutionValidator {
 public:
     bool isFeasible(const InstanceMatrix& instance, Allocation& allocation,
-                    int Vmax, int Smax, double Pmax, ProbabilityScenario& scenario, 
+                    int Vmax, int Smax, double Pmax, ProbabilityScenario& scenario,
                     bool verifyProbRestriction) {
-                        if (allocation.getNumberOfEmployedServices() > Smax)
-                            return false;
-                        
-                        if (!allocation.respectsResourceRestriction(instance))
-                            return false;
+        if (allocation.getNumberOfEmployedServices() > Smax)
+            return false;
 
-                        if (scenario == ProbabilityScenario::P) {
-                            double probSum = 0.0;
-                            int numberOfTasks = (int)allocation.getAllocation().size();
-                            double p = instance.getProbabilityPerService()[0];
+        if (!allocation.respectsResourceRestriction(instance))
+            return false;
 
-                            for (int k = 0; k <= Vmax; ++k) {
-                                double binom = MathOperations::binominal(numberOfTasks, k);
-                                probSum += binom * pow(p, k) * pow(1 - p, numberOfTasks - k);
-                            }
-                        } else if (scenario == ProbabilityScenario::Ps) {
-                            if (verifyProbRestriction) {
+        if (scenario == ProbabilityScenario::P) {
+            double probSum = 0.0;
+            int numberOfTasks = allocation.numberOfTasksAllocated();
+            double p = instance.getProbabilityPerService()[0];
 
-                                // IMPORTANTE: PODEMOS REAPROVEITAR DE ALGUMA FORMA A LÓGICA DE CÁLCULO DE PROBABILIDADE DE VIOLAÇÃO DO SLA QUE ESTÁ IMPLEMENTADA NO SOLUTION VALIDATOR PARA VER SE A SOLUÇÃO É VIÁVEL OU NÃO, AO INVÉS DE CALCULAR A PROBABILIDADE DE VIOLAÇÃO DO SLA APENAS PARA VER SE A SOLUÇÃO É VIÁVEL, PODERÍAMOS CALCULAR ESSA PROBABILIDADE E USAR ESSA INFORMAÇÃO PARA ORIENTAR O PROCESSO DE BUSCA? POR EXEMPLO, AO INVÉS DE ACEITAR QUALQUER MOVIMENTO QUE MELHORE O CUSTO, SÓ ACEITAR MOVIMENTOS QUE MELHOREM O CUSTO E TAMBÉM REDUZAM A PROBABILIDADE DE VIOLAÇÃO DO SLA?
-                                int vMax = instance.getVmax();
-                                int numberOfTasks = instance.getNumberOfTasks();
-                                const vector<double>& probabilities = instance.getProbabilityPerService();
+            for (int k = 0; k <= Vmax; ++k) {
+                double binom = MathOperations::binominal(numberOfTasks, k);
+                probSum += binom * pow(p, k) * pow(1 - p, numberOfTasks - k);
+            }
+            return true;
+        }
 
-                                //Matriz de programção dinâmica para armazenar as probabilidades acumuladas
-                                // i = número de tarefas consideradas, k = número de violações de SLA
-                                vector<vector<double>> dinamicPrograming(numberOfTasks + 1, std::vector<double>(vMax + 1, 0.0));
+        if (scenario == ProbabilityScenario::Ps) {
+            if (!verifyProbRestriction)
+                return true;
 
+            int vMax = instance.getVmax();
+            int numberOfTasks = instance.getNumberOfTasks();
+            const vector<double>& probabilities = instance.getProbabilityPerService();
+            const vector<int>& alloc = allocation.getAllocation();
 
-                                for (int i = 0; i <= numberOfTasks; ++i) {
-                                    double sumProb = 0.0;
-                                    double probi_1 = 0.0;
+            // Buffer DP achatado e reutilizado entre chamadas (evita alocação no heap por chamada).
+            int cols = vMax + 1;
+            int needed = (numberOfTasks + 1) * cols;
+            if ((int)dp_.size() < needed) dp_.assign(needed, 0.0);
+            auto cell = [&](int i, int k) -> double& { return dp_[i * cols + k]; };
 
-                                    if (i > 0) {
-                                        Task task(i - 1, instance.getTaskConsumption(i - 1));
-                                        auto it = allocation.getAllocation().find(task.getTaskId());
-                                        if (it != allocation.getAllocation().end()) {
-                                            probi_1 = probabilities[it->second];
-                                        }
+            for (int i = 0; i <= numberOfTasks; ++i) {
+                double sumProb = 0.0;
+                double probi_1 = 0.0;
 
-                                    }
+                if (i > 0 && (i - 1) < (int)alloc.size() && alloc[i - 1] >= 0)
+                    probi_1 = probabilities[alloc[i - 1]];
 
-                                    for (int k = 0; k <= vMax; ++k) {
-                                        if (i == 0 && k == 0) {
-                                            dinamicPrograming[i][k] = 1.0; // Probabilidade de 0 tarefas violarem o SLA é 1
-                                        } else if (k > i) {
-                                            dinamicPrograming[i][k] = 0.0; // Probabilidade de mais de 0 tarefas violarem o SLA é 0
-                                        } else if (k == 0) {
-                                            dinamicPrograming[i][k] = dinamicPrograming[i - 1][k] * (1 - probi_1); // Nenhuma tarefa viola o SLA
-                                        } else {
-                                            dinamicPrograming[i][k] = dinamicPrograming[i - 1][k] * (1 - probi_1) + 
-                                                                     dinamicPrograming[i - 1][k - 1] * probi_1; // k tarefas violam o SLA
-                                        }
+                for (int k = 0; k <= vMax; ++k) {
+                    if (i == 0 && k == 0)
+                        cell(i, k) = 1.0;
+                    else if (k > i)
+                        cell(i, k) = 0.0;
+                    else if (k == 0)
+                        cell(i, k) = cell(i - 1, k) * (1 - probi_1);
+                    else
+                        cell(i, k) = cell(i - 1, k) * (1 - probi_1) + cell(i - 1, k - 1) * probi_1;
 
-                                        sumProb += dinamicPrograming[i][k];
-                                    }
+                    sumProb += cell(i, k);
+                }
 
-                                    if (1.0 - sumProb > Pmax) {
-                                        return false; // Probabilidade de violação do SLA é maior que Pmax
-                                    }
-                                }
+                if (1.0 - sumProb > Pmax)
+                    return false;
+            }
 
-                                double pNotViolateSLA = 0.0; // Probabilidade de nenhuma tarefa violar o SLA
+            double pNotViolateSLA = 0.0;
+            for (int k = 0; k <= Vmax; ++k)
+                pNotViolateSLA += cell(numberOfTasks, k);
 
-                                for (int k = 0; k <= Vmax; ++k) {
-                                    pNotViolateSLA += dinamicPrograming[numberOfTasks][k];
-                                }
+            if (1.0 - pNotViolateSLA <= Pmax) {
+                allocation.setCurrentProb(1.0 - pNotViolateSLA);
+                return true;
+            }
+            return false;
+        }
 
-                                if (1.0 - pNotViolateSLA <= Pmax) {
-                                    allocation.setCurrentProb(1.0 - pNotViolateSLA);
-                                    return true; //
-                                } else {
-                                    return false; // Probabilidade de violação do SLA é maior que Pmax
-                                }
-                            } else {
-                                return true; // Se não for necessário verificar a restrição de probabilidade, consideramos a solução como viável
-                            }
-                        }
-                        
+        return false;
     }
-
 
     vector<int> removeEqual(const std::vector<int>& a_arr, const std::vector<int>& b_arr) {
         std::vector<int> result;
-
         for (int a : a_arr) {
             bool found = false;
             for (int b : b_arr) {
@@ -110,11 +99,9 @@ public:
             }
             if (!found) result.push_back(a);
         }
-
         return result;
     }
-        
+
+private:
+    vector<double> dp_;
 };
-
-
-
