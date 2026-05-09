@@ -2,15 +2,15 @@
 
 class MathOperations {
 public:
+    // C(n, k) calculado de forma incremental com double para evitar overflow.
     static double binominal(int n, int k) {
-        return factorial(n) / (factorial(k) * factorial(n - k));
-    }
+        if (k < 0 || k > n) return 0.0;
+        if (k == 0 || k == n) return 1.0;
+        if (k > n - k) k = n - k;
 
-private:
-    static int factorial(int n) {
-        int result = 1;
-        for (int i = 2; i <= n; ++i)
-            result *= i;
+        double result = 1.0;
+        for (int i = 1; i <= k; ++i)
+            result = result * (n - k + i) / i;
         return result;
     }
 };
