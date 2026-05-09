@@ -36,7 +36,10 @@ public:
                 int bestCostGain = -1;
                 bool bestFound = false;
 
-                for (auto& [taskId, currentServId] : all.getAllocation()) {
+                const auto& alloc = all.getAllocation();
+                for (int taskId = 0; taskId < (int)alloc.size(); ++taskId) {
+                   int currentServId = alloc[taskId];
+                   if (currentServId < 0) continue;
                    int init = RandomUtil::getRandomInt(0, matrix.getNumberOfServices() - 1);
 
                    auto tryMove = [&](int i) -> bool {
@@ -86,16 +89,11 @@ public:
                    for (int i = init; i < matrix.getNumberOfServices() && !stopped; ++i)
                         stopped = tryMove(i);
 
-                    if (!stopped &&
-                        (condition == ImprovementCondition::BEST_IMPROVEMENT ||
-                        (condition == ImprovementCondition::FIRST_IMPROVEMENT && !locallyImproved))) {
-
+                    if (!stopped) {
                         for (int i = 0; i < init && !stopped; ++i)
                             stopped = tryMove(i);
-
                     }
 
-                    if (locallyImproved) break; // FirstImprovement: sai do loop de tarefas
                 }
 
                 if (bestFound && condition == ImprovementCondition::BEST_IMPROVEMENT) {
@@ -104,7 +102,7 @@ public:
                     globallyImproved = true;
                     all.replaceService(Task(bestTaskIdMove, matrix.getTaskConsumption(bestTaskIdMove)), Service(bestServiceIdMove), matrix);
                 }
-            } while (locallyImproved && condition == ImprovementCondition::BEST_IMPROVEMENT);
+            } while (locallyImproved);
 
             return globallyImproved;
        } else {
@@ -120,13 +118,17 @@ public:
                 int bestCostGain = -1;
                 bool bestFound = false;
 
-                for (auto& [currentTaskId, currentTaskServId] : all.getAllocation()) {
+                const auto& alloc = all.getAllocation();
+                for (int currentTaskId = 0; currentTaskId < (int)alloc.size(); ++currentTaskId) {
+                    int currentTaskServId = alloc[currentTaskId];
+                    if (currentTaskServId < 0) continue;
                     int init = RandomUtil::getRandomInt(0, matrix.getNumberOfTasks() - 1);
 
                     auto trySwap = [&](int i) -> bool {
                         if (i == currentTaskId) return false;
 
                         int randomTaskServId = all.getServiceForTask(i);
+                        if (randomTaskServId < 0) return false;
 
                         if (currentTaskServId == randomTaskServId)
                             return false;
@@ -185,14 +187,11 @@ public:
                     for (int i = init; i < matrix.getNumberOfTasks() && !stopped; ++i)
                         stopped = trySwap(i);
 
-                    if (!stopped &&
-                        (condition == ImprovementCondition::BEST_IMPROVEMENT ||
-                        (condition == ImprovementCondition::FIRST_IMPROVEMENT && !locallyImproved))) {
+                    if (!stopped) {
                         for (int i = 0; i < init && !stopped; ++i)
                             stopped = trySwap(i);
                     }
 
-                    if (locallyImproved) break; // FirstImprovement: sai do loop de tarefas
                 }
 
 
@@ -206,7 +205,7 @@ public:
                     all.replaceService(Task(t2Id, matrix.getTaskConsumption(t2Id)), Service(s2Id), matrix);
                 }
 
-            } while (locallyImproved && condition == ImprovementCondition::BEST_IMPROVEMENT);
+            } while (locallyImproved);
 
             return globallyImproved;
        }
