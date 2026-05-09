@@ -103,20 +103,18 @@ public:
 
 private:
     // Escolhe se MOVE ou SWAP
-    Allocation pertubation(Allocation allocation, InstanceMatrix matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX, PerturbationMode pertubationMode) {
+    Allocation pertubation(Allocation allocation, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX, PerturbationMode pertubationMode) {
         if (pertubationMode == PerturbationMode::MOVE) {
-            return pertubationMove(allocation, matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
+            return pertubationMove(std::move(allocation), matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
         } else if (pertubationMode == PerturbationMode::SWAP) {
-            return pertubationSwap(allocation, matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
+            return pertubationSwap(std::move(allocation), matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
         }
+        return allocation;
     }
 
-    Allocation pertubationSwap(Allocation allocation, InstanceMatrix matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX) {
-        // Implementar a lógica de perturbação aqui
-        // Por exemplo, podemos escolher aleatoriamente uma tarefa e realocá-la para um serviço diferente
-        int numberOfTasks = allocation.getAllocation().size();
-        int numberOfServices = allocation.getNumberOfEmployedServices();
-        int limit = static_cast<int>(6 - (i / (IT_MAX * 1.0)) * 5); // Controla a intensidade da perturbação, começando com 5 e diminuindo para 1 ao longo das iterações
+    Allocation pertubationSwap(Allocation allocation, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX) {
+        int numberOfTasks = matrix.getNumberOfTasks();
+        int limit = static_cast<int>(6 - (i / (IT_MAX * 1.0)) * 5);
 
         for (int j = 0; j < limit;) {
             int taskId1 = RandomUtil::getRandomInt(0, numberOfTasks - 1);
@@ -150,12 +148,10 @@ private:
     }
 
 
-    Allocation pertubationMove(Allocation allocation, InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX) {
-        // Implementar a lógica de perturbação aqui
-        // Por exemplo, podemos escolher aleatoriamente uma tarefa e realocá-la para um serviço diferente
-        int numberOfTasks = allocation.getAllocation().size();
-        int numberOfServices = allocation.getNumberOfEmployedServices();
-        int limit = static_cast<int>(6 - (i / (IT_MAX * 1.0)) * 5); // Controla a intensidade da perturbação, começando com 5 e diminuindo para 1 ao longo das iterações
+    Allocation pertubationMove(Allocation allocation, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX) {
+        int numberOfTasks = matrix.getNumberOfTasks();
+        int numberOfServices = matrix.getNumberOfServices(); // todos os serviços disponíveis, não apenas os já em uso
+        int limit = static_cast<int>(6 - (i / (IT_MAX * 1.0)) * 5);
 
         for (int j = 0; j < limit;) {
             int taskId = RandomUtil::getRandomInt(0, numberOfTasks - 1);
@@ -266,7 +262,8 @@ private:
                 // Tenta do mais seguro ao menos seguro até conseguir alocar
 
 
-                while (!allocation.getAllocation().count(task.getTaskId())) {
+                while (!allocation.hasTask(task.getTaskId())) {
+                    if (orderedServices.empty()) break;
                     Service service(orderedServices.front());
 
                     allocation.addTask(task, service, matrix);
