@@ -1,50 +1,55 @@
 #pragma once
 
-#include <unordered_map>
 #include <vector>
 #include "Task.h"
 #include "Service.h"
 #include "InstanceMatrix.hpp"
 
 using std::vector;
-using std::unordered_map;
-
-// Stub mínimo de InstanceMatrix — será expandido quando o módulo instance for criado
 
 class Allocation {
 public:
     Allocation()
-        : currentCost_(0.0), currentProb_(0.0), timeToBest_(0.0) {}
+        : currentCost_(0.0), currentProb_(0.0), timeToBest_(0.0),
+          numberOfTasksAllocated_(0), numberOfEmployedServices_(0) {}
 
     Allocation(const Allocation& other) = default;
     Allocation& operator=(const Allocation& other) = default;
+    Allocation(Allocation&&) noexcept = default;
+    Allocation& operator=(Allocation&&) noexcept = default;
 
-    int numberOfTasksAllocated() const {
-        return static_cast<int>(allocation_.size());
+    int numberOfTasksAllocated() const { return numberOfTasksAllocated_; }
+
+    bool hasTask(int taskId) const {
+        return taskId >= 0 && taskId < (int)allocation_.size() && allocation_[taskId] >= 0;
     }
 
     void addTask(const Task& t, const Service& s, const InstanceMatrix& instance) {
+        ensureSized(instance);
         int taskId = t.getTaskId();
         int servId = s.getServId();
 
+        if (allocation_[taskId] >= 0) return; // já alocado
+
         currentCost_ += instance.getTaskCost(taskId, servId);
+        allocation_[taskId] = servId;
+        numberOfTasksAllocated_++;
 
-        if (allocation_.find(taskId) == allocation_.end())
-            allocation_[taskId] = servId;
+        if (employedServices_[servId]++ == 0)
+            numberOfEmployedServices_++;
 
-        employedServices_[servId]++;
         resourcePerService_[servId] += t.getResourceConsumption();
     }
 
     void replaceService(const Task& t, const Service& newS, const InstanceMatrix& instance) {
-        int taskId   = t.getTaskId();
+        int taskId = t.getTaskId();
         int oldServId = allocation_[taskId];
         int newServId = newS.getServId();
 
         currentCost_ -= instance.getTaskCost(taskId, oldServId);
 
         if (--employedServices_[oldServId] == 0)
-            employedServices_.erase(oldServId);
+            numberOfEmployedServices_--;
 
         resourcePerService_[oldServId] -= t.getResourceConsumption();
 
@@ -52,7 +57,9 @@ public:
 
         currentCost_ += instance.getTaskCost(taskId, newServId);
 
-        employedServices_[newServId]++;
+        if (employedServices_[newServId]++ == 0)
+            numberOfEmployedServices_++;
+
         resourcePerService_[newServId] += t.getResourceConsumption();
     }
 
@@ -60,32 +67,31 @@ public:
         int taskId = t.getTaskId();
         int servId = allocation_[taskId];
 
-        allocation_.erase(taskId);
+        allocation_[taskId] = -1;
+        numberOfTasksAllocated_--;
         currentCost_ -= instance.getTaskCost(taskId, servId);
 
         if (--employedServices_[servId] == 0)
-            employedServices_.erase(servId);
+            numberOfEmployedServices_--;
 
         resourcePerService_[servId] -= t.getResourceConsumption();
     }
 
     bool respectsResourceRestriction(const InstanceMatrix& instance) const {
-        for (const auto& [servId, consumption] : resourcePerService_)
-            if (consumption > instance.getVres())
-                return false;
+        int vRes = instance.getVres();
+        for (int v : resourcePerService_)
+            if (v > vRes) return false;
         return true;
     }
 
-    int getNumberOfEmployedServices() const {
-        return static_cast<int>(employedServices_.size());
-    }
+    int getNumberOfEmployedServices() const { return numberOfEmployedServices_; }
 
     int getServiceForTask(int taskId) const {
-        return allocation_.at(taskId);
+        return allocation_[taskId];
     }
 
-    const unordered_map<int, int>& getAllocation() const { return allocation_; }
-    void setAllocation(const unordered_map<int, int>& allocation) { allocation_ = allocation; }
+    // taskId -> serviceId; -1 quando não alocado.
+    const vector<int>& getAllocation() const { return allocation_; }
 
     double getCurrentCost() const { return currentCost_; }
     void setCurrentCost(double cost) { currentCost_ = cost; }
@@ -97,14 +103,22 @@ public:
     void setTimeToBest(double time) { timeToBest_ = time; }
 
 private:
-    // taskId -> serviceId
-    unordered_map<int, int> allocation_;
-    // serviceId -> total resource consumption
-    unordered_map<int, int> resourcePerService_;
-    // serviceId -> number of allocated tasks
-    unordered_map<int, int> employedServices_;
+    void ensureSized(const InstanceMatrix& instance) {
+        if (allocation_.empty()) {
+            allocation_.assign(instance.getNumberOfTasks(), -1);
+            resourcePerService_.assign(instance.getNumberOfServices(), 0);
+            employedServices_.assign(instance.getNumberOfServices(), 0);
+        }
+    }
+
+    vector<int> allocation_;          // taskId -> serviceId, -1 = não alocado
+    vector<int> resourcePerService_;  // serviceId -> consumo total
+    vector<int> employedServices_;    // serviceId -> contagem de tarefas
 
     double currentCost_;
     double currentProb_;
     double timeToBest_;
+
+    int numberOfTasksAllocated_;
+    int numberOfEmployedServices_;
 };
