@@ -59,21 +59,38 @@ public:
             if (contNotImproved > IT_MAX / 10) {
                 contNotImproved = 0;
 
-                // Inspirado no IGrAl (Caramia 2008): antes de reiniciar, mergulha em soluções
-                // inviáveis para escapar do ótimo local e tenta reparar a viabilidade.
+                // IGrAl (Caramia 2008): mergulha em soluções inviáveis para escapar do ótimo local.
+                // Em vez de reparar deterministicamente (o que desfaz a diversidade), penaliza a
+                // solução inviável e deixa o VND encontrar o caminho de volta à viabilidade por conta
+                // própria — explorando uma bacia diferente da já varrida.
                 Allocation diveAllocation = pertubationInfeasible(currentAllocation, matrix, matrix.getSmax(), i, IT_MAX);
 
-                if (repairFeasibility(diveAllocation, matrix, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario)) {
-                    diveAllocation = neighborhoodSearch(matrix, diveAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
+                double violationExcess = validator.computeViolationExcess(
+                    matrix, diveAllocation, matrix.getVmax(), matrix.getPmax(), pScenario);
+                // λ escala o excesso de violação na mesma ordem de grandeza dos custos:
+                // excesso igual a Pmax ≅ penalidade igual a bestCost.
+                double lambda = bestCost / std::max(matrix.getPmax(), 1e-9);
+                double penalizedCost = diveAllocation.getCurrentCost() + lambda * violationExcess;
 
-                    if (diveAllocation.getCurrentCost() < bestCost) {
-                        bestAllocation = diveAllocation;
-                        bestCost = diveAllocation.getCurrentCost();
-                        bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
+                if (penalizedCost < bestCost) {
+                    // Dive promissor: roda VND a partir do ponto inviável sem reparar.
+                    // O VND só aceita moves que resultem em soluções viáveis, então migra
+                    // naturalmente para uma região viável diferente da já explorada.
+                    Allocation explored = neighborhoodSearch(matrix, diveAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
+
+                    if (validator.isFeasible(matrix, explored, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, true)) {
+                        if (explored.getCurrentCost() < bestCost) {
+                            bestAllocation = explored;
+                            bestCost = explored.getCurrentCost();
+                            bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
+                        }
+                        currentAllocation = explored;
+                    } else {
+                        // VND não conseguiu voltar à viabilidade — reinicia do greedy
+                        currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
                     }
-                    currentAllocation = diveAllocation;
                 } else {
-                    // Repair falhou: restart greedy como fallback
+                    // Dive não promissor — reinicia do greedy
                     currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
                 }
             }
@@ -152,64 +169,6 @@ private:
             }
         }
         return allocation;
-    }
-
-    // Repara viabilidade substituindo tarefas dos serviços com maior probabilidade de
-    // violação por serviços mais seguros. Análogo ao Manage_Infeasibility do IGrAl.
-    // Retorna true se a alocação se tornar viável, false se não for possível reparar.
-    bool repairFeasibility(Allocation& allocation, const InstanceMatrix& matrix,
-                           int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario) {
-        const int maxSteps = matrix.getNumberOfTasks();
-
-        for (int step = 0; step < maxSteps; ++step) {
-            if (validator.isFeasible(matrix, allocation, Vmax, Smax, Pmax, pScenario, true))
-                return true;
-
-            const vector<int>& alloc = allocation.getAllocation();
-
-            // Identifica a tarefa alocada ao serviço de maior probabilidade de violação
-            int   mostViolatingTask = -1;
-            double highestProb      = -1.0;
-            for (int t = 0; t < (int)alloc.size(); ++t) {
-                int s = alloc[t];
-                if (s < 0) continue;
-                double p = matrix.getServiceProb(s);
-                if (p > highestProb) {
-                    highestProb       = p;
-                    mostViolatingTask = t;
-                }
-            }
-            if (mostViolatingTask < 0) break;
-
-            // Coleta serviços com probabilidade menor que a do serviço atual,
-            // ordenados por probabilidade crescente (mais seguros primeiro)
-            int currentServId = alloc[mostViolatingTask];
-            vector<int> saferServices;
-            for (int s = 0; s < matrix.getNumberOfServices(); ++s) {
-                if (s != currentServId && matrix.getServiceProb(s) < highestProb)
-                    saferServices.push_back(s);
-            }
-            std::shuffle(saferServices.begin(), saferServices.end(), RandomUtil::engine());
-
-            Task    task(mostViolatingTask, matrix.getTaskConsumption(mostViolatingTask));
-            Service oldService(currentServId);
-            bool    moved = false;
-
-            for (int safeServId : saferServices) {
-                allocation.replaceService(task, Service(safeServId), matrix);
-
-                if (allocation.getNumberOfEmployedServices() <= Smax &&
-                    allocation.respectsResourceRestriction(matrix)) {
-                    moved = true;
-                    break; // aceita o serviço mais seguro que respeita restrições duras
-                }
-                allocation.replaceService(task, oldService, matrix);
-            }
-
-            if (!moved) break; // nenhum serviço mais seguro disponível — reparo impossível
-        }
-
-        return validator.isFeasible(matrix, allocation, Vmax, Smax, Pmax, pScenario, true);
     }
 
     Allocation pertubationSwap(Allocation allocation, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX) {
