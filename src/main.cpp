@@ -199,11 +199,13 @@ int main() {
                     bestCost   = all.getCurrentCost();
                     timeToBest = all.getTimeToBest();
                 }
+
                 if (instance.getOptimalCost() > 0 &&
                     all.getCurrentCost() == static_cast<double>(instance.getOptimalCost())) {
                     timeToBest = all.getTimeToBest();
                     break;
                 }
+
             } while ((nowMs() - instanceInitTime) / 1000.0 <= execTimePerRepetition);
 
             double repetitionExecTime = nowMs() - instanceInitTime;
@@ -231,21 +233,46 @@ int main() {
         instanceID++;
     }
 
-    cout << "Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best" << endl;
+    cout << "Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal" << endl;
     double instances    = static_cast<double>(algResults.size());
     double meanBestCost = 0;
 
+    int totalReachedOptimal   = 0;
+    int totalWithKnownOptimal = 0;
+    vector<string> optimalInstances;
+
     for (auto& [id, result] : algResults) {
+        bool hasOptimal     = instanceArray[id - 1].getOptimalCost() > 0;
+        bool reachedOptimal = hasOptimal && result.countBests > 0;
+
         cout << result.instanceName                         << " ";
         cout << instanceArray[id - 1].getOptimalCost()     << " ";
         cout << instanceArray[id - 1].getOptimalExecTime() << " ";
         cout << result.meanResult                          << " ";
         cout << result.bestResult                          << " ";
         meanBestCost += result.bestResult / instances;
-        cout << result.timeToBest / 1000.0                 << endl;
+        cout << result.timeToBest / 1000.0                 << " ";
+        cout << (reachedOptimal
+            ? "YES (" + std::to_string((int)result.countBests) + "/" + std::to_string(executionsPerInstance) + ")"
+            : (hasOptimal ? "NO" : "N/A")) << endl;
+
+        if (hasOptimal) {
+            totalWithKnownOptimal++;
+            if (reachedOptimal) {
+                totalReachedOptimal++;
+                optimalInstances.push_back(result.instanceName);
+            }
+        }
     }
 
-    cout << "MEAN BEST COSTS: " << meanBestCost << endl;
+    cout << "\nMEAN BEST COSTS: " << meanBestCost << endl;
+    cout << "REACHED OPTIMAL: " << totalReachedOptimal << "/" << totalWithKnownOptimal << " instances" << endl;
+
+    if (!optimalInstances.empty()) {
+        cout << "INSTANCES THAT REACHED OPTIMAL:" << endl;
+        for (const auto& name : optimalInstances)
+            cout << "  " << name << endl;
+    }
 
     return 0;
 }
