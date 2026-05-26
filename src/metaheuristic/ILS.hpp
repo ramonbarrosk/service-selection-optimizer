@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <vector>
+#include <algorithm>
 #include <chrono>
 #include <climits>
 #include "Allocation.h"
@@ -33,7 +34,6 @@ public:
     Allocation ILSWithRestart(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode) {
         Allocation currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
 
-
         currentAllocation = neighborhoodSearch(matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
 
         Allocation bestAllocation = currentAllocation;
@@ -42,9 +42,8 @@ public:
 
         int contNotImproved = 0;
 
-
         for (int i = 0; i < IT_MAX; ++i) {
-           currentAllocation = pertubation(currentAllocation, matrix, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, i, IT_MAX, pertubationMode);
+            currentAllocation = pertubation(currentAllocation, matrix, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, i, IT_MAX, pertubationMode);
 
             currentAllocation = neighborhoodSearch(matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
 
@@ -57,10 +56,43 @@ public:
                 contNotImproved++;
             }
 
-            // Reinicia a busca se não houve melhoria após um certo número de iterações
             if (contNotImproved > IT_MAX / 10) {
                 contNotImproved = 0;
-                currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
+
+                // IGrAl (Caramia 2008): mergulha em soluções inviáveis para escapar do ótimo local.
+                // Em vez de reparar deterministicamente (o que desfaz a diversidade), penaliza a
+                // solução inviável e deixa o VND encontrar o caminho de volta à viabilidade por conta
+                // própria — explorando uma bacia diferente da já varrida.
+                Allocation diveAllocation = pertubationInfeasible(currentAllocation, matrix, matrix.getSmax(), i, IT_MAX);
+
+                double violationExcess = validator.computeViolationExcess(
+                    matrix, diveAllocation, matrix.getVmax(), matrix.getPmax(), pScenario);
+                // λ escala o excesso de violação na mesma ordem de grandeza dos custos:
+                // excesso igual a Pmax ≅ penalidade igual a bestCost.
+                double lambda = bestCost / std::max(matrix.getPmax(), 1e-9);
+                double penalizedCost = diveAllocation.getCurrentCost() + lambda * violationExcess;
+
+                if (penalizedCost < bestCost) {
+                    // Dive promissor: roda VND a partir do ponto inviável sem reparar.
+                    // O VND só aceita moves que resultem em soluções viáveis, então migra
+                    // naturalmente para uma região viável diferente da já explorada.
+                    Allocation explored = neighborhoodSearch(matrix, diveAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
+
+                    if (validator.isFeasible(matrix, explored, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, true)) {
+                        if (explored.getCurrentCost() < bestCost) {
+                            bestAllocation = explored;
+                            bestCost = explored.getCurrentCost();
+                            bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
+                        }
+                        currentAllocation = explored;
+                    } else {
+                        // VND não conseguiu voltar à viabilidade — reinicia do greedy
+                        currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
+                    }
+                } else {
+                    // Dive não promissor — reinicia do greedy
+                    currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
+                }
             }
         }
 
@@ -102,12 +134,39 @@ public:
 
 
 private:
-    // Escolhe se MOVE ou SWAP
     Allocation pertubation(Allocation allocation, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX, PerturbationMode pertubationMode) {
         if (pertubationMode == PerturbationMode::MOVE) {
             return pertubationMove(std::move(allocation), matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
         } else if (pertubationMode == PerturbationMode::SWAP) {
             return pertubationSwap(std::move(allocation), matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
+        } else if (pertubationMode == PerturbationMode::INFEASIBLE_DIVE) {
+            return pertubationInfeasible(std::move(allocation), matrix, Smax, i, IT_MAX);
+        }
+        return allocation;
+    }
+
+    // Perturbação que ignora intencionalmente a restrição de probabilidade.
+    // Análogo ao Small_Perturbation do IGrAl (Caramia 2008): ao ficar preso num ótimo
+    // local, força movimentos que violam Pmax para explorar regiões infeasíveis.
+    // Apenas restrições duras de recurso (Smax, Vres) são mantidas.
+    Allocation pertubationInfeasible(Allocation allocation, const InstanceMatrix& matrix, int Smax, int i, int IT_MAX) {
+        int numberOfTasks    = matrix.getNumberOfTasks();
+        int numberOfServices = matrix.getNumberOfServices();
+        int limit = std::max(1, static_cast<int>(6 - (i / (IT_MAX * 1.0)) * 5));
+
+        for (int j = 0; j < limit; ++j) {
+            int taskId = RandomUtil::getRandomInt(0, numberOfTasks - 1);
+            Task    task(taskId, matrix.getTaskConsumption(taskId));
+            Service oldService(allocation.getServiceForTask(taskId));
+            Service newService(RandomUtil::getRandomInt(0, numberOfServices - 1));
+
+            allocation.replaceService(task, newService, matrix);
+
+            // Desfaz apenas se violar restrições duras (Smax ou capacidade de recurso)
+            if (allocation.getNumberOfEmployedServices() > Smax ||
+                !allocation.respectsResourceRestriction(matrix)) {
+                allocation.replaceService(task, oldService, matrix);
+            }
         }
         return allocation;
     }
