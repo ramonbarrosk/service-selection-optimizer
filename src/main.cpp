@@ -199,11 +199,13 @@ int main() {
                     bestCost   = all.getCurrentCost();
                     timeToBest = all.getTimeToBest();
                 }
+
                 if (instance.getOptimalCost() > 0 &&
                     all.getCurrentCost() == static_cast<double>(instance.getOptimalCost())) {
                     timeToBest = all.getTimeToBest();
                     break;
                 }
+
             } while ((nowMs() - instanceInitTime) / 1000.0 <= execTimePerRepetition);
 
             double repetitionExecTime = nowMs() - instanceInitTime;
@@ -235,12 +237,12 @@ int main() {
     double instances    = static_cast<double>(algResults.size());
     double meanBestCost = 0;
 
-    int totalReachedOptimal  = 0;
+    int totalReachedOptimal   = 0;
     int totalWithKnownOptimal = 0;
     vector<string> optimalInstances;
 
     for (auto& [id, result] : algResults) {
-        bool hasOptimal = instanceArray[id - 1].getOptimalCost() > 0;
+        bool hasOptimal     = instanceArray[id - 1].getOptimalCost() > 0;
         bool reachedOptimal = hasOptimal && result.countBests > 0;
 
         cout << result.instanceName                         << " ";
@@ -250,7 +252,9 @@ int main() {
         cout << result.bestResult                          << " ";
         meanBestCost += result.bestResult / instances;
         cout << result.timeToBest / 1000.0                 << " ";
-        cout << (reachedOptimal ? "YES (" + std::to_string((int)result.countBests) + "/" + std::to_string(executionsPerInstance) + ")" : (hasOptimal ? "NO" : "N/A")) << endl;
+        cout << (reachedOptimal
+            ? "YES (" + std::to_string((int)result.countBests) + "/" + std::to_string(executionsPerInstance) + ")"
+            : (hasOptimal ? "NO" : "N/A")) << endl;
 
         if (hasOptimal) {
             totalWithKnownOptimal++;

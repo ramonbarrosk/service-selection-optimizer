@@ -1,0 +1,8 @@
+# Resultados Java ILS por instância
+# Formato: Instance_10_10_N,mean_cost,best_cost
+# Se não tiver best_cost, pode omitir a terceira coluna.
+# Copie e preencha com os valores do seu projeto Java.
+#
+# Exemplo:
+# Instance_10_10_1,160.0,158.0
+# Instance_10_10_11,172.3,170.0
