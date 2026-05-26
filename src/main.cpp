@@ -187,12 +187,12 @@ int main() {
 
             do {
                 ILS ils;
-                all = ils.ILSWithRestart(instance, 0.4, ITERATIONS, instanceInitTime,
+                all = ils.ILSWithRestart(instance, 0.2, ITERATIONS, instanceInitTime,
                     ProbabilityScenario::Ps,
                     ImprovementHeuristic::COST_IMPROVEMENT,
                     SearchMode::LOCAL_SEARCH,
-                    ImprovementCondition::FIRST_IMPROVEMENT,
-                    ImprovementMode::SWAP,
+                    ImprovementCondition::BEST_IMPROVEMENT,
+                    ImprovementMode::MOVE,
                     PerturbationMode::MOVE);
 
                 if (all.getCurrentCost() < bestCost) {
@@ -266,7 +266,7 @@ int main() {
     }
 
     cout << "\nMEAN BEST COSTS: " << meanBestCost << endl;
-    cout << "REACHED OPTIMAL: " << totalReachedOptimal << "/" << totalWithKnownOptimal << " instances" << endl;
+    cout << "REACHED OPTIMALL: " << totalReachedOptimal << "/" << totalWithKnownOptimal << " instances" << endl;
 
     if (!optimalInstances.empty()) {
         cout << "INSTANCES THAT REACHED OPTIMAL:" << endl;
