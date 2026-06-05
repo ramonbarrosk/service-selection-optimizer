@@ -41,6 +41,7 @@ public:
         bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
 
         int contNotImproved = 0;
+        int restartStreak   = 0;  // reinicios consecutivos sem melhora global
 
         for (int i = 0; i < IT_MAX; ++i) {
             currentAllocation = pertubation(currentAllocation, matrix, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, i, IT_MAX, pertubationMode);
@@ -52,6 +53,7 @@ public:
                 bestCost = currentAllocation.getCurrentCost();
                 bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
                 contNotImproved = 0;
+                restartStreak   = 0;  // melhora global: volta ao construtivo por custo
             } else {
                 contNotImproved++;
             }
@@ -72,6 +74,11 @@ public:
                 double lambda = bestCost / std::max(matrix.getPmax(), 1e-9);
                 double penalizedCost = diveAllocation.getCurrentCost() + lambda * violationExcess;
 
+                // w cresce com reinicios consecutivos sem melhora: começa guiado por custo
+                // (w=0) e migra progressivamente para guiado por probabilidade (w=1) a cada
+                // reinicio frustrado, diversificando a região de partida da busca.
+                double w = std::min(0.5, restartStreak / 5.0);
+
                 if (penalizedCost < bestCost) {
                     // Dive promissor: roda VND a partir do ponto inviável sem reparar.
                     // O VND só aceita moves que resultem em soluções viáveis, então migra
@@ -83,15 +90,18 @@ public:
                             bestAllocation = explored;
                             bestCost = explored.getCurrentCost();
                             bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
+                            restartStreak = 0;
                         }
                         currentAllocation = explored;
                     } else {
-                        // VND não conseguiu voltar à viabilidade — reinicia do greedy
-                        currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
+                        // VND não conseguiu voltar à viabilidade — reinicia com construtivo adaptativo
+                        currentAllocation = adaptiveGreedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, w);
+                        restartStreak++;
                     }
                 } else {
-                    // Dive não promissor — reinicia do greedy
-                    currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
+                    // Dive não promissor — reinicia com construtivo adaptativo
+                    currentAllocation = adaptiveGreedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, w);
+                    restartStreak++;
                 }
             }
         }
@@ -256,7 +266,84 @@ private:
             return currentAllocation;
 
     }
-    // Solução inicial usando o método construtivo guloso randomizado 
+    // Construtivo guloso adaptativo: desloca o critério de seleção de custo puro (w=0)
+    // para probabilidade pura (w=1) conforme o número de reinicios consecutivos cresce.
+    // Quando w=0 o comportamento é idêntico ao greedyInitialSolution original.
+    Allocation adaptiveGreedyInitialSolution(const InstanceMatrix& matrix, double alpha,
+            int numberOfTasks, int Vmax, int Smax, double Pmax,
+            ProbabilityScenario pScenario, double w) {
+
+        if (w <= 0.0)
+            return greedyInitialSolution(matrix, alpha, numberOfTasks, Vmax, Smax, Pmax, pScenario);
+
+        Allocation allocation;
+        vector<int> tasksToAllocate;
+        for (int i = 0; i < numberOfTasks; ++i)
+            tasksToAllocate.push_back(i);
+
+        // Intervalo global de probabilidade para normalização [0,1]
+        int nServices = matrix.getNumberOfServices();
+        double minProb = std::numeric_limits<double>::max();
+        double maxProb = std::numeric_limits<double>::lowest();
+        for (int s = 0; s < nServices; ++s) {
+            double p = matrix.getServiceProb(s);
+            minProb = std::min(minProb, p);
+            maxProb = std::max(maxProb, p);
+        }
+        double probRange = (maxProb - minProb) > 1e-9 ? (maxProb - minProb) : 1.0;
+
+        int cont = 0;
+        while (allocation.numberOfTasksAllocated() < numberOfTasks) {
+            if (cont > 3 * numberOfTasks)
+                return ProbabilityBasedInitialSolution(matrix, alpha, numberOfTasks, Vmax, Smax, Pmax, pScenario);
+
+            int idx    = RandomUtil::getRandomInt(0, (int)tasksToAllocate.size() - 1);
+            int taskId = tasksToAllocate[idx];
+
+            double minCost  = matrix.getMinCostForTask(taskId);
+            double maxCost  = matrix.getMaxCostForTask(taskId);
+            double costRange = (maxCost - minCost) > 1e-9 ? (maxCost - minCost) : 1.0;
+
+            // Score blended para cada serviço: menor é melhor.
+            // score = (1-w)*custo_norm + w*prob_norm
+            vector<std::pair<double, int>> scored;
+            scored.reserve(nServices);
+            for (int s = 0; s < nServices; ++s) {
+                double costNorm = (matrix.getTaskCost(taskId, s) - minCost) / costRange;
+                double probNorm = (matrix.getServiceProb(s)       - minProb) / probRange;
+                scored.emplace_back((1.0 - w) * costNorm + w * probNorm, s);
+            }
+            std::sort(scored.begin(), scored.end());
+
+            // RCL: serviços com score dentro do limiar alpha (mesmo mecanismo do GRASP original)
+            double minScore   = scored.front().first;
+            double maxScore   = scored.back().first;
+            double threshold  = minScore + alpha * (maxScore - minScore);
+
+            vector<Service> rcl;
+            for (auto& [score, sId] : scored) {
+                if (score > threshold) break;  // lista ordenada, pode parar cedo
+                rcl.emplace_back(sId, matrix.getTaskCost(taskId, sId));
+            }
+
+            Service chosen = RandomUtil::getRandomService(rcl);
+            Task    task(taskId, matrix.getTaskConsumption(taskId));
+
+            tasksToAllocate.erase(tasksToAllocate.begin() + idx);
+            allocation.addTask(task, chosen, matrix);
+
+            if (!validator.isFeasible(matrix, allocation, Vmax, Smax, Pmax, pScenario, true)) {
+                allocation.removeTask(task, matrix);
+                tasksToAllocate.push_back(taskId);
+            }
+
+            cont++;
+        }
+
+        return allocation;
+    }
+
+    // Solução inicial usando o método construtivo guloso randomizado
     Allocation greedyInitialSolution(const InstanceMatrix& matrix, double alpha, int numberOfTasks, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario) {
         Allocation allocation;
 
