@@ -3,6 +3,8 @@
 #include <map>
 #include <vector>
 #include <climits>
+#include <limits>
+#include <algorithm>
 #include "Allocation.h"
 #include "InstanceMatrix.hpp"
 #include "SolutionValidator.hpp"
@@ -18,6 +20,53 @@ class GenericSearcher {
     SolutionValidator validator;
 public:
     GenericSearcher() = default;
+
+    // ───────────────────── Oscilação estratégica ─────────────────────
+    // Proposta (2): relaxa a capacidade (Vres) para restrição SUAVE, otimizando
+    // o objetivo penalizado  f = custo + λ·sobrecarga.  Smax e SLA seguem DURAS.
+    // Isso permite atravessar a região inviável-por-capacidade para reequilibrar
+    // — o movimento que a busca cost-only (estritamente viável) nunca faz, e que
+    // as instâncias apertadas exigem. Em instâncias folgadas a sobrecarga é sempre
+    // 0, então o passo vira uma descida de custo comum e não atrapalha.
+    //
+    // Recebe uma solução VIÁVEL e retorna true se encontrou outra viável mais
+    // barata (atualizando `all`); caso contrário deixa `all` intacta.
+    bool oscillationImprovement(Allocation& all, const InstanceMatrix& matrix,
+                                int Vmax, int Smax, double Pmax,
+                                ProbabilityScenario pScenario, int rounds = 12) {
+        int Vres = matrix.getVres();
+        double startCost = all.getCurrentCost();
+
+        Allocation work = all;
+        Allocation best = all;
+        double bestCost = (overloadOf(work, Vres) == 0) ? work.getCurrentCost()
+                                                        : std::numeric_limits<double>::max();
+
+        // λ na escala dos custos: começa moderado e oscila para visitar a fronteira.
+        double meanCost = 0; int n = matrix.getNumberOfTasks();
+        for (int t = 0; t < n; ++t) meanCost += matrix.getMinCostForTask(t);
+        meanCost /= std::max(1, n);
+        double lambda = std::max(1.0, meanCost * 2.0);
+
+        for (int r = 0; r < rounds; ++r) {
+            penalizedDescentMove(work, matrix, Vres, Vmax, Smax, Pmax, pScenario, lambda);
+            if (overloadOf(work, Vres) == 0) {
+                if (work.getCurrentCost() < bestCost) { best = work; bestCost = work.getCurrentCost(); }
+                lambda *= 0.6;                  // relaxa: deixa cruzar para inviável-barato
+                if (lambda < 0.25) lambda = 0.25;
+            } else {
+                lambda *= 2.0;                  // aperta: empurra de volta para viável
+            }
+        }
+        // descida final garantindo viabilidade
+        penalizedDescentMove(work, matrix, Vres, Vmax, Smax, Pmax, pScenario, lambda * 8.0);
+        if (overloadOf(work, Vres) == 0 && work.getCurrentCost() < bestCost) {
+            best = work; bestCost = work.getCurrentCost();
+        }
+
+        if (bestCost < startCost - 1e-9) { all = best; return true; }
+        return false;
+    }
 
     bool costImprovement(Allocation& all, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, ImprovementCondition condition, ImprovementMode mode) {
        bool globallyImproved = false;
@@ -239,5 +288,68 @@ public:
         }
 
         return currentAllocation;
+    }
+
+private:
+    // Sobrecarga total de capacidade (soma de quanto cada serviço passa de Vres).
+    long overloadOf(const Allocation& a, int Vres) const {
+        long ov = 0;
+        for (int u : a.getResourcePerService())
+            if (u > Vres) ov += (u - Vres);
+        return ov;
+    }
+
+    // SLA só pode piorar se o novo serviço for mais arriscado que o antigo.
+    // Quando piora, roda o DP de Poisson-binomial para checar Pmax.
+    bool slaOkAfterMove(Allocation& a, const InstanceMatrix& m, int Vmax, double Pmax,
+                        ProbabilityScenario pScenario, int oldServ, int newServ) {
+        if (m.getServiceProb(newServ) <= m.getServiceProb(oldServ)) return true;
+        return validator.computeViolationExcess(m, a, Vmax, Pmax, pScenario) <= 1e-12;
+    }
+
+    // Descida best-improvement no objetivo penalizado f = custo + λ·sobrecarga,
+    // só por MOVE. Aceita mover para serviço sobrecarregado se o ganho líquido em f
+    // for positivo; Smax e SLA continuam restrições duras.
+    bool penalizedDescentMove(Allocation& a, const InstanceMatrix& m, int Vres,
+                              int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario,
+                              double lambda) {
+        bool any = false, improved = true;
+        int n = m.getNumberOfTasks(), S = m.getNumberOfServices();
+        while (improved) {
+            improved = false;
+            int bestT = -1, bestS = -1; double bestDelta = -1e-9;
+            const auto& alloc = a.getAllocation();
+            for (int t = 0; t < n; ++t) {
+                int c = alloc[t]; if (c < 0) continue;
+                int cons = m.getTaskConsumption(t);
+                const auto& load = a.getResourcePerService();
+                long usedC   = load[c];
+                long ovC_old = std::max(0L, usedC - (long)Vres);
+                long ovC_new = std::max(0L, usedC - cons - (long)Vres);
+                for (int s = 0; s < S; ++s) {
+                    if (s == c) continue;
+                    double dCost = m.getTaskCost(t, s) - m.getTaskCost(t, c);
+                    long usedS   = load[s];
+                    long ovS_old = std::max(0L, usedS - (long)Vres);
+                    long ovS_new = std::max(0L, usedS + cons - (long)Vres);
+                    double dOver = (ovC_new - ovC_old) + (ovS_new - ovS_old);
+                    double dF = dCost + lambda * dOver;
+                    if (dF < bestDelta) {
+                        // valida Smax e SLA aplicando o move temporariamente
+                        Task task(t, cons); Service ns(s), cs(c);
+                        a.replaceService(task, ns, m);
+                        bool ok = a.getNumberOfEmployedServices() <= Smax &&
+                                  slaOkAfterMove(a, m, Vmax, Pmax, pScenario, c, s);
+                        a.replaceService(task, cs, m);
+                        if (ok) { bestDelta = dF; bestT = t; bestS = s; }
+                    }
+                }
+            }
+            if (bestT >= 0) {
+                a.replaceService(Task(bestT, m.getTaskConsumption(bestT)), Service(bestS), m);
+                improved = true; any = true;
+            }
+        }
+        return any;
     }
 };

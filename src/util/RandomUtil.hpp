@@ -13,6 +13,9 @@ public:
         return gen;
     }
 
+    // Reseeds the thread-local engine for reproducible/paired experiments.
+    static void setSeed(unsigned s) { engine().seed(s); }
+
     static int getRandomInt(int min, int max) {
         uniform_int_distribution<> dis(min, max);
         return dis(engine());

@@ -147,10 +147,10 @@ static void initiateInstanceArray(vector<InstanceMatrix>& instanceArray,
 }
 
 int main() {
-    const int executionsPerInstance = 20;
-
+    //const int executionsPerInstance = 20;
+    const int executionsPerInstance = 3;
     // To run all instances, leave targetInstances empty: {}
-    const vector<int> targetInstances = {11, 28, 100, 128, 129};
+    const vector<int> targetInstances = {};  // {} = todas as 94 | {11,28,100,128,129} = só as difíceis
     const int numberOfInstances = targetInstances.empty() ? 94
                                                           : static_cast<int>(targetInstances.size());
 
@@ -189,9 +189,11 @@ int main() {
         }
 
         // Sem log: usa 60s fixos por repetição (replica o comportamento Java)
-        double execTimePerRepetition = hasLogData
-            ? instance.getOptimalExecTime() / optimalExecTimeDivisor
-            : 60.0;
+        // double execTimePerRepetition = hasLogData
+        //     ? instance.getOptimalExecTime() / optimalExecTimeDivisor
+        //     : 60.0;
+
+        double execTimePerRepetition = 3.0;
 
         for (int r = 0; r < executionsPerInstance; r++) {
             cout << "r " << r << endl;

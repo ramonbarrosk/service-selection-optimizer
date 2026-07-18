@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <chrono>
 #include <climits>
 #include "Allocation.h"
@@ -32,7 +33,15 @@ public:
     // ILS com restart se a solução não melhorar por um número determinado de iterações
 
     Allocation ILSWithRestart(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode) {
+#ifdef ENABLE_OSCILLATION
+        // Híbrido (proposta 1): parte do construtivo best-fit; cai no guloso se não fechar viável.
+        bool bfOk = false;
+        Allocation currentAllocation = bestFitInitialSolution(matrix, 0.0, bfOk);
+        if (!bfOk)
+            currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
+#else
         Allocation currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
+#endif
 
         currentAllocation = neighborhoodSearch(matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
 
@@ -54,12 +63,22 @@ public:
                 bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
                 contNotImproved = 0;
                 restartStreak   = 0;  // melhora global: volta ao construtivo por custo
+#ifdef INSTRUMENT
+                extern long g_improveTotal, g_improveAfterRestart, g_seenRestart;
+                g_improveTotal++;
+                if (g_seenRestart) g_improveAfterRestart++;
+#endif
             } else {
                 contNotImproved++;
             }
 
             if (contNotImproved > IT_MAX / 10) {
                 contNotImproved = 0;
+#ifdef INSTRUMENT
+                extern long g_restartBranch, g_divePromising, g_diveFeasible, g_adaptiveWpos, g_maxStreak, g_seenRestart;
+                g_restartBranch++;
+                g_seenRestart = 1;
+#endif
 
                 // IGrAl (Caramia 2008): mergulha em soluções inviáveis para escapar do ótimo local.
                 // Em vez de reparar deterministicamente (o que desfaz a diversidade), penaliza a
@@ -77,7 +96,17 @@ public:
                 // w cresce com reinicios consecutivos sem melhora: começa guiado por custo
                 // (w=0) e migra progressivamente para guiado por probabilidade (w=1) a cada
                 // reinicio frustrado, diversificando a região de partida da busca.
+#ifdef DISABLE_ADAPTIVE
+                double w = 0.0;   // baseline: construtivo sempre guloso por custo
+#else
                 double w = std::min(0.5, restartStreak / 5.0);
+#endif
+
+#ifdef INSTRUMENT
+                if (w > 0.0) g_adaptiveWpos++;
+                if (penalizedCost < bestCost) g_divePromising++;
+                if (restartStreak > g_maxStreak) g_maxStreak = restartStreak;
+#endif
 
                 if (penalizedCost < bestCost) {
                     // Dive promissor: roda VND a partir do ponto inviável sem reparar.
@@ -93,14 +122,17 @@ public:
                             restartStreak = 0;
                         }
                         currentAllocation = explored;
+#ifdef INSTRUMENT
+                        g_diveFeasible++;
+#endif
                     } else {
-                        // VND não conseguiu voltar à viabilidade — reinicia com construtivo adaptativo
-                        currentAllocation = adaptiveGreedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, w);
+                        // VND não conseguiu voltar à viabilidade — reinicia o construtivo
+                        currentAllocation = restartConstruction(matrix, alpha, w, pScenario);
                         restartStreak++;
                     }
                 } else {
-                    // Dive não promissor — reinicia com construtivo adaptativo
-                    currentAllocation = adaptiveGreedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, w);
+                    // Dive não promissor — reinicia o construtivo
+                    currentAllocation = restartConstruction(matrix, alpha, w, pScenario);
                     restartStreak++;
                 }
             }
@@ -257,10 +289,20 @@ private:
         ImprovementMode improvementMode) {
 
             if (mode == SearchMode::LOCAL_SEARCH) {
+                GenericSearcher searcher;
                 if (improvementHeuristic == ImprovementHeuristic::COST_IMPROVEMENT)
-                    GenericSearcher().costImprovement(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition, improvementMode);
+                    searcher.costImprovement(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition, improvementMode);
+#ifdef ENABLE_OSCILLATION
+                // Híbrido (proposta 2): após a descida cost-only, reequilibra capacidade
+                // via oscilação estratégica. Inócuo em instâncias folgadas, decisivo nas apertadas.
+                searcher.oscillationImprovement(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario);
+#endif
             } else if (mode == SearchMode::VND) {
-                return GenericSearcher().VND(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition);
+                Allocation r = GenericSearcher().VND(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition);
+#ifdef ENABLE_OSCILLATION
+                GenericSearcher().oscillationImprovement(r, matrix, Vmax, Smax, Pmax, pScenario);
+#endif
+                return r;
             }
 
             return currentAllocation;
@@ -294,8 +336,13 @@ private:
 
         int cont = 0;
         while (allocation.numberOfTasksAllocated() < numberOfTasks) {
-            if (cont > 3 * numberOfTasks)
+            if (cont > 3 * numberOfTasks) {
+#ifdef INSTRUMENT
+                extern long g_fallbackAdaptive;
+                g_fallbackAdaptive++;
+#endif
                 return ProbabilityBasedInitialSolution(matrix, alpha, numberOfTasks, Vmax, Smax, Pmax, pScenario);
+            }
 
             int idx    = RandomUtil::getRandomInt(0, (int)tasksToAllocate.size() - 1);
             int taskId = tasksToAllocate[idx];
@@ -343,6 +390,66 @@ private:
         return allocation;
     }
 
+    // Reconstrução usada nos restarts. No modo híbrido usa best-fit randomizado
+    // (RCL α=0.3) para diversificar; sem a flag mantém o construtivo adaptativo original.
+    Allocation restartConstruction(const InstanceMatrix& matrix, double alpha, double w, ProbabilityScenario pScenario) {
+#ifdef ENABLE_OSCILLATION
+        (void)w;
+        bool ok = false;
+        Allocation a = bestFitInitialSolution(matrix, 0.3, ok);
+        if (ok) return a;
+        return adaptiveGreedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, w);
+#else
+        return adaptiveGreedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, w);
+#endif
+    }
+
+    // Construtivo best-fit-decrescente + cheapest-feasible (proposta 1).
+    // Ordena tarefas por consumo decrescente e atribui o serviço mais barato que
+    // mantém a solução viável. alpha>0 randomiza via RCL de custo (diversifica
+    // restarts). Constrói a estrutura "empacotada" que a oscilação precisa para
+    // render nas instâncias apertadas. Devolve ok=false se não fechar viável.
+    Allocation bestFitInitialSolution(const InstanceMatrix& matrix, double alpha, bool& ok) {
+        int n = matrix.getNumberOfTasks(), S = matrix.getNumberOfServices();
+        int Vmax = matrix.getVmax(), Smax = matrix.getSmax(); double Pmax = matrix.getPmax();
+        ProbabilityScenario sc = ProbabilityScenario::Ps;
+        Allocation a;
+
+        vector<int> order(n);
+        std::iota(order.begin(), order.end(), 0);
+        std::sort(order.begin(), order.end(), [&](int x, int y) {
+            return matrix.getTaskConsumption(x) > matrix.getTaskConsumption(y);
+        });
+
+        ok = true;
+        for (int taskId : order) {
+            Task task(taskId, matrix.getTaskConsumption(taskId));
+            vector<std::pair<int,int>> svc; svc.reserve(S);   // (custo, servId)
+            for (int s = 0; s < S; ++s) svc.emplace_back(matrix.getTaskCost(taskId, s), s);
+            std::sort(svc.begin(), svc.end());
+
+            int minC = svc.front().first, maxC = svc.back().first;
+            int thr = minC + (int)(alpha * (maxC - minC));
+            vector<int> candIdx;
+            for (size_t i = 0; i < svc.size(); ++i)
+                if (svc[i].first <= thr || alpha == 0.0) candIdx.push_back((int)i);
+            if (alpha > 0.0) std::shuffle(candIdx.begin(), candIdx.end(), RandomUtil::engine());
+            for (size_t i = 0; i < svc.size(); ++i)
+                if (std::find(candIdx.begin(), candIdx.end(), (int)i) == candIdx.end())
+                    candIdx.push_back((int)i);
+
+            bool placed = false;
+            for (int ci : candIdx) {
+                Service service(svc[ci].second, svc[ci].first);
+                a.addTask(task, service, matrix);
+                if (validator.isFeasible(matrix, a, Vmax, Smax, Pmax, sc, true)) { placed = true; break; }
+                a.removeTask(task, matrix);
+            }
+            if (!placed) { ok = false; return a; }
+        }
+        return a;
+    }
+
     // Solução inicial usando o método construtivo guloso randomizado
     Allocation greedyInitialSolution(const InstanceMatrix& matrix, double alpha, int numberOfTasks, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario) {
         Allocation allocation;
@@ -356,6 +463,10 @@ private:
 
         while (allocation.numberOfTasksAllocated() < numberOfTasks) {
             if (cont > 3 * numberOfTasks) {
+#ifdef INSTRUMENT
+                extern long g_fallbackGreedy;
+                g_fallbackGreedy++;
+#endif
                 return ProbabilityBasedInitialSolution(matrix, alpha, numberOfTasks, Vmax, Smax, Pmax, pScenario);
             }
 

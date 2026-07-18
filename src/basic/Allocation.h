@@ -90,6 +90,10 @@ public:
         return allocation_[taskId];
     }
 
+    // serviceId -> consumo total de recurso. Usado pela busca por oscilação
+    // estratégica para medir sobrecarga de capacidade sem reconstruir.
+    const vector<int>& getResourcePerService() const { return resourcePerService_; }
+
     // taskId -> serviceId; -1 quando não alocado.
     const vector<int>& getAllocation() const { return allocation_; }
 
