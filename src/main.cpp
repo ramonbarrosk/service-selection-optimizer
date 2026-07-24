@@ -147,10 +147,10 @@ static void initiateInstanceArray(vector<InstanceMatrix>& instanceArray,
 }
 
 int main() {
-    //const int executionsPerInstance = 20;
     const int executionsPerInstance = 3;
+
     // To run all instances, leave targetInstances empty: {}
-    const vector<int> targetInstances = {};  // {} = todas as 94 | {11,28,100,128,129} = só as difíceis
+    const vector<int> targetInstances = {};
     const int numberOfInstances = targetInstances.empty() ? 94
                                                           : static_cast<int>(targetInstances.size());
 
@@ -189,11 +189,9 @@ int main() {
         }
 
         // Sem log: usa 60s fixos por repetição (replica o comportamento Java)
-        // double execTimePerRepetition = hasLogData
-        //     ? instance.getOptimalExecTime() / optimalExecTimeDivisor
-        //     : 60.0;
-
-        double execTimePerRepetition = 3.0;
+        double execTimePerRepetition = hasLogData
+            ? instance.getOptimalExecTime() / optimalExecTimeDivisor
+            : 60.0;
 
         for (int r = 0; r < executionsPerInstance; r++) {
             cout << "r " << r << endl;
@@ -203,12 +201,15 @@ int main() {
 
             do {
                 ILS ils;
-                all = ils.ILSWithRestart(instance, 0.2, ITERATIONS, instanceInitTime,
+                // ILS#1 (réplica de ArticleResult.java, repo dos autores):
+                // First Improvement, Perturbation Move, Neighborhood Move (código: SWAP), alpha = 0.4.
+                // Muito mais rápido que ILS#3 (Best Improvement) com resultado comparável.
+                all = ils.ILS_run(instance, 0.4, ITERATIONS, instanceInitTime,
                     ProbabilityScenario::Ps,
                     ImprovementHeuristic::COST_IMPROVEMENT,
                     SearchMode::LOCAL_SEARCH,
-                    ImprovementCondition::BEST_IMPROVEMENT,
-                    ImprovementMode::MOVE,
+                    ImprovementCondition::FIRST_IMPROVEMENT,
+                    ImprovementMode::SWAP,
                     PerturbationMode::MOVE);
 
                 if (all.getCurrentCost() < bestCost) {
