@@ -145,7 +145,15 @@ public:
     // ILS Clássico sem restart
 
     Allocation ILS_run(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode) {
+#ifdef ENABLE_OSCILLATION
+        // Híbrido (proposta 1): parte do construtivo best-fit; cai no guloso se não fechar viável.
+        bool bfOk = false;
+        Allocation currentAllocation = bestFitInitialSolution(matrix, 0.0, bfOk);
+        if (!bfOk)
+            currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
+#else
         Allocation currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
+#endif
 
         Allocation bestAllocation = neighborhoodSearch(matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
         double bestCost = bestAllocation.getCurrentCost();
