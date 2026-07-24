@@ -362,6 +362,89 @@ várias tarefas *de uma vez*, algo que o MOVE/SWAP um-a-um nunca vê).
 
 ---
 
+## Fase 5 — réplica fiel dos autores, ILS#1 × ILS#3 e a otimização revertida
+
+Nesta fase alinhamos o `main.cpp` à **implementação de referência dos autores**
+(`ArticleResult.java`, repo `Service-Selection-Under-Uncertainty`) e investigamos por que uma
+das configurações do paper é impraticável.
+
+### 5.1 — Réplica fiel da configuração dos autores (ILS#1)
+
+O `ArticleResult.java` committado usa o método `ILS()` (clássico, **sem** restart) com a config
+**ILS#1** do paper (§7.2). Alinhamos o C++ a isso — a chamada em `main.cpp` passou a ser:
+
+| Parâmetro | Valor (idêntico ao Java) |
+|---|---|
+| Método | `ILS_run` (clássico, sem restart) |
+| Execuções por instância | 3 |
+| Iterações | 10⁴ (2000 se `optExecTime < 2s`) |
+| Orçamento / repetição | `optExecTime / divisor` + `do-while` (multistart por tempo) |
+| α | **0.4** |
+| Neighborhood Strategy | **First Improvement** |
+| Perturbation Movement | Move |
+| Neighborhood Structure (código) | **SWAP** |
+
+> Divergência documentada: o texto do ILS#1 (§7.2) diz *"Neighborhood Structure = Move"*, mas o
+> **código** dos autores passa `ImprovementMode.SWAP`. Seguimos o código (fonte da verdade).
+
+Também foi necessário levar o construtivo best-fit (proposta 1) para dentro do `ILS_run` — antes
+o gate `#ifdef ENABLE_OSCILLATION` só existia no `ILSWithRestart`. Sem isso, trocar para o ILS
+clássico teria **desligado o híbrido silenciosamente** (a oscilação sozinha é no-op).
+
+### 5.2 — ILS#3 (Best Improvement) é impraticável nesta implementação
+
+Testamos também **ILS#3** (Best Improvement, Move, α=0.2). Resultado: **inviável em tempo**.
+Uma única instância difícil (#11) não terminava em 120s; extrapolado, o experimento completo
+levaria **~14 horas por modo**.
+
+Causa (confirmada por `gprof`): `isFeasible` é chamado **357 milhões de vezes** (64% do tempo).
+Best Improvement avalia **todos** os vizinhos que reduzem custo a cada passo (aplicando o move,
+rodando o DP de SLA e desfazendo), enquanto First Improvement (ILS#1) para no **primeiro**
+movimento que melhora. A diferença de volume de chamadas é de ordens de magnitude.
+
+**Decisão:** abandonar o ILS#3 e ficar com o **ILS#1** — muito mais rápido e com resultado
+comparável (na comparação 3-way, o ganho vem do **best-fit**, não da estratégia de vizinhança).
+
+### 5.3 — Otimização de `respectsResourceRestriction`: medida, validada e **revertida**
+
+Ao investigar a lentidão do ILS#3, tornamos `respectsResourceRestriction` **O(1)** (contador
+incremental de serviços sobrecarregados, mantido nas mutações) em vez do scan O(nº serviços).
+
+- **Correção:** validada com auto-checagem (contador vs scan real) em milhões de chamadas →
+  **0 divergências**. E num A/B com semente fixa + trabalho fixo nas 94 instâncias, os custos
+  saíram **bit-a-bit idênticos**.
+- **Desempenho no ILS#1:** **não ajudou.** Medição pareada (94 instâncias, baseline OSC=0):
+
+  | Versão | Tempo |
+  |---|---|
+  | `respectsResourceRestriction` O(n) (original) | 169,8s |
+  | contador incremental O(1) | 179,6s |
+
+  Como o ILS#1 (First Improvement) chama `isFeasible` muito menos que o ILS#3, a economia do scan
+  não compensa o custo O(1) extra adicionado a cada mutação (`replaceService`/`addTask`/
+  `removeTask`). Resultado neutro-a-levemente-negativo.
+
+**Decisão:** a otimização era específica do ILS#3 (que abandonamos). Para o ILS#1 ela não traz
+ganho e adiciona complexidade — **revertida** ao original (mantém o código fiel ao dos autores).
+
+### 5.4 — Relatório 3-way (ILS#1): efeito do best-fit
+
+Comparação Java (referência) × C++ baseline (`OSC=0`) × C++ híbrido (best-fit), **mesma config
+ILS#1**, 94 instâncias, 3 execuções (`data/report_java.txt`, `report_cpp_baseline.txt`,
+`report_cpp_hybrid.txt`; tabela em `data/charts_3way/table_3way.png`):
+
+| Versão | GAP médio | Ótimos (GAP=0) |
+|---|---|---|
+| Java (referência) | 63,0% | 0/94 |
+| C++ baseline (`OSC=0`) | 52,2% | 0/94 |
+| **C++ híbrido (best-fit)** | **4,1%** | **46/94** |
+
+O best-fit melhorou em **94 de 94** instâncias; gap médio **52% → 4%**. Java e C++ baseline
+diferem por RNG (mesma config), ambos na faixa "baseline fraco" — o que confirma que o salto de
+qualidade vem do **construtivo best-fit**, não da metaheurística de base.
+
+---
+
 ## Apêndice — reprodutibilidade
 
 Scaffolding de experimento em `experiments/` (binários independentes da `main`, cada um com seu
