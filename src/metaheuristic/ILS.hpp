@@ -412,50 +412,90 @@ private:
 #endif
     }
 
-    // Construtivo best-fit-decrescente + cheapest-feasible (proposta 1).
-    // Ordena tarefas por consumo decrescente e atribui o serviço mais barato que
-    // mantém a solução viável. alpha>0 randomiza via RCL de custo (diversifica
-    // restarts). Constrói a estrutura "empacotada" que a oscilação precisa para
-    // render nas instâncias apertadas. Devolve ok=false se não fechar viável.
-    Allocation bestFitInitialSolution(const InstanceMatrix& matrix, double alpha, bool& ok) {
-        int n = matrix.getNumberOfTasks(), S = matrix.getNumberOfServices();
-        int Vmax = matrix.getVmax(), Smax = matrix.getSmax(); double Pmax = matrix.getPmax();
-        ProbabilityScenario sc = ProbabilityScenario::Ps;
-        Allocation a;
+    // ───────────── Construtivo best-fit-decrescente + cheapest-feasible (proposta 1) ─────────────
+    //
+    // Constrói uma solução inicial "empacotada" — a estrutura que a oscilação (proposta 2)
+    // precisa para render nas instâncias apertadas. A ideia tem dois passos:
+    //
+    //   1. "decreasing": aloca as tarefas MAIS PESADAS (maior consumo de recurso) primeiro.
+    //      É a sabedoria do bin-packing First-Fit-Decreasing: encaixe as "pedras grandes"
+    //      antes, senão elas não cabem em lugar nenhum no fim.
+    //   2. "cheapest-feasible": para cada tarefa, escolhe o serviço MAIS BARATO que mantém a
+    //      solução viável em TODAS as restrições (capacidade, Smax, SLA) — checa a viabilidade
+    //      ANTES de fixar a alocação, em vez de alocar cego e reparar depois.
+    //
+    // Parâmetro `alpha` (diversificação GRASP/RCL, usado nos restarts):
+    //   - alpha == 0 → determinístico: sempre tenta do serviço mais barato ao mais caro.
+    //   - alpha  > 0 → entre os serviços "baratos o suficiente" (custo ≤ limiar RCL), tenta
+    //                  numa ordem ALEATÓRIA, gerando soluções iniciais diferentes por restart.
+    //
+    // `feasibleComplete` sai `false` se alguma tarefa não coube em nenhum serviço (instância
+    // apertada demais para o construtivo) — o chamador então cai no guloso original.
+    Allocation bestFitInitialSolution(const InstanceMatrix& matrix, double alpha, bool& feasibleComplete) {
+        const int numberOfTasks    = matrix.getNumberOfTasks();
+        const int numberOfServices = matrix.getNumberOfServices();
+        const int Vmax = matrix.getVmax();
+        const int Smax = matrix.getSmax();
+        const double Pmax = matrix.getPmax();
+        ProbabilityScenario scenario = ProbabilityScenario::Ps;   // isFeasible pede ref não-const
 
-        vector<int> order(n);
-        std::iota(order.begin(), order.end(), 0);
-        std::sort(order.begin(), order.end(), [&](int x, int y) {
-            return matrix.getTaskConsumption(x) > matrix.getTaskConsumption(y);
-        });
+        Allocation allocation;
 
-        ok = true;
-        for (int taskId : order) {
+        // Passo 1: ordena as tarefas por consumo de recurso DECRESCENTE (pesadas primeiro).
+        vector<int> tasksByConsumptionDesc(numberOfTasks);
+        std::iota(tasksByConsumptionDesc.begin(), tasksByConsumptionDesc.end(), 0);
+        std::sort(tasksByConsumptionDesc.begin(), tasksByConsumptionDesc.end(),
+                  [&](int taskA, int taskB) {
+                      return matrix.getTaskConsumption(taskA) > matrix.getTaskConsumption(taskB);
+                  });
+
+        feasibleComplete = true;
+        for (int taskId : tasksByConsumptionDesc) {
             Task task(taskId, matrix.getTaskConsumption(taskId));
-            vector<std::pair<int,int>> svc; svc.reserve(S);   // (custo, servId)
-            for (int s = 0; s < S; ++s) svc.emplace_back(matrix.getTaskCost(taskId, s), s);
-            std::sort(svc.begin(), svc.end());
 
-            int minC = svc.front().first, maxC = svc.back().first;
-            int thr = minC + (int)(alpha * (maxC - minC));
-            vector<int> candIdx;
-            for (size_t i = 0; i < svc.size(); ++i)
-                if (svc[i].first <= thr || alpha == 0.0) candIdx.push_back((int)i);
-            if (alpha > 0.0) std::shuffle(candIdx.begin(), candIdx.end(), RandomUtil::engine());
-            for (size_t i = 0; i < svc.size(); ++i)
-                if (std::find(candIdx.begin(), candIdx.end(), (int)i) == candIdx.end())
-                    candIdx.push_back((int)i);
+            // Serviços ordenados por custo crescente para esta tarefa: pares (custo, serviceId).
+            vector<std::pair<int, int>> servicesByCost;
+            servicesByCost.reserve(numberOfServices);
+            for (int serviceId = 0; serviceId < numberOfServices; ++serviceId)
+                servicesByCost.emplace_back(matrix.getTaskCost(taskId, serviceId), serviceId);
+            std::sort(servicesByCost.begin(), servicesByCost.end());
 
-            bool placed = false;
-            for (int ci : candIdx) {
-                Service service(svc[ci].second, svc[ci].first);
-                a.addTask(task, service, matrix);
-                if (validator.isFeasible(matrix, a, Vmax, Smax, Pmax, sc, true)) { placed = true; break; }
-                a.removeTask(task, matrix);
+            // Monta a ORDEM DE TENTATIVA (índices em servicesByCost):
+            //   - Lista candidata RCL = serviços com custo ≤ limiar (todos, se alpha==0);
+            //   - se alpha>0, embaralha a RCL (diversifica os restarts);
+            //   - anexa os demais serviços depois, como fallback, ainda em ordem de custo.
+            const int cheapestCost = servicesByCost.front().first;
+            const int priciestCost = servicesByCost.back().first;
+            const int rclThreshold = cheapestCost + (int)(alpha * (priciestCost - cheapestCost));
+
+            vector<int> tryOrder;
+            for (size_t i = 0; i < servicesByCost.size(); ++i)
+                if (alpha == 0.0 || servicesByCost[i].first <= rclThreshold)
+                    tryOrder.push_back((int)i);
+            if (alpha > 0.0)
+                std::shuffle(tryOrder.begin(), tryOrder.end(), RandomUtil::engine());
+            for (size_t i = 0; i < servicesByCost.size(); ++i)
+                if (std::find(tryOrder.begin(), tryOrder.end(), (int)i) == tryOrder.end())
+                    tryOrder.push_back((int)i);
+
+            // Passo 2: atribui ao primeiro serviço (nessa ordem) que mantém tudo viável.
+            bool assigned = false;
+            for (int i : tryOrder) {
+                Service service(servicesByCost[i].second, servicesByCost[i].first);
+                allocation.addTask(task, service, matrix);
+                if (validator.isFeasible(matrix, allocation, Vmax, Smax, Pmax, scenario, true)) {
+                    assigned = true;
+                    break;
+                }
+                allocation.removeTask(task, matrix);   // não coube: desfaz e tenta o próximo
             }
-            if (!placed) { ok = false; return a; }
+
+            if (!assigned) {                            // nenhum serviço acomodou a tarefa
+                feasibleComplete = false;
+                return allocation;
+            }
         }
-        return a;
+        return allocation;
     }
 
     // Solução inicial usando o método construtivo guloso randomizado
