@@ -87,9 +87,43 @@ static InstanceMatrix readInstance(int instanceCont) {
     return instance;
 }
 
-static void initiateInstanceArray(vector<InstanceMatrix>& instanceArray) {
-    const string folder = "data/instances/";
+static void loadInstanceLog(InstanceMatrix& instance, const string& filename) {
+    std::ifstream logFile("data/Log/" + filename);
+    if (!logFile.is_open()) return;
 
+    string lastLine, logLine;
+    while (std::getline(logFile, logLine)) {
+        if (logLine.rfind("Total", 0) == 0) {
+            auto eq = logLine.find('=');
+            if (eq != string::npos) {
+                string rest = logLine.substr(eq + 1);
+                auto sec = rest.find("sec");
+                if (sec != string::npos) rest = rest.substr(0, sec);
+                rest.erase(0, rest.find_first_not_of(" \t"));
+                rest.erase(rest.find_last_not_of(" \t") + 1);
+                instance.setOptimalExecTime(std::stod(rest));
+            }
+        }
+        lastLine = logLine;
+    }
+    // Last line: "... = <optimalCost>"
+    auto eq = lastLine.rfind("= ");
+    if (eq != string::npos)
+        instance.setOptimalCost(std::stoi(lastLine.substr(eq + 2)));
+}
+
+static void initiateInstanceArray(vector<InstanceMatrix>& instanceArray,
+                                  const vector<int>& filter = {}) {
+    if (!filter.empty()) {
+        for (int i = 0; i < static_cast<int>(filter.size()); i++) {
+            int num = filter[i];
+            instanceArray[i] = readInstance(num);
+            loadInstanceLog(instanceArray[i], "Instance_10_10_" + std::to_string(num));
+        }
+        return;
+    }
+
+    const string folder = "data/instances/";
     vector<fs::path> files;
     for (const auto& entry : fs::directory_iterator(folder))
         files.push_back(entry.path());
@@ -107,44 +141,24 @@ static void initiateInstanceArray(vector<InstanceMatrix>& instanceArray) {
             parts.push_back(part);
 
         instanceArray[cont] = readInstance(std::stoi(parts[3]));
-
-        // Optional log file for optimal cost/time (format from Java version)
-        std::ifstream logFile("data/Log/" + filename);
-        if (logFile.is_open()) {
-            string lastLine, logLine;
-            while (std::getline(logFile, logLine)) {
-                if (logLine.rfind("Total", 0) == 0) {
-                    auto eq = logLine.find('=');
-                    if (eq != string::npos) {
-                        string rest = logLine.substr(eq + 1);
-                        auto sec = rest.find("sec");
-                        if (sec != string::npos) rest = rest.substr(0, sec);
-                        rest.erase(0, rest.find_first_not_of(" \t"));
-                        rest.erase(rest.find_last_not_of(" \t") + 1);
-                        instanceArray[cont].setOptimalExecTime(std::stod(rest));
-                    }
-                }
-                lastLine = logLine;
-            }
-            // Last line: "... = <optimalCost>"
-            auto eq = lastLine.rfind("= ");
-            if (eq != string::npos)
-                instanceArray[cont].setOptimalCost(std::stoi(lastLine.substr(eq + 2)));
-        }
-
+        loadInstanceLog(instanceArray[cont], filename);
         cont++;
     }
 }
 
 int main() {
     const int executionsPerInstance = 3;
-    const int numberOfInstances     = 94;
+
+    // To run all instances, leave targetInstances empty: {}
+    const vector<int> targetInstances = {};
+    const int numberOfInstances = targetInstances.empty() ? 94
+                                                          : static_cast<int>(targetInstances.size());
 
     int optimalExecTimeDivisor = 10;
     int ITERATIONS = 10000;
 
     vector<InstanceMatrix> instanceArray(numberOfInstances);
-    initiateInstanceArray(instanceArray);
+    initiateInstanceArray(instanceArray, targetInstances);
 
     std::map<int, AlgResult> algResults;
     for (int i = 1; i <= numberOfInstances; i++)
@@ -187,12 +201,15 @@ int main() {
 
             do {
                 ILS ils;
-                all = ils.ILSWithRestart(instance, 0.2, ITERATIONS, instanceInitTime,
+                // ILS#1 (réplica de ArticleResult.java, repo dos autores):
+                // First Improvement, Perturbation Move, Neighborhood Move (código: SWAP), alpha = 0.4.
+                // Muito mais rápido que ILS#3 (Best Improvement) com resultado comparável.
+                all = ils.ILS_run(instance, 0.4, ITERATIONS, instanceInitTime,
                     ProbabilityScenario::Ps,
                     ImprovementHeuristic::COST_IMPROVEMENT,
                     SearchMode::LOCAL_SEARCH,
-                    ImprovementCondition::BEST_IMPROVEMENT,
-                    ImprovementMode::MOVE,
+                    ImprovementCondition::FIRST_IMPROVEMENT,
+                    ImprovementMode::SWAP,
                     PerturbationMode::MOVE);
 
                 if (all.getCurrentCost() < bestCost) {
