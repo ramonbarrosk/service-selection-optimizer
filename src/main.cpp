@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>
+#include <cstdlib>
 
 #include "basic/Allocation.h"
 #include "instance/InstanceMatrix.hpp"
@@ -38,6 +39,26 @@ static double nowMs() {
     using namespace std::chrono;
     return static_cast<double>(
         duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count());
+}
+
+static int envInt(const char* name, int fallback) {
+    const char* value = std::getenv(name);
+    if (!value || !*value)
+        return fallback;
+    const int parsed = std::stoi(value);
+    if (parsed <= 0)
+        throw std::invalid_argument(string(name) + " must be greater than zero");
+    return parsed;
+}
+
+static double envDouble(const char* name, double fallback) {
+    const char* value = std::getenv(name);
+    if (!value || !*value)
+        return fallback;
+    const double parsed = std::stod(value);
+    if (parsed <= 0.0)
+        throw std::invalid_argument(string(name) + " must be greater than zero");
+    return parsed;
 }
 
 static InstanceMatrix readInstance(int instanceCont) {
@@ -147,7 +168,11 @@ static void initiateInstanceArray(vector<InstanceMatrix>& instanceArray,
 }
 
 int main() {
-    const int executionsPerInstance = 3;
+    const double programStartTime = nowMs();
+    const int executionsPerInstance = envInt("SSO_REPETITIONS", 3);
+    const int configuredIterations = envInt("SSO_ITERATIONS", -1);
+    const double timeScale = envDouble("SSO_TIME_SCALE", 1.0);
+    const double fixedTimeSeconds = envDouble("SSO_TIME_SECONDS", -1.0);
 
     // To run all instances, leave targetInstances empty: {}
     const vector<int> targetInstances = {};
@@ -165,6 +190,13 @@ int main() {
         algResults[i] = AlgResult{};
 
     int instanceID = 1;
+
+    cout << "CONFIG repetitions=" << executionsPerInstance
+         << " iterations=" << (configuredIterations > 0
+             ? std::to_string(configuredIterations) : "adaptive")
+         << " timeScale=" << timeScale
+         << " fixedTimeSeconds=" << (fixedTimeSeconds > 0.0
+             ? std::to_string(fixedTimeSeconds) : "adaptive") << endl;
 
     for (const InstanceMatrix& instance : instanceArray) {
         algResults[instanceID].instanceName = instance.getInstanceName();
@@ -188,10 +220,16 @@ int main() {
             optimalExecTimeDivisor = 10;
         }
 
+        if (configuredIterations > 0)
+            ITERATIONS = configuredIterations;
+
         // Sem log: usa 60s fixos por repetição (replica o comportamento Java)
-        double execTimePerRepetition = hasLogData
+        const double adaptiveTimeSeconds = hasLogData
             ? instance.getOptimalExecTime() / optimalExecTimeDivisor
             : 60.0;
+        const double execTimePerRepetition = fixedTimeSeconds > 0.0
+            ? fixedTimeSeconds
+            : adaptiveTimeSeconds * timeScale;
 
         for (int r = 0; r < executionsPerInstance; r++) {
             cout << "r " << r << endl;
@@ -290,6 +328,12 @@ int main() {
         for (const auto& name : optimalInstances)
             cout << "  " << name << endl;
     }
+
+
+    const double totalSeconds = (nowMs() - programStartTime) / 1000.0;
+    const int totalMinutes = static_cast<int>(totalSeconds) / 60;
+    cout << "TOTAL EXECUTION TIME: " << totalMinutes << "m "
+         << totalSeconds - totalMinutes * 60 << "s" << endl;
 
     return 0;
 }

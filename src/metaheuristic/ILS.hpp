@@ -15,7 +15,22 @@
 #include "RandomUtil.hpp"
 #include "SearchMode.h"
 #include "GenericSearcher.h"
+#ifdef ENABLE_GLS
+#include "GuidedLocalSearcher.hpp"
+#endif
 #include "PertubationMode.h"
+
+#ifndef GLS_ALPHA
+#define GLS_ALPHA 0.3
+#endif
+
+#ifndef GLS_ROUNDS
+#define GLS_ROUNDS 30
+#endif
+
+#ifndef GLS_MAX_ROUNDS
+#define GLS_MAX_ROUNDS 120
+#endif
 
 class ILS {
 
@@ -157,19 +172,112 @@ public:
 
         Allocation bestAllocation = neighborhoodSearch(matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
         double bestCost = bestAllocation.getCurrentCost();
+        currentAllocation = bestAllocation;
         bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
+
+#ifdef ENABLE_GLS
+        int iterationsWithoutImprovement = 0;
+        int consecutiveUnsuccessfulGlsCalls = 0;
+        GuidedLocalSearcher guidedSearcher;
+        const int glsStagnationThreshold = std::max(50, IT_MAX / 20);
+#endif
 
         for (int i = 0; i < IT_MAX; ++i) {
             Allocation perturbed = pertubation(currentAllocation, matrix, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, i, IT_MAX, pertubationMode);
 
             Allocation improved = neighborhoodSearch(matrix, perturbed, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
 
+            // Let the ILS walk advance through different basins even when the
+            // candidate does not improve the global best.
+            currentAllocation = improved;
+
             if (improved.getCurrentCost() < bestCost) {
                 bestAllocation = improved;
                 bestCost = improved.getCurrentCost();
                 bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
+#ifdef ENABLE_GLS
+                iterationsWithoutImprovement = 0;
+                consecutiveUnsuccessfulGlsCalls = 0;
+#endif
+            } else {
+#ifdef ENABLE_GLS
+                ++iterationsWithoutImprovement;
+#endif
             }
+
+#ifdef ENABLE_GLS
+            if (iterationsWithoutImprovement >= glsStagnationThreshold) {
+                int guidedRounds = GLS_ROUNDS;
+#ifdef ENABLE_ADAPTIVE_GLS_ROUNDS
+                const int multiplier =
+                    1 << std::min(consecutiveUnsuccessfulGlsCalls, 2);
+                guidedRounds = std::min(
+                    GLS_MAX_ROUNDS, GLS_ROUNDS * multiplier);
+#endif
+#ifdef ENABLE_PERSISTENT_GLS
+                const bool preservePenalties = true;
+#else
+                const bool preservePenalties = false;
+#endif
+                const double bestCostBeforeGls = bestCost;
+                Allocation guided = guidedSearcher.improve(
+                    currentAllocation, matrix,
+                    matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
+                    GLS_ALPHA, guidedRounds, preservePenalties);
+
+                // Polish the best real-cost solution returned by GLS using the
+                // established local-search and strategic-oscillation pipeline.
+                guided = neighborhoodSearch(
+                    matrix, guided, matrix.getVmax(), matrix.getSmax(),
+                    matrix.getPmax(), pScenario, searchMode,
+                    improvementCondition, ImprovementHeuristic, improvementMode);
+                currentAllocation = guided;
+
+                if (guided.getCurrentCost() < bestCost) {
+                    bestAllocation = guided;
+                    bestCost = guided.getCurrentCost();
+                    bestAllocation.setTimeToBest(
+                        (nowMs() - instanceInitTime) / 1000.0);
+                }
+
+                if (bestCost < bestCostBeforeGls - 1e-9)
+                    consecutiveUnsuccessfulGlsCalls = 0;
+                else
+                    consecutiveUnsuccessfulGlsCalls = std::min(
+                        consecutiveUnsuccessfulGlsCalls + 1, 2);
+                iterationsWithoutImprovement = 0;
+            }
+#endif
         }
+
+#ifdef ENABLE_GLS
+        // Intensify the best basin one last time, retaining the learned
+        // penalties when persistence is enabled.
+#ifdef ENABLE_PERSISTENT_GLS
+        const bool preserveFinalPenalties = true;
+#else
+        const bool preserveFinalPenalties = false;
+#endif
+        int finalGuidedRounds = GLS_ROUNDS;
+#ifdef ENABLE_ADAPTIVE_GLS_ROUNDS
+        finalGuidedRounds = std::min(
+            GLS_MAX_ROUNDS,
+            GLS_ROUNDS * (1 << std::min(consecutiveUnsuccessfulGlsCalls, 2)));
+#endif
+        Allocation guidedBest = guidedSearcher.improve(
+            bestAllocation, matrix,
+            matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
+            GLS_ALPHA, finalGuidedRounds, preserveFinalPenalties);
+        guidedBest = neighborhoodSearch(
+            matrix, guidedBest, matrix.getVmax(), matrix.getSmax(),
+            matrix.getPmax(), pScenario, searchMode, improvementCondition,
+            ImprovementHeuristic, improvementMode);
+        if (guidedBest.getCurrentCost() < bestCost) {
+            bestAllocation = guidedBest;
+            bestAllocation.setTimeToBest(
+                (nowMs() - instanceInitTime) / 1000.0);
+        }
+#endif
 
         return bestAllocation;
     }
