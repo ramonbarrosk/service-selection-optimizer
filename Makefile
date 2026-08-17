@@ -3,9 +3,15 @@ CXXFLAGS = -std=c++17 -O3 -DNDEBUG -Wall -Wextra \
     -Isrc/basic -Isrc/enum -Isrc/instance -Isrc/util \
     -Isrc/validator -Isrc/search -Isrc/metaheuristic
 
-# Híbrido proposta (1)+(2): construtivo best-fit + busca por oscilação estratégica.
-# Ligado por padrão (comprovado pelo A/B: gap médio 36.6% -> 17.2% nas difíceis).
-# Para voltar ao baseline original:  make OSC=0
+# Proposta 1: construtivo best-fit. Separado da oscilacao para permitir
+# ablacoes justas como BEST_FIT=1 OSC=0 GLS=1.
+BEST_FIT ?= 1
+ifneq ($(BEST_FIT),0)
+CXXFLAGS += -DENABLE_BEST_FIT
+endif
+
+# Proposta 2: busca por oscilacao estrategica. Para desativa-la sem remover o
+# best-fit: make BEST_FIT=1 OSC=0
 OSC ?= 1
 ifneq ($(OSC),0)
 CXXFLAGS += -DENABLE_OSCILLATION
@@ -33,11 +39,24 @@ GLS_MAX_ROUNDS ?= 120
 GLS_ADAPTIVE ?= 1
 GLS_PERSISTENT ?= 1
 GLS_GFLS ?= 1
+GLS_FINAL_MIN_GAP ?= 0.01
+GLS_CAPACITY_WEIGHT ?= 0.0
+GLS_REGRET_WEIGHT ?= 0.0
+GLS_EJECTION_CHAIN ?= 0
+GLS_PARTIAL_RECONSTRUCTION ?= 0
+GLS_RECONSTRUCTION_SIZE ?= 3
+GLS_RECONSTRUCTION_PERIOD ?= 5
+PATH_RELINKING ?= 0
+PATH_RELINKING_POOL ?= 5
+PATH_RELINKING_MIN_GAP ?= 0.05
 
 CXXFLAGS += -DENABLE_GLS \
             -DGLS_ALPHA=$(GLS_ALPHA) \
             -DGLS_ROUNDS=$(GLS_ROUNDS) \
-            -DGLS_MAX_ROUNDS=$(GLS_MAX_ROUNDS)
+            -DGLS_MAX_ROUNDS=$(GLS_MAX_ROUNDS) \
+            -DGLS_FINAL_MIN_GAP=$(GLS_FINAL_MIN_GAP) \
+            -DGLS_CAPACITY_WEIGHT=$(GLS_CAPACITY_WEIGHT) \
+            -DGLS_REGRET_WEIGHT=$(GLS_REGRET_WEIGHT)
 ifneq ($(GLS_ADAPTIVE),0)
 CXXFLAGS += -DENABLE_ADAPTIVE_GLS_ROUNDS
 endif
@@ -46,6 +65,19 @@ CXXFLAGS += -DENABLE_PERSISTENT_GLS
 endif
 ifneq ($(GLS_GFLS),0)
 CXXFLAGS += -DENABLE_GUIDED_FAST_LOCAL_SEARCH
+endif
+ifneq ($(GLS_EJECTION_CHAIN),0)
+CXXFLAGS += -DENABLE_GLS_EJECTION_CHAIN
+endif
+ifneq ($(GLS_PARTIAL_RECONSTRUCTION),0)
+CXXFLAGS += -DENABLE_GLS_PARTIAL_RECONSTRUCTION \
+            -DGLS_RECONSTRUCTION_SIZE=$(GLS_RECONSTRUCTION_SIZE) \
+            -DGLS_RECONSTRUCTION_PERIOD=$(GLS_RECONSTRUCTION_PERIOD)
+endif
+ifneq ($(PATH_RELINKING),0)
+CXXFLAGS += -DENABLE_PATH_RELINKING \
+            -DPATH_RELINKING_POOL=$(PATH_RELINKING_POOL) \
+            -DPATH_RELINKING_MIN_GAP=$(PATH_RELINKING_MIN_GAP)
 endif
 endif
 
@@ -64,7 +96,44 @@ $(TARGET): src/main.cpp
 run: $(TARGET)
 	@./$(TARGET)
 
+# Variante experimental validada em data/gls_structural_reform_report.md.
+# Ela preserva a funcao objetivo do GLS e muda apenas a utilidade usada para
+# escolher quais features recebem penalidade.
+build-gls-structural:
+	$(MAKE) -B GLS=1 GLS_ALPHA=1.0 GLS_CAPACITY_WEIGHT=2.0 GLS_REGRET_WEIGHT=0.5 all
+
+run-gls-structural:
+	$(MAKE) -B GLS=1 GLS_ALPHA=1.0 GLS_CAPACITY_WEIGHT=2.0 GLS_REGRET_WEIGHT=0.5 all
+	@./$(TARGET)
+
+# GLS estrutural com cadeia de duas realocacoes A->B e B->C.
+build-gls-ejection-chain:
+	$(MAKE) -B GLS=1 GLS_ALPHA=1.0 GLS_CAPACITY_WEIGHT=2.0 GLS_REGRET_WEIGHT=0.5 GLS_EJECTION_CHAIN=1 all
+
+run-gls-ejection-chain:
+	$(MAKE) -B GLS=1 GLS_ALPHA=1.0 GLS_CAPACITY_WEIGHT=2.0 GLS_REGRET_WEIGHT=0.5 GLS_EJECTION_CHAIN=1 all
+	@./$(TARGET)
+
+# GLS estrutural com destroy-and-repair exato de um pequeno grupo de tarefas.
+build-gls-partial-reconstruction:
+	$(MAKE) -B GLS=1 GLS_ALPHA=1.0 GLS_CAPACITY_WEIGHT=2.0 GLS_REGRET_WEIGHT=0.5 GLS_PARTIAL_RECONSTRUCTION=1 all
+
+run-gls-partial-reconstruction:
+	$(MAKE) -B GLS=1 GLS_ALPHA=1.0 GLS_CAPACITY_WEIGHT=2.0 GLS_REGRET_WEIGHT=0.5 GLS_PARTIAL_RECONSTRUCTION=1 all
+	@./$(TARGET)
+
+# GLS estrutural com conjunto elite e path relinking apos estagnacao.
+build-gls-path-relinking:
+	$(MAKE) -B GLS=1 GLS_ALPHA=1.0 GLS_CAPACITY_WEIGHT=2.0 GLS_REGRET_WEIGHT=0.5 PATH_RELINKING=1 all
+
+run-gls-path-relinking:
+	$(MAKE) -B GLS=1 GLS_ALPHA=1.0 GLS_CAPACITY_WEIGHT=2.0 GLS_REGRET_WEIGHT=0.5 PATH_RELINKING=1 all
+	@./$(TARGET)
+
 clean:
 	rm -rf build
 
-.PHONY: all run clean
+.PHONY: all run build-gls-structural run-gls-structural \
+	build-gls-ejection-chain run-gls-ejection-chain \
+	build-gls-partial-reconstruction run-gls-partial-reconstruction \
+	build-gls-path-relinking run-gls-path-relinking clean

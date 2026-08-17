@@ -1,0 +1,69 @@
+CONFIG repetitions=3 iterations=adaptive timeScale=1 fixedTimeSeconds=adaptive stageTrace=on
+Executing instance 1
+r 0
+STAGE_TRACE instance=Instance_10_10_100 repetition=0 ilsCall=0 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=148 final=129 glsCalls=19 normalLocalGain=1 normalOscGain=27 glsDirectGain=4 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_100 repetition=0 ilsCall=1 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=142 final=125 glsCalls=16 normalLocalGain=4 normalOscGain=32 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_100 repetition=0 ilsCall=2 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=149 final=134 glsCalls=5 normalLocalGain=8 normalOscGain=13 glsDirectGain=6 glsLocalPolishGain=0 glsOscPolishGain=0
+r 1
+STAGE_TRACE instance=Instance_10_10_100 repetition=1 ilsCall=0 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=144 final=126 glsCalls=17 normalLocalGain=2 normalOscGain=24 glsDirectGain=7 glsLocalPolishGain=2 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_100 repetition=1 ilsCall=1 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=148 final=129 glsCalls=18 normalLocalGain=0 normalOscGain=27 glsDirectGain=4 glsLocalPolishGain=0 glsOscPolishGain=1
+STAGE_TRACE instance=Instance_10_10_100 repetition=1 ilsCall=2 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=150 final=136 glsCalls=7 normalLocalGain=0 normalOscGain=21 glsDirectGain=4 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_100 repetition=1 ilsCall=3 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=161 final=161 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+r 2
+STAGE_TRACE instance=Instance_10_10_100 repetition=2 ilsCall=0 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=139 final=131 glsCalls=17 normalLocalGain=3 normalOscGain=24 glsDirectGain=3 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_100 repetition=2 ilsCall=1 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=151 final=127 glsCalls=19 normalLocalGain=1 normalOscGain=17 glsDirectGain=16 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_100 repetition=2 ilsCall=2 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=140 final=137 glsCalls=7 normalLocalGain=0 normalOscGain=24 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_100 repetition=2 ilsCall=3 optimum=101 bestFit=182 initialLocal=176 initialOsc=161 preFirstGLS=161 final=161 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+Executing instance 2
+r 0
+STAGE_TRACE instance=Instance_10_10_129 repetition=0 ilsCall=0 optimum=100 bestFit=159 initialLocal=148 initialOsc=144 preFirstGLS=113 final=109 glsCalls=11 normalLocalGain=0 normalOscGain=35 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_129 repetition=0 ilsCall=1 optimum=100 bestFit=159 initialLocal=149 initialOsc=147 preFirstGLS=147 final=147 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+r 1
+STAGE_TRACE instance=Instance_10_10_129 repetition=1 ilsCall=0 optimum=100 bestFit=159 initialLocal=149 initialOsc=147 preFirstGLS=114 final=111 glsCalls=10 normalLocalGain=0 normalOscGain=36 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_129 repetition=1 ilsCall=1 optimum=100 bestFit=159 initialLocal=149 initialOsc=147 preFirstGLS=147 final=147 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+r 2
+STAGE_TRACE instance=Instance_10_10_129 repetition=2 ilsCall=0 optimum=100 bestFit=159 initialLocal=149 initialOsc=147 preFirstGLS=109 final=108 glsCalls=10 normalLocalGain=0 normalOscGain=39 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_129 repetition=2 ilsCall=1 optimum=100 bestFit=159 initialLocal=148 initialOsc=144 preFirstGLS=144 final=144 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+Executing instance 3
+r 0
+STAGE_TRACE instance=Instance_10_10_147 repetition=0 ilsCall=0 optimum=100 bestFit=140 initialLocal=140 initialOsc=135 preFirstGLS=115 final=107 glsCalls=13 normalLocalGain=0 normalOscGain=28 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_147 repetition=0 ilsCall=1 optimum=100 bestFit=140 initialLocal=140 initialOsc=135 preFirstGLS=135 final=135 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+r 1
+STAGE_TRACE instance=Instance_10_10_147 repetition=1 ilsCall=0 optimum=100 bestFit=140 initialLocal=140 initialOsc=135 preFirstGLS=109 final=108 glsCalls=14 normalLocalGain=0 normalOscGain=27 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_147 repetition=1 ilsCall=1 optimum=100 bestFit=140 initialLocal=140 initialOsc=135 preFirstGLS=135 final=135 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+r 2
+STAGE_TRACE instance=Instance_10_10_147 repetition=2 ilsCall=0 optimum=100 bestFit=140 initialLocal=140 initialOsc=135 preFirstGLS=113 final=107 glsCalls=15 normalLocalGain=0 normalOscGain=28 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_147 repetition=2 ilsCall=1 optimum=100 bestFit=140 initialLocal=140 initialOsc=135 preFirstGLS=135 final=135 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+Executing instance 4
+r 0
+STAGE_TRACE instance=Instance_10_10_28 repetition=0 ilsCall=0 optimum=102 bestFit=170 initialLocal=158 initialOsc=155 preFirstGLS=134 final=118 glsCalls=18 normalLocalGain=2 normalOscGain=35 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_28 repetition=0 ilsCall=1 optimum=102 bestFit=170 initialLocal=158 initialOsc=155 preFirstGLS=140 final=131 glsCalls=5 normalLocalGain=0 normalOscGain=20 glsDirectGain=4 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_28 repetition=0 ilsCall=2 optimum=102 bestFit=170 initialLocal=158 initialOsc=155 preFirstGLS=155 final=155 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+r 1
+STAGE_TRACE instance=Instance_10_10_28 repetition=1 ilsCall=0 optimum=102 bestFit=170 initialLocal=158 initialOsc=155 preFirstGLS=144 final=119 glsCalls=18 normalLocalGain=0 normalOscGain=31 glsDirectGain=5 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_28 repetition=1 ilsCall=1 optimum=102 bestFit=170 initialLocal=158 initialOsc=157 preFirstGLS=145 final=128 glsCalls=5 normalLocalGain=0 normalOscGain=29 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_28 repetition=1 ilsCall=2 optimum=102 bestFit=170 initialLocal=158 initialOsc=155 preFirstGLS=155 final=155 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+r 2
+STAGE_TRACE instance=Instance_10_10_28 repetition=2 ilsCall=0 optimum=102 bestFit=170 initialLocal=158 initialOsc=155 preFirstGLS=145 final=118 glsCalls=18 normalLocalGain=0 normalOscGain=34 glsDirectGain=3 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_28 repetition=2 ilsCall=1 optimum=102 bestFit=170 initialLocal=158 initialOsc=155 preFirstGLS=133 final=124 glsCalls=6 normalLocalGain=0 normalOscGain=30 glsDirectGain=1 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_28 repetition=2 ilsCall=2 optimum=102 bestFit=170 initialLocal=158 initialOsc=155 preFirstGLS=155 final=155 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+Executing instance 5
+r 0
+STAGE_TRACE instance=Instance_10_10_128 repetition=0 ilsCall=0 optimum=101 bestFit=147 initialLocal=144 initialOsc=136 preFirstGLS=129 final=122 glsCalls=8 normalLocalGain=0 normalOscGain=13 glsDirectGain=1 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_128 repetition=0 ilsCall=1 optimum=101 bestFit=147 initialLocal=144 initialOsc=136 preFirstGLS=136 final=136 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+r 1
+STAGE_TRACE instance=Instance_10_10_128 repetition=1 ilsCall=0 optimum=101 bestFit=147 initialLocal=144 initialOsc=136 preFirstGLS=127 final=116 glsCalls=8 normalLocalGain=0 normalOscGain=20 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_128 repetition=1 ilsCall=1 optimum=101 bestFit=147 initialLocal=144 initialOsc=136 preFirstGLS=136 final=136 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+r 2
+STAGE_TRACE instance=Instance_10_10_128 repetition=2 ilsCall=0 optimum=101 bestFit=147 initialLocal=144 initialOsc=136 preFirstGLS=121 final=112 glsCalls=7 normalLocalGain=0 normalOscGain=24 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+STAGE_TRACE instance=Instance_10_10_128 repetition=2 ilsCall=1 optimum=101 bestFit=147 initialLocal=144 initialOsc=136 preFirstGLS=136 final=136 glsCalls=0 normalLocalGain=0 normalOscGain=0 glsDirectGain=0 glsLocalPolishGain=0 glsOscPolishGain=0
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal
+Instance_10_10_100 101 216.78 125 125 21.68 NO
+Instance_10_10_129 100 60.67 108.667 108 6.069 NO
+Instance_10_10_147 100 80.7 107 107 8.07167 NO
+Instance_10_10_28 102 124.9 118 118 12.4923 NO
+Instance_10_10_128 101 50.13 116.667 112 5.015 NO
+
+MEAN BEST COSTS: 114
+REACHED OPTIMALL: 0/5 instances
+TOTAL EXECUTION TIME: 2m 40.004s

@@ -1,0 +1,31 @@
+CONFIG repetitions=3 iterations=adaptive timeScale=1 fixedTimeSeconds=adaptive
+Executing instance 1
+r 0
+r 1
+r 2
+Executing instance 2
+r 0
+r 1
+r 2
+Executing instance 3
+r 0
+r 1
+r 2
+Executing instance 4
+r 0
+r 1
+r 2
+Executing instance 5
+r 0
+r 1
+r 2
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal
+Instance_10_10_100 101 216.78 115 115 21.68 NO
+Instance_10_10_129 100 60.67 108 108 6.06867 NO
+Instance_10_10_147 100 80.7 108.667 108 8.07167 NO
+Instance_10_10_28 102 124.9 116 112 12.4917 NO
+Instance_10_10_128 101 50.13 115.667 112 5.015 NO
+
+MEAN BEST COSTS: 111
+REACHED OPTIMALL: 0/5 instances
+TOTAL EXECUTION TIME: 2m 39.997s

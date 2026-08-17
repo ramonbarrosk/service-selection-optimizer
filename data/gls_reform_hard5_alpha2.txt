@@ -1,0 +1,31 @@
+CONFIG repetitions=3 iterations=adaptive timeScale=0.8 fixedTimeSeconds=adaptive stageTrace=off deadline=internal
+Executing instance 1
+r 0
+r 1
+r 2
+Executing instance 2
+r 0
+r 1
+r 2
+Executing instance 3
+r 0
+r 1
+r 2
+Executing instance 4
+r 0
+r 1
+r 2
+Executing instance 5
+r 0
+r 1
+r 2
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal
+Instance_10_10_100 101 216.78 122.667 121 17.343 NO
+Instance_10_10_129 100 60.67 108.667 107 4.854 NO
+Instance_10_10_147 100 80.7 110.667 109 6.45767 NO
+Instance_10_10_28 102 124.9 122 120 9.994 NO
+Instance_10_10_128 101 50.13 121 116 4.011 NO
+
+MEAN BEST COSTS: 114.6
+REACHED OPTIMALL: 0/5 instances
+TOTAL EXECUTION TIME: 2m 7.994s

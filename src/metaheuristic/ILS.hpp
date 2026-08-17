@@ -5,6 +5,8 @@
 #include <numeric>
 #include <chrono>
 #include <climits>
+#include <cmath>
+#include <limits>
 #include "Allocation.h"
 #include "InstanceMatrix.hpp"
 #include "SolutionValidator.hpp"
@@ -32,6 +34,34 @@
 #define GLS_MAX_ROUNDS 120
 #endif
 
+#ifndef GLS_FINAL_MIN_GAP
+#define GLS_FINAL_MIN_GAP 0.01
+#endif
+
+#ifndef PATH_RELINKING_POOL
+#define PATH_RELINKING_POOL 5
+#endif
+
+#ifndef PATH_RELINKING_MIN_GAP
+#define PATH_RELINKING_MIN_GAP 0.05
+#endif
+
+// Diagnostico opcional: registra checkpoints e quem produziu novos recordes
+// globais sem alterar a trajetoria da busca.
+struct ILSStageTrace {
+    double constructedCost = std::numeric_limits<double>::quiet_NaN();
+    double initialLocalCost = std::numeric_limits<double>::quiet_NaN();
+    double initialOscillationCost = std::numeric_limits<double>::quiet_NaN();
+    double bestBeforeFirstGls = std::numeric_limits<double>::quiet_NaN();
+    double finalCost = std::numeric_limits<double>::quiet_NaN();
+    double normalLocalRecordGain = 0.0;
+    double normalOscillationRecordGain = 0.0;
+    double glsDirectRecordGain = 0.0;
+    double glsLocalPolishRecordGain = 0.0;
+    double glsOscillationPolishRecordGain = 0.0;
+    int glsCalls = 0;
+};
+
 class ILS {
 
     SolutionValidator validator;
@@ -48,7 +78,7 @@ public:
     // ILS com restart se a solução não melhorar por um número determinado de iterações
 
     Allocation ILSWithRestart(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode) {
-#ifdef ENABLE_OSCILLATION
+#ifdef ENABLE_BEST_FIT
         // Híbrido (proposta 1): parte do construtivo best-fit; cai no guloso se não fechar viável.
         bool bfOk = false;
         Allocation currentAllocation = bestFitInitialSolution(matrix, 0.0, bfOk);
@@ -159,8 +189,26 @@ public:
 
     // ILS Clássico sem restart
 
-    Allocation ILS_run(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode) {
-#ifdef ENABLE_OSCILLATION
+    Allocation ILS_run(const InstanceMatrix& matrix, double alpha, int IT_MAX,
+                       double instanceInitTime, ProbabilityScenario pScenario,
+                       ImprovementHeuristic ImprovementHeuristic,
+                       SearchMode searchMode,
+                       ImprovementCondition improvementCondition,
+                       ImprovementMode improvementMode,
+                       PerturbationMode pertubationMode,
+                       double deadlineMs = std::numeric_limits<double>::infinity(),
+                       ILSStageTrace* stageTrace = nullptr) {
+        const auto deadlineReached = [&]() {
+            return std::isfinite(deadlineMs) && nowMs() >= deadlineMs;
+        };
+#ifdef ENABLE_GLS
+        const auto remainingMs = [&]() {
+            return std::isfinite(deadlineMs)
+                ? std::max(0.0, deadlineMs - nowMs())
+                : std::numeric_limits<double>::infinity();
+        };
+#endif
+#ifdef ENABLE_BEST_FIT
         // Híbrido (proposta 1): parte do construtivo best-fit; cai no guloso se não fechar viável.
         bool bfOk = false;
         Allocation currentAllocation = bestFitInitialSolution(matrix, 0.0, bfOk);
@@ -170,28 +218,125 @@ public:
         Allocation currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
 #endif
 
-        Allocation bestAllocation = neighborhoodSearch(matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
+        if (stageTrace)
+            stageTrace->constructedCost = currentAllocation.getCurrentCost();
+        double initialLocalCost = currentAllocation.getCurrentCost();
+        double initialOscillationCost = currentAllocation.getCurrentCost();
+        Allocation bestAllocation = neighborhoodSearch(
+            matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(),
+            matrix.getPmax(), pScenario, searchMode, improvementCondition,
+            ImprovementHeuristic, improvementMode,
+            &initialLocalCost, &initialOscillationCost);
+        if (stageTrace) {
+            stageTrace->initialLocalCost = initialLocalCost;
+            stageTrace->initialOscillationCost = initialOscillationCost;
+        }
         double bestCost = bestAllocation.getCurrentCost();
         currentAllocation = bestAllocation;
         bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
 
+#ifdef ENABLE_PATH_RELINKING
+        std::vector<Allocation> elitePool{bestAllocation};
+        const auto allocationDistance = [&](const Allocation& lhs,
+                                            const Allocation& rhs) {
+            int distance = 0;
+            for (int taskId = 0; taskId < matrix.getNumberOfTasks(); ++taskId)
+                distance += lhs.getServiceForTask(taskId)
+                    != rhs.getServiceForTask(taskId);
+            return distance;
+        };
+        const auto addElite = [&](const Allocation& candidate) {
+            const int minimumDistance = std::max(
+                3, matrix.getNumberOfTasks() / 20);
+            for (Allocation& elite : elitePool) {
+                if (allocationDistance(candidate, elite) < minimumDistance) {
+                    if (candidate.getCurrentCost() < elite.getCurrentCost())
+                        elite = candidate;
+                    return;
+                }
+            }
+            if (static_cast<int>(elitePool.size()) < PATH_RELINKING_POOL) {
+                elitePool.push_back(candidate);
+                return;
+            }
+            auto worst = std::max_element(
+                elitePool.begin(), elitePool.end(),
+                [](const Allocation& lhs, const Allocation& rhs) {
+                    return lhs.getCurrentCost() < rhs.getCurrentCost();
+                });
+            if (candidate.getCurrentCost() < worst->getCurrentCost())
+                *worst = candidate;
+        };
+        const auto mostDistantElite = [&](const Allocation& source)
+                -> const Allocation* {
+            const Allocation* selected = nullptr;
+            int maximumDistance = 0;
+            for (const Allocation& elite : elitePool) {
+                const int distance = allocationDistance(source, elite);
+                if (distance > maximumDistance) {
+                    maximumDistance = distance;
+                    selected = &elite;
+                }
+            }
+            return selected;
+        };
+#endif
+
 #ifdef ENABLE_GLS
         int iterationsWithoutImprovement = 0;
         int consecutiveUnsuccessfulGlsCalls = 0;
+        bool experiencedGlsStagnation = false;
+        double estimatedGlsRoundMs = 1.0;
         GuidedLocalSearcher guidedSearcher;
         const int glsStagnationThreshold = std::max(50, IT_MAX / 20);
+        const auto affordableGlsRounds = [&](int requestedRounds) {
+            if (!std::isfinite(deadlineMs))
+                return requestedRounds;
+            constexpr double guardMs = 2.0;
+            const double available = remainingMs() - guardMs;
+            if (available < GLS_ROUNDS * estimatedGlsRoundMs)
+                return 0;
+            if (requestedRounds > GLS_ROUNDS
+                    && available < requestedRounds * estimatedGlsRoundMs)
+                return GLS_ROUNDS;
+            return requestedRounds;
+        };
 #endif
 
         for (int i = 0; i < IT_MAX; ++i) {
+            if (deadlineReached())
+                break;
+
             Allocation perturbed = pertubation(currentAllocation, matrix, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, i, IT_MAX, pertubationMode);
 
-            Allocation improved = neighborhoodSearch(matrix, perturbed, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
+            double localCost = perturbed.getCurrentCost();
+            double oscillationCost = perturbed.getCurrentCost();
+            Allocation improved = neighborhoodSearch(
+                matrix, perturbed, matrix.getVmax(), matrix.getSmax(),
+                matrix.getPmax(), pScenario, searchMode, improvementCondition,
+                ImprovementHeuristic, improvementMode, &localCost,
+                &oscillationCost);
+
+#ifdef ENABLE_PATH_RELINKING
+            if (i % 25 == 0)
+                addElite(improved);
+#endif
 
             // Let the ILS walk advance through different basins even when the
             // candidate does not improve the global best.
             currentAllocation = improved;
 
             if (improved.getCurrentCost() < bestCost) {
+                if (stageTrace) {
+                    double record = bestCost;
+                    if (localCost < record) {
+                        stageTrace->normalLocalRecordGain += record - localCost;
+                        record = localCost;
+                    }
+                    if (oscillationCost < record)
+                        stageTrace->normalOscillationRecordGain +=
+                            record - oscillationCost;
+                }
                 bestAllocation = improved;
                 bestCost = improved.getCurrentCost();
                 bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
@@ -207,6 +352,12 @@ public:
 
 #ifdef ENABLE_GLS
             if (iterationsWithoutImprovement >= glsStagnationThreshold) {
+                experiencedGlsStagnation = true;
+                if (stageTrace) {
+                    if (stageTrace->glsCalls == 0)
+                        stageTrace->bestBeforeFirstGls = bestCost;
+                    ++stageTrace->glsCalls;
+                }
                 int guidedRounds = GLS_ROUNDS;
 #ifdef ENABLE_ADAPTIVE_GLS_ROUNDS
                 const int multiplier =
@@ -214,24 +365,90 @@ public:
                 guidedRounds = std::min(
                     GLS_MAX_ROUNDS, GLS_ROUNDS * multiplier);
 #endif
+                guidedRounds = affordableGlsRounds(guidedRounds);
+                if (guidedRounds == 0)
+                    break;
 #ifdef ENABLE_PERSISTENT_GLS
                 const bool preservePenalties = true;
 #else
                 const bool preservePenalties = false;
 #endif
                 const double bestCostBeforeGls = bestCost;
+                const double glsStartMs = nowMs();
                 Allocation guided = guidedSearcher.improve(
                     currentAllocation, matrix,
                     matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
-                    GLS_ALPHA, guidedRounds, preservePenalties);
+                    GLS_ALPHA, guidedRounds, preservePenalties, deadlineMs);
+                const double directGlsCost = guided.getCurrentCost();
+                const double glsElapsedMs = nowMs() - glsStartMs;
+                if (!deadlineReached() && guidedRounds > 0) {
+                    const double observedRoundMs = glsElapsedMs / guidedRounds;
+                    estimatedGlsRoundMs = 0.5 * estimatedGlsRoundMs
+                        + 0.5 * std::max(0.01, observedRoundMs);
+                }
 
                 // Polish the best real-cost solution returned by GLS using the
                 // established local-search and strategic-oscillation pipeline.
-                guided = neighborhoodSearch(
-                    matrix, guided, matrix.getVmax(), matrix.getSmax(),
-                    matrix.getPmax(), pScenario, searchMode,
-                    improvementCondition, ImprovementHeuristic, improvementMode);
+                if (!deadlineReached()) {
+                    double polishLocalCost = guided.getCurrentCost();
+                    double polishOscillationCost = guided.getCurrentCost();
+                    guided = neighborhoodSearch(
+                        matrix, guided, matrix.getVmax(), matrix.getSmax(),
+                        matrix.getPmax(), pScenario, searchMode,
+                        improvementCondition, ImprovementHeuristic, improvementMode,
+                        &polishLocalCost, &polishOscillationCost);
+                    if (stageTrace && guided.getCurrentCost() < bestCost) {
+                        double record = bestCost;
+                        if (directGlsCost < record) {
+                            stageTrace->glsDirectRecordGain += record - directGlsCost;
+                            record = directGlsCost;
+                        }
+                        if (polishLocalCost < record) {
+                            stageTrace->glsLocalPolishRecordGain +=
+                                record - polishLocalCost;
+                            record = polishLocalCost;
+                        }
+                        if (polishOscillationCost < record)
+                            stageTrace->glsOscillationPolishRecordGain +=
+                                record - polishOscillationCost;
+                    }
+                }
                 currentAllocation = guided;
+
+#ifdef ENABLE_PATH_RELINKING
+                addElite(guided);
+                // O path relinking entra apenas quando o GLS nao bateu a
+                // incumbente e o GAP ainda e relevante. O guia escolhido e
+                // a elite mais diferente.
+                const double knownOptimal = matrix.getOptimalCost();
+                const bool pathRelevantGap = knownOptimal <= 0.0
+                    || (bestCost - knownOptimal) / knownOptimal
+                        >= PATH_RELINKING_MIN_GAP;
+                if (guided.getCurrentCost() >= bestCostBeforeGls - 1e-9
+                        && pathRelevantGap && !deadlineReached()) {
+                    const Allocation* guide = mostDistantElite(bestAllocation);
+                    if (guide != nullptr) {
+                        Allocation linked = pathRelink(
+                            bestAllocation, *guide, matrix,
+                            matrix.getVmax(), matrix.getSmax(), matrix.getPmax(),
+                            pScenario, deadlineMs);
+                        if (!deadlineReached())
+                            linked = neighborhoodSearch(
+                                matrix, linked, matrix.getVmax(), matrix.getSmax(),
+                                matrix.getPmax(), pScenario, searchMode,
+                                improvementCondition, ImprovementHeuristic,
+                                improvementMode);
+                        addElite(linked);
+                        currentAllocation = linked;
+                        if (linked.getCurrentCost() < bestCost) {
+                            bestAllocation = linked;
+                            bestCost = linked.getCurrentCost();
+                            bestAllocation.setTimeToBest(
+                                (nowMs() - instanceInitTime) / 1000.0);
+                        }
+                    }
+                }
+#endif
 
                 if (guided.getCurrentCost() < bestCost) {
                     bestAllocation = guided;
@@ -251,34 +468,75 @@ public:
         }
 
 #ifdef ENABLE_GLS
-        // Intensify the best basin one last time, retaining the learned
-        // penalties when persistence is enabled.
+        // Final GLS is useful only after real stagnation, while the known
+        // optimum has not been reached and enough deadline remains.
+        const double optimalCost = matrix.getOptimalCost();
+        const bool reachedKnownOptimal = optimalCost > 0.0
+            && bestCost <= optimalCost + 1e-9;
+        const bool relevantGap = optimalCost <= 0.0
+            || (bestCost - optimalCost) / optimalCost >= GLS_FINAL_MIN_GAP;
+        const bool shouldRunFinalGls = experiencedGlsStagnation
+            && !deadlineReached() && !reachedKnownOptimal && relevantGap;
+        if (shouldRunFinalGls) {
 #ifdef ENABLE_PERSISTENT_GLS
-        const bool preserveFinalPenalties = true;
+            const bool preserveFinalPenalties = true;
 #else
-        const bool preserveFinalPenalties = false;
+            const bool preserveFinalPenalties = false;
 #endif
-        int finalGuidedRounds = GLS_ROUNDS;
+            int finalGuidedRounds = GLS_ROUNDS;
 #ifdef ENABLE_ADAPTIVE_GLS_ROUNDS
-        finalGuidedRounds = std::min(
-            GLS_MAX_ROUNDS,
-            GLS_ROUNDS * (1 << std::min(consecutiveUnsuccessfulGlsCalls, 2)));
+            finalGuidedRounds = std::min(
+                GLS_MAX_ROUNDS,
+                GLS_ROUNDS * (1 << std::min(consecutiveUnsuccessfulGlsCalls, 2)));
 #endif
-        Allocation guidedBest = guidedSearcher.improve(
-            bestAllocation, matrix,
-            matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
-            GLS_ALPHA, finalGuidedRounds, preserveFinalPenalties);
-        guidedBest = neighborhoodSearch(
-            matrix, guidedBest, matrix.getVmax(), matrix.getSmax(),
-            matrix.getPmax(), pScenario, searchMode, improvementCondition,
-            ImprovementHeuristic, improvementMode);
-        if (guidedBest.getCurrentCost() < bestCost) {
-            bestAllocation = guidedBest;
-            bestAllocation.setTimeToBest(
-                (nowMs() - instanceInitTime) / 1000.0);
+            finalGuidedRounds = affordableGlsRounds(finalGuidedRounds);
+            if (finalGuidedRounds > 0) {
+                if (stageTrace)
+                    ++stageTrace->glsCalls;
+                Allocation guidedBest = guidedSearcher.improve(
+                    bestAllocation, matrix,
+                    matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
+                    GLS_ALPHA, finalGuidedRounds, preserveFinalPenalties, deadlineMs);
+                const double directGlsCost = guidedBest.getCurrentCost();
+                if (!deadlineReached()) {
+                    double polishLocalCost = guidedBest.getCurrentCost();
+                    double polishOscillationCost = guidedBest.getCurrentCost();
+                    guidedBest = neighborhoodSearch(
+                        matrix, guidedBest, matrix.getVmax(), matrix.getSmax(),
+                        matrix.getPmax(), pScenario, searchMode,
+                        improvementCondition, ImprovementHeuristic, improvementMode,
+                        &polishLocalCost, &polishOscillationCost);
+                    if (stageTrace && guidedBest.getCurrentCost() < bestCost) {
+                        double record = bestCost;
+                        if (directGlsCost < record) {
+                            stageTrace->glsDirectRecordGain += record - directGlsCost;
+                            record = directGlsCost;
+                        }
+                        if (polishLocalCost < record) {
+                            stageTrace->glsLocalPolishRecordGain +=
+                                record - polishLocalCost;
+                            record = polishLocalCost;
+                        }
+                        if (polishOscillationCost < record)
+                            stageTrace->glsOscillationPolishRecordGain +=
+                                record - polishOscillationCost;
+                    }
+                }
+                if (guidedBest.getCurrentCost() < bestCost) {
+                    bestAllocation = guidedBest;
+                    bestCost = guidedBest.getCurrentCost();
+                    bestAllocation.setTimeToBest(
+                        (nowMs() - instanceInitTime) / 1000.0);
+                }
+            }
         }
 #endif
 
+        if (stageTrace) {
+            if (std::isnan(stageTrace->bestBeforeFirstGls))
+                stageTrace->bestBeforeFirstGls = bestCost;
+            stageTrace->finalCost = bestAllocation.getCurrentCost();
+        }
         return bestAllocation;
     }
 
@@ -292,6 +550,114 @@ public:
 
 
 private:
+#ifdef ENABLE_PATH_RELINKING
+    Allocation pathRelink(Allocation start, const Allocation& guide,
+                          const InstanceMatrix& matrix,
+                          int Vmax, int Smax, double Pmax,
+                          ProbabilityScenario pScenario,
+                          double deadlineMs) {
+        const int numberOfTasks = matrix.getNumberOfTasks();
+        Allocation current = start;
+        Allocation best = start;
+        const auto timedOut = [&]() {
+            return std::isfinite(deadlineMs) && nowMs() >= deadlineMs;
+        };
+
+        while (!timedOut()) {
+            enum class Step { NONE, MOVE, SWAP };
+            Step bestStep = Step::NONE;
+            double bestDelta = std::numeric_limits<double>::infinity();
+            int bestTask1 = -1;
+            int bestTask2 = -1;
+
+            // MOVE diretamente ao servico usado pela solucao guia.
+            for (int taskId = 0; taskId < numberOfTasks; ++taskId) {
+                if (timedOut())
+                    break;
+                const int oldService = current.getServiceForTask(taskId);
+                const int targetService = guide.getServiceForTask(taskId);
+                if (oldService == targetService)
+                    continue;
+                const double delta = matrix.getTaskCost(taskId, targetService)
+                    - matrix.getTaskCost(taskId, oldService);
+                if (delta >= bestDelta)
+                    continue;
+                Task task(taskId, matrix.getTaskConsumption(taskId));
+                current.replaceService(task, Service(targetService), matrix);
+                const bool feasible = validator.isFeasible(
+                    matrix, current, Vmax, Smax, Pmax, pScenario, true);
+                current.replaceService(task, Service(oldService), matrix);
+                if (feasible) {
+                    bestDelta = delta;
+                    bestStep = Step::MOVE;
+                    bestTask1 = taskId;
+                    bestTask2 = -1;
+                }
+            }
+
+            // SWAP direcionado: pelo menos uma tarefa chega ao servico da guia
+            // e a distancia total precisa diminuir.
+            for (int task1 = 0; task1 < numberOfTasks && !timedOut(); ++task1) {
+                const int service1 = current.getServiceForTask(task1);
+                for (int task2 = task1 + 1; task2 < numberOfTasks; ++task2) {
+                    const int service2 = current.getServiceForTask(task2);
+                    if (service1 == service2)
+                        continue;
+                    const int before =
+                        (service1 != guide.getServiceForTask(task1))
+                        + (service2 != guide.getServiceForTask(task2));
+                    const int after =
+                        (service2 != guide.getServiceForTask(task1))
+                        + (service1 != guide.getServiceForTask(task2));
+                    if (after >= before)
+                        continue;
+                    const double delta =
+                        matrix.getTaskCost(task1, service2)
+                        + matrix.getTaskCost(task2, service1)
+                        - matrix.getTaskCost(task1, service1)
+                        - matrix.getTaskCost(task2, service2);
+                    if (delta >= bestDelta)
+                        continue;
+                    Task first(task1, matrix.getTaskConsumption(task1));
+                    Task second(task2, matrix.getTaskConsumption(task2));
+                    current.replaceService(first, Service(service2), matrix);
+                    current.replaceService(second, Service(service1), matrix);
+                    const bool feasible = validator.isFeasible(
+                        matrix, current, Vmax, Smax, Pmax, pScenario, true);
+                    current.replaceService(first, Service(service1), matrix);
+                    current.replaceService(second, Service(service2), matrix);
+                    if (feasible) {
+                        bestDelta = delta;
+                        bestStep = Step::SWAP;
+                        bestTask1 = task1;
+                        bestTask2 = task2;
+                    }
+                }
+            }
+
+            if (bestStep == Step::NONE)
+                break;
+            if (bestStep == Step::MOVE) {
+                current.replaceService(
+                    Task(bestTask1, matrix.getTaskConsumption(bestTask1)),
+                    Service(guide.getServiceForTask(bestTask1)), matrix);
+            } else {
+                const int service1 = current.getServiceForTask(bestTask1);
+                const int service2 = current.getServiceForTask(bestTask2);
+                current.replaceService(
+                    Task(bestTask1, matrix.getTaskConsumption(bestTask1)),
+                    Service(service2), matrix);
+                current.replaceService(
+                    Task(bestTask2, matrix.getTaskConsumption(bestTask2)),
+                    Service(service1), matrix);
+            }
+            if (current.getCurrentCost() < best.getCurrentCost())
+                best = current;
+        }
+        return best;
+    }
+#endif
+
     Allocation pertubation(Allocation allocation, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX, PerturbationMode pertubationMode) {
         if (pertubationMode == PerturbationMode::MOVE) {
             return pertubationMove(std::move(allocation), matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
@@ -402,22 +768,31 @@ private:
         int Vmax, int Smax, double Pmax,
         ProbabilityScenario pScenario,
         SearchMode mode, ImprovementCondition improvementCondition, ImprovementHeuristic improvementHeuristic,
-        ImprovementMode improvementMode) {
+        ImprovementMode improvementMode, double* afterLocalCost = nullptr,
+        double* afterOscillationCost = nullptr) {
 
             if (mode == SearchMode::LOCAL_SEARCH) {
                 GenericSearcher searcher;
                 if (improvementHeuristic == ImprovementHeuristic::COST_IMPROVEMENT)
                     searcher.costImprovement(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition, improvementMode);
+                if (afterLocalCost)
+                    *afterLocalCost = currentAllocation.getCurrentCost();
 #ifdef ENABLE_OSCILLATION
                 // Híbrido (proposta 2): após a descida cost-only, reequilibra capacidade
                 // via oscilação estratégica. Inócuo em instâncias folgadas, decisivo nas apertadas.
                 searcher.oscillationImprovement(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario);
 #endif
+                if (afterOscillationCost)
+                    *afterOscillationCost = currentAllocation.getCurrentCost();
             } else if (mode == SearchMode::VND) {
                 Allocation r = GenericSearcher().VND(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition);
+                if (afterLocalCost)
+                    *afterLocalCost = r.getCurrentCost();
 #ifdef ENABLE_OSCILLATION
                 GenericSearcher().oscillationImprovement(r, matrix, Vmax, Smax, Pmax, pScenario);
 #endif
+                if (afterOscillationCost)
+                    *afterOscillationCost = r.getCurrentCost();
                 return r;
             }
 
@@ -506,10 +881,10 @@ private:
         return allocation;
     }
 
-    // Reconstrução usada nos restarts. No modo híbrido usa best-fit randomizado
-    // (RCL α=0.3) para diversificar; sem a flag mantém o construtivo adaptativo original.
+    // Reconstrução usada nos restarts. Com best-fit usa RCL alpha=0.3 para
+    // diversificar; sem a flag mantém o construtivo adaptativo original.
     Allocation restartConstruction(const InstanceMatrix& matrix, double alpha, double w, ProbabilityScenario pScenario) {
-#ifdef ENABLE_OSCILLATION
+#ifdef ENABLE_BEST_FIT
         (void)w;
         bool ok = false;
         Allocation a = bestFitInitialSolution(matrix, 0.3, ok);

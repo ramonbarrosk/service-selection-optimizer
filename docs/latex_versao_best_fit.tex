@@ -1,0 +1,239 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\title{Seleção de Serviços sob Incerteza --- Mergulho Inviável vs. Híbrido (Best-Fit + Oscilação)}
+\author{Ramon Barros de Lima}
+\date{Julho 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{O problema}
+
+Devemos alocar 100 tarefas em 100 serviços gastando o \textbf{mínimo}, respeitando três
+restrições que não podem ser quebradas: (i) \textbf{custo} total; (ii) \textbf{capacidade}
+de recurso de cada serviço ($V_{res}$); e (iii) \textbf{SLA}, cuja probabilidade de violação
+não pode passar de $P_{max}$. O algoritmo base é um \textit{Iterated Local Search} (ILS):
+constrói uma solução inicial e a refina alternando \textbf{perturbação} e \textbf{busca local}.
+
+Comparamos duas estratégias para escapar de ótimos locais nas instâncias mais difíceis:
+o \textbf{Mergulho Inviável} (Caso A) e o \textbf{Híbrido best-fit + oscilação} (Caso 3).
+
+\section{Caso A --- Mergulho Inviável (IGrAl)}
+
+Quando a busca fica presa, esta estratégia \textbf{mergulha em soluções inviáveis} (violando o
+SLA / $P_{max}$) na esperança de escapar para outra região. A solução inviável é penalizada
+por $\lambda = \text{custo}(s^*)/P_{max}$; se o custo penalizado for promissor, roda-se a busca
+local a partir dela; senão, reinicia-se com um construtivo adaptativo.
+
+\begin{algorithm}[H]
+\caption{ILS com Mergulho em Soluções Inviáveis (Caso A)}
+\begin{algorithmic}[1]
+\Require instância, $\alpha$, $IT\_MAX$
+\Ensure melhor solução viável $s^*$
+
+\State $s \leftarrow \text{SoluçãoGulosa}(\text{instância}, \alpha)$
+\State $s \leftarrow \text{BuscaLocal}(s)$
+\State $s^* \leftarrow s$
+\State $semMelhora \leftarrow 0$;\quad $reiniciosSemMelhora \leftarrow 0$
+
+\For{$i = 1$ \textbf{até} $IT\_MAX$}
+    \State $s \leftarrow \text{Perturbação}(s,\ \textsc{Move})$
+    \State $s \leftarrow \text{BuscaLocal}(s)$
+    \If{$\text{custo}(s) < \text{custo}(s^*)$}
+        \State $s^* \leftarrow s$;\quad $semMelhora \leftarrow 0$;\quad $reiniciosSemMelhora \leftarrow 0$
+    \Else
+        \State $semMelhora \leftarrow semMelhora + 1$
+    \EndIf
+
+    \If{$semMelhora > IT\_MAX / 10$}
+        \State $semMelhora \leftarrow 0$
+        \State $dive \leftarrow \text{Perturbação}(s,\ \textsc{Infeasible})$
+        \Comment{ignora $P_{max}$}
+        \State $excesso \leftarrow \text{ComputaExcessoViolação}(dive)$
+        \State $\lambda \leftarrow \text{custo}(s^*)\ /\ P_{max}$
+        \State $custoP \leftarrow \text{custo}(dive) + \lambda \times excesso$
+        \State $w \leftarrow \min(0.5,\ reiniciosSemMelhora\ /\ 5)$
+
+        \If{$custoP < \text{custo}(s^*)$}
+            \Comment{dive promissor (raro na prática)}
+            \State $explorado \leftarrow \text{BuscaLocal}(dive)$
+            \If{$\text{viável}(explorado)$}
+                \If{$\text{custo}(explorado) < \text{custo}(s^*)$}
+                    \State $s^* \leftarrow explorado$;\quad $reiniciosSemMelhora \leftarrow 0$
+                \EndIf
+                \State $s \leftarrow explorado$
+            \Else
+                \State $s \leftarrow \text{ConstrutivoAdaptativo}(\text{instância}, \alpha, w)$
+                \State $reiniciosSemMelhora \leftarrow reiniciosSemMelhora + 1$
+            \EndIf
+        \Else
+            \State $s \leftarrow \text{ConstrutivoAdaptativo}(\text{instância}, \alpha, w)$
+            \State $reiniciosSemMelhora \leftarrow reiniciosSemMelhora + 1$
+        \EndIf
+    \EndIf
+\EndFor
+\State \Return $s^*$
+\end{algorithmic}
+\end{algorithm}
+
+\noindent\textbf{Limitação medida:} o dive relaxa o \textbf{SLA}, mas o gargalo das instâncias
+difíceis é a \textbf{capacidade}. Além disso, $\lambda$ é alto demais e o custo penalizado quase
+nunca fica abaixo de $\text{custo}(s^*)$ --- o ramo do ``dive promissor'' praticamente não dispara.
+Na prática, degenera em reinícios.
+
+\section{Caso 3 --- Híbrido (Best-Fit + Oscilação Estratégica)}
+
+O híbrido substitui \emph{duas} peças do ILS: o \textbf{construtivo} (Proposta 1) e a
+\textbf{busca local} (Proposta 2).
+
+\paragraph{Proposta 1 --- Construtivo Best-Fit.} Aloca as tarefas mais \textbf{pesadas} primeiro
+(as ``pedras grandes'') e, para cada uma, escolhe o serviço \textbf{mais barato que ainda mantém
+a solução viável} (\textit{cheapest-feasible}) --- checando as restrições \emph{antes} de fixar.
+Parte de uma estrutura bem ``empacotada''.
+
+\paragraph{Proposta 2 --- Oscilação Estratégica.} Relaxa a \textbf{capacidade} para restrição
+\emph{suave}, otimizando $f = \text{custo} + \lambda \cdot \text{sobrecarga}$. O multiplicador
+$\lambda$ \textbf{oscila}: diminui quando a solução é viável (deixa cruzar para regiões
+inviáveis-mas-baratas) e aumenta quando é inviável (empurra de volta). Isso permite o movimento
+que a busca estritamente viável nunca faz --- sobrecarregar um serviço temporariamente para
+reequilibrar e eliminar outro depois. $S_{max}$ e SLA permanecem restrições duras.
+
+\begin{algorithm}[H]
+\caption{ILS Híbrido (Caso 3)}
+\begin{algorithmic}[1]
+\Require instância, $\alpha$, $IT\_MAX$
+\Ensure melhor solução viável $s^*$
+\State $s \leftarrow \textsc{ConstrutivoBestFit}(\text{instância}, 0)$
+\State $s \leftarrow \textsc{BuscaLocalHíbrida}(s)$
+\Comment{descida por custo $+$ oscilação}
+\State $s^* \leftarrow s$
+\For{$i = 1$ \textbf{até} $IT\_MAX$}
+    \State $s \leftarrow \text{Perturbação}(s,\ \textsc{Move})$
+    \State $s \leftarrow \textsc{BuscaLocalHíbrida}(s)$
+    \If{$\text{custo}(s) < \text{custo}(s^*)$}
+        \State $s^* \leftarrow s$
+    \EndIf
+\EndFor
+\State \Return $s^*$
+\end{algorithmic}
+\end{algorithm}
+
+\noindent onde $\textsc{BuscaLocalHíbrida}(s)$ aplica a descida por custo (aceita só moves viáveis
+e mais baratos) seguida da \textsc{OscilaçãoEstratégica} (Algoritmo~4).
+
+\begin{algorithm}[H]
+\caption{ConstrutivoBestFit --- Proposta 1}
+\begin{algorithmic}[1]
+\Require instância, $\alpha$
+\Ensure solução inicial $s$ (ou falha)
+\State ordena tarefas por consumo de recurso \textbf{decrescente} $\rightarrow T$
+\State $s \leftarrow \emptyset$
+\For{cada tarefa $t \in T$}
+    \State ordena serviços por custo \textbf{crescente} para $t$
+    \State define a ordem de tentativa (RCL aleatória se $\alpha>0$; senão do mais barato ao mais caro)
+    \State $colocada \leftarrow \textbf{falso}$
+    \For{cada serviço $j$ na ordem de tentativa}
+        \State atribui $t \rightarrow j$ em $s$
+        \If{$\textsc{Viável}(s)$}
+            \Comment{capacidade, $S_{max}$ e SLA}
+            \State $colocada \leftarrow \textbf{verdadeiro}$;\quad \textbf{break}
+        \Else
+            \State desfaz a atribuição
+        \EndIf
+    \EndFor
+    \If{\textbf{não} $colocada$}
+        \State \Return falha
+    \EndIf
+\EndFor
+\State \Return $s$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{OscilaçãoEstratégica --- Proposta 2}
+\begin{algorithmic}[1]
+\Require solução viável $s$; número de rodadas $R$
+\Ensure solução viável (melhorada ou a original)
+\State $s_0 \leftarrow s$;\quad $melhor \leftarrow s$
+\State $\lambda \leftarrow 2 \times \text{custoMédioMínimo}$
+\For{$r = 1$ \textbf{até} $R$}
+    \State $s \leftarrow \textsc{DescidaPenalizada}(s, \lambda)$
+    \Comment{minimiza $f = \text{custo} + \lambda\cdot\text{sobrecarga}$ (Move)}
+    \If{$\text{sobrecarga}(s) = 0$}
+        \Comment{região viável}
+        \If{$\text{custo}(s) < \text{custo}(melhor)$}
+            \State $melhor \leftarrow s$
+        \EndIf
+        \State $\lambda \leftarrow \lambda \times 0.6$
+        \Comment{relaxa}
+    \Else
+        \State $\lambda \leftarrow \lambda \times 2.0$
+        \Comment{aperta}
+    \EndIf
+\EndFor
+\State $s \leftarrow \textsc{DescidaPenalizada}(s, 8\lambda)$
+\Comment{descida final garante viabilidade}
+\If{$\text{sobrecarga}(s)=0$ \textbf{e} $\text{custo}(s) < \text{custo}(melhor)$}
+    \State $melhor \leftarrow s$
+\EndIf
+\If{$\text{custo}(melhor) < \text{custo}(s_0)$}
+    \State \Return $melhor$
+\Else
+    \State \Return $s_0$
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
+\noindent $\textsc{DescidaPenalizada}(s,\lambda)$ é uma descida \emph{best-improvement} por
+movimentos \textsc{Move}: aplica repetidamente o move que mais reduz $f = \text{custo} +
+\lambda\cdot\text{sobrecarga}$, aceitando sobrecarregar um serviço se o ganho líquido em $f$
+compensar. $S_{max}$ e SLA são verificados e mantidos duros.
+
+\section{A melhoria do Caso 3}
+
+Comparação isolada no \emph{mesmo motor} ILS, variando apenas o mecanismo, nas 5 instâncias mais
+difíceis (3 execuções cada):
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ccrr}
+\toprule
+Instância & Ótimo & Mergulho Inviável (GAP) & Híbrido (GAP) \\
+\midrule
+11  & 100 & 154 \ (54\%) & \textbf{108 \ (8\%)} \\
+28  & 102 & 165 \ (62\%) & \textbf{123 \ (21\%)} \\
+100 & 101 & 168 \ (66\%) & \textbf{131 \ (30\%)} \\
+128 & 101 & 161 \ (59\%) & \textbf{116 \ (15\%)} \\
+129 & 100 & 159 \ (59\%) & \textbf{108 \ (8\%)} \\
+\midrule
+\multicolumn{2}{c}{\textbf{GAP médio}} & \textbf{60,1\%} & \textbf{16,2\%} \\
+\bottomrule
+\end{tabular}
+\caption{Mergulho inviável (viola SLA) vs. Híbrido (viola capacidade). Mesmo motor,
+só a estratégia muda.}
+\end{table}
+
+O híbrido vence em \textbf{5 de 5} instâncias, reduzindo o GAP médio em cerca de \textbf{44 pontos
+percentuais}: o \emph{pior} resultado do híbrido (30\%) ainda supera o \emph{melhor} do mergulho
+inviável (54\%). Numa avaliação mais ampla, nas 94 instâncias, o híbrido leva o GAP médio de
+$52{,}2\%$ (baseline) para $4{,}1\%$, atingindo o ótimo em $46/94$ instâncias.
+
+\paragraph{Por que o Caso 3 é superior.} O mergulho inviável mexe na restrição \emph{errada}
+(SLA) com um mecanismo que quase nunca dispara. O híbrido relaxa exatamente o \emph{gargalo}
+(capacidade), com um $\lambda$ adaptativo que de fato aceita os movimentos de reequilíbrio,
+partindo de uma construção best-fit bem estruturada.
+
+\paragraph{Ressalva.} Mesmo o híbrido não atinge o ótimo perfeito nas mais apertadas (ex.\ a
+instância 100 chega a $\approx 131$, com ótimo $101$): por ser uma busca por vizinhança, nunca
+\emph{prova} otimalidade. Para essa garantia, seria necessário um método exato (ILP /
+matheurística).
+
+\end{document}

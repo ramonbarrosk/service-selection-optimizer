@@ -1,0 +1,471 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\title{Seleção de Serviços sob Incerteza\\
+Evolução do Mergulho Inviável à GLS/GFLS com Deadline}
+\author{Ramon Barros de Lima}
+\date{Agosto 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{O problema}
+
+Devemos alocar 100 tarefas em 100 serviços minimizando o \textbf{custo total}.
+A solução deve respeitar três restrições duras: (i) capacidade de recurso de
+cada serviço ($V_{res}$); (ii) número máximo de serviços empregados
+($S_{max}$); e (iii) SLA probabilística, cuja probabilidade de violação não
+pode ultrapassar $P_{max}$. O custo é a função objetivo, e não uma restrição.
+
+O algoritmo-base é um \textit{Iterated Local Search} (ILS): uma solução inicial
+é construída e refinada por perturbações e busca local. A evolução experimental
+considerou três mecanismos:
+
+\begin{enumerate}
+    \item \textbf{Mergulho Inviável}: relaxa temporariamente a SLA;
+    \item \textbf{Híbrido best-fit + oscilação}: melhora a construção e relaxa
+          temporariamente a capacidade;
+    \item \textbf{GLS/GFLS com deadline}: acrescenta penalidades persistentes
+          às atribuições tarefa--serviço e controla rigorosamente o orçamento.
+\end{enumerate}
+
+\section{Caso A --- Mergulho Inviável (IGrAl)}
+
+Quando a busca fica presa, esta estratégia mergulha em soluções que podem
+violar a SLA. A solução inviável é avaliada por
+
+\begin{equation}
+    f_{dive}(s) = g(s) + \lambda_{dive}\,
+    \max\{0, P_{viol}(s)-P_{max}\},
+    \qquad
+    \lambda_{dive}=\frac{g(s^*)}{P_{max}},
+\end{equation}
+
+onde $g(s)$ é o custo real e $s^*$ é a melhor solução viável conhecida.
+
+\begin{algorithm}[H]
+\caption{ILS com Mergulho em Soluções Inviáveis}
+\begin{algorithmic}[1]
+\Require instância, $\alpha$, $IT\_MAX$
+\Ensure melhor solução viável $s^*$
+\State $s \gets \Call{SoluçãoGulosa}{instância,\alpha}$
+\State $s \gets \Call{BuscaLocal}{s}$; $s^* \gets s$
+\State $semMelhora \gets 0$; $reiníciosSemMelhora \gets 0$
+\For{$i=1$ \textbf{até} $IT\_MAX$}
+    \State $s \gets \Call{PerturbaçãoMove}{s}$
+    \State $s \gets \Call{BuscaLocal}{s}$
+    \If{$g(s)<g(s^*)$}
+        \State $s^* \gets s$; $semMelhora \gets 0$
+        \State $reiníciosSemMelhora \gets 0$
+    \Else
+        \State $semMelhora \gets semMelhora+1$
+    \EndIf
+    \If{$semMelhora>IT\_MAX/10$}
+        \State $semMelhora \gets 0$
+        \State $dive \gets \Call{PerturbaçãoInviável}{s}$
+        \State $excesso \gets \max\{0,P_{viol}(dive)-P_{max}\}$
+        \State $\lambda_{dive} \gets g(s^*)/P_{max}$
+        \State $custoP \gets g(dive)+\lambda_{dive}\cdot excesso$
+        \State $w \gets \min\{0.5,reiníciosSemMelhora/5\}$
+        \If{$custoP<g(s^*)$}
+            \State $explorado \gets \Call{BuscaLocal}{dive}$
+            \If{$\Call{Viável}{explorado}$}
+                \State $s \gets explorado$
+                \If{$g(s)<g(s^*)$} \State $s^*\gets s$ \EndIf
+            \Else
+                \State $s\gets\Call{ConstrutivoAdaptativo}{instância,\alpha,w}$
+                \State $reiníciosSemMelhora\gets reiníciosSemMelhora+1$
+            \EndIf
+        \Else
+            \State $s\gets\Call{ConstrutivoAdaptativo}{instância,\alpha,w}$
+            \State $reiníciosSemMelhora\gets reiníciosSemMelhora+1$
+        \EndIf
+    \EndIf
+\EndFor
+\State \Return $s^*$
+\end{algorithmic}
+\end{algorithm}
+
+O mergulho relaxa a restrição errada para estas instâncias: o gargalo principal
+é a capacidade, não a SLA. Além disso, $\lambda_{dive}$ torna a solução
+inviável pouco competitiva; na prática, o método degenera frequentemente em
+reinícios.
+
+\section{Caso 3 --- Híbrido Best-Fit + Oscilação}
+
+\subsection{Construção best-fit}
+
+As tarefas são processadas em ordem decrescente de consumo. Para cada tarefa,
+testa-se primeiro o serviço mais barato que mantém capacidade, $S_{max}$ e SLA.
+Se o best-fit não construir uma solução completa, utiliza-se o construtivo
+guloso histórico como fallback.
+
+\begin{algorithm}[H]
+\caption{Construtivo Best-Fit Cheapest-Feasible}
+\begin{algorithmic}[1]
+\Require instância, $\alpha$
+\Ensure solução inicial $s$ ou falha
+\State $T\gets$ tarefas ordenadas por consumo decrescente
+\State $s\gets\emptyset$
+\For{cada tarefa $t\in T$}
+    \State ordene os serviços por custo crescente para $t$
+    \State forme uma RCL se $\alpha>0$; caso contrário, preserve a ordem
+    \State $colocada\gets\textbf{falso}$
+    \For{cada serviço $j$ na ordem de tentativa}
+        \State atribua temporariamente $t\rightarrow j$
+        \If{$\Call{Viável}{s}$}
+            \State $colocada\gets\textbf{verdadeiro}$; \textbf{break}
+        \Else
+            \State desfaça $t\rightarrow j$
+        \EndIf
+    \EndFor
+    \If{\textbf{não} $colocada$} \State \Return falha \EndIf
+\EndFor
+\State \Return $s$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Oscilação estratégica}
+
+A capacidade é tratada temporariamente como restrição suave no objetivo
+
+\begin{equation}
+    f_{osc}(s)=g(s)+\lambda_{osc}\cdot sobrecarga(s).
+\end{equation}
+
+Quando a solução é viável, $\lambda_{osc}$ diminui, permitindo cruzar regiões
+inviáveis por capacidade. Quando existe sobrecarga, $\lambda_{osc}$ aumenta e
+empurra a trajetória de volta à região viável. A SLA e $S_{max}$ continuam
+duras.
+
+\begin{algorithm}[H]
+\caption{Busca Local Híbrida}
+\begin{algorithmic}[1]
+\Require solução $s$, número de rodadas $R$
+\Ensure melhor solução viável encontrada
+\State $s\gets\Call{DescidaPorCustoFLS}{s}$
+\State $s_0\gets s$; $melhor\gets s$
+\State $\lambda_{osc}\gets 2\cdot custoMédioMínimo$
+\For{$r=1$ \textbf{até} $R$}
+    \State $s\gets\Call{DescidaPenalizadaMove}{s,\lambda_{osc}}$
+    \If{$sobrecarga(s)=0$}
+        \If{$g(s)<g(melhor)$} \State $melhor\gets s$ \EndIf
+        \State $\lambda_{osc}\gets0.6\lambda_{osc}$
+    \Else
+        \State $\lambda_{osc}\gets2\lambda_{osc}$
+    \EndIf
+\EndFor
+\State $s\gets\Call{DescidaPenalizadaMove}{s,8\lambda_{osc}}$
+\If{$sobrecarga(s)=0$ \textbf{e} $g(s)<g(melhor)$}
+    \State $melhor\gets s$
+\EndIf
+\State \Return $melhor$ se melhorar $s_0$; senão retorne $s_0$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Melhor solução atual --- ILS + GLS/GFLS com Deadline}
+
+A configuração promovida mantém o best-fit, a FLS e a oscilação, acrescentando
+\textit{Guided Local Search} (GLS) como mecanismo de escape após estagnação.
+Sua execução é ativada por
+
+\begin{verbatim}
+make GLS=1
+\end{verbatim}
+
+Os parâmetros promovidos são:
+
+\begin{itemize}
+    \item $\alpha_{GLS}=0.3$;
+    \item esforço adaptativo de $30\rightarrow60\rightarrow120$ rodadas;
+    \item penalidades persistentes durante uma execução do ILS;
+    \item GFLS por sub-vizinhanças de serviço;
+    \item deadline verificado dentro do ILS e da GLS;
+    \item GLS final condicional.
+\end{itemize}
+
+\subsection{Features, penalidades e objetivo aumentado}
+
+Uma feature é a atribuição $(t,j)$ da tarefa $t$ ao serviço $j$. A penalidade
+$p_{tj}$ é inteira e inicialmente zero. A GLS usa
+
+\begin{equation}
+    h(s)=g(s)+\lambda_{GLS}
+    \sum_{t,j}p_{tj}I_{tj}(s),
+\end{equation}
+
+com
+
+\begin{equation}
+    \lambda_{GLS}=0.3\cdot
+    \frac{\max\{1,g(s_{inicial})\}}{|T|}.
+\end{equation}
+
+O melhor resultado devolvido é sempre escolhido pelo custo real $g(s)$, nunca
+por $h(s)$. Ao alcançar um mínimo local de $h$, penalizam-se todas as features
+presentes com utilidade máxima:
+
+\begin{equation}
+    utilidade(t,j)=\frac{custo(t,j)}{1+p_{tj}}.
+\end{equation}
+
+\subsection{MOVE, SWAP e GFLS}
+
+Para um MOVE de $j_a$ para $j_b$:
+
+\begin{equation}
+    \Delta h=\Delta g+\lambda_{GLS}(p_{t,j_b}-p_{t,j_a}).
+\end{equation}
+
+Para SWAP, somam-se as duas features inseridas e subtraem-se as duas removidas.
+Somente movimentos com $\Delta h<0$ e que respeitam capacidade, $S_{max}$ e SLA
+são aceitos.
+
+A GFLS associa uma sub-vizinhança a cada serviço. MOVEs e SWAPs são ignorados
+somente quando todos os serviços envolvidos estão inativos. Uma penalização ou
+um movimento aceito reativa os serviços afetados. As penalidades persistem
+entre chamadas GLS; os bits GFLS são reiniciados em cada chamada, porque a
+perturbação e a oscilação podem ter alterado a solução.
+
+\subsection{Pseudocódigo completo da solução atual}
+
+\begin{algorithm}[H]
+\caption{ILS + GLS/GFLS com Deadline (configuração promovida)}
+\begin{algorithmic}[1]
+\Require instância, $IT\_MAX$, $deadline$
+\Ensure melhor solução viável $s^*$
+\State $s\gets\Call{BestFit}{instância}$
+\If{best-fit falhou}
+    \State $s\gets\Call{ConstrutivoGuloso}{instância}$
+\EndIf
+\State $s\gets\Call{BuscaLocalHíbrida}{s}$
+\State $s^*\gets s$; $semMelhora\gets0$; $falhasGLS\gets0$
+\State $estadoGLS\gets$ penalidades zeradas
+\State $limiar\gets\max\{50,IT\_MAX/20\}$
+\State $tempoRodadaGLS\gets1$ ms
+
+\For{$i=1$ \textbf{até} $IT\_MAX$}
+    \If{$\Call{DeadlineAtingido}{deadline}$} \State \textbf{break} \EndIf
+    \State $candidato\gets\Call{PerturbaçãoMove}{s}$
+    \State $candidato\gets\Call{BuscaLocalHíbrida}{candidato}$
+    \State $s\gets candidato$
+    \Comment{a caminhada avança mesmo sem melhorar $s^*$}
+    \If{$g(s)<g(s^*)$}
+        \State $s^*\gets s$; $semMelhora\gets0$; $falhasGLS\gets0$
+    \Else
+        \State $semMelhora\gets semMelhora+1$
+    \EndIf
+
+    \If{$semMelhora\geq limiar$}
+        \State $R\gets\min\{120,30\cdot2^{\min(falhasGLS,2)}\}$
+        \State $R\gets\Call{RodadasQueCabem}{R,tempoRodadaGLS,deadline}$
+        \If{$R=0$} \State \textbf{break} \EndIf
+        \State $antes\gets g(s^*)$; $inícioGLS\gets\Call{Agora}{}$
+        \State $guiada\gets\Call{GLS-GFLS}{s,estadoGLS,0.3,R,deadline}$
+        \State atualize $tempoRodadaGLS$ pela duração observada
+        \If{\textbf{não} $\Call{DeadlineAtingido}{deadline}$}
+            \State $guiada\gets\Call{BuscaLocalHíbrida}{guiada}$
+        \EndIf
+        \State $s\gets guiada$
+        \If{$g(s)<g(s^*)$} \State $s^*\gets s$ \EndIf
+        \If{$g(s^*)<antes$}
+            \State $falhasGLS\gets0$
+        \Else
+            \State $falhasGLS\gets\min\{falhasGLS+1,2\}$
+        \EndIf
+        \State $semMelhora\gets0$
+    \EndIf
+\EndFor
+
+\State $gap\gets(g(s^*)-ótimo)/ótimo$, se o ótimo for conhecido
+\State $executarFinal\gets$ houve estagnação GLS, há tempo, o ótimo não foi
+\Statex \hspace{1.5em} atingido e $gap\geq1\%$
+\If{$executarFinal$}
+    \State $R_f\gets\min\{120,30\cdot2^{\min(falhasGLS,2)}\}$
+    \State $R_f\gets\Call{RodadasQueCabem}{R_f,tempoRodadaGLS,deadline}$
+    \If{$R_f>0$}
+        \State $final\gets\Call{GLS-GFLS}{s^*,estadoGLS,0.3,R_f,deadline}$
+        \If{há tempo} \State $final\gets\Call{BuscaLocalHíbrida}{final}$ \EndIf
+        \If{$g(final)<g(s^*)$} \State $s^*\gets final$ \EndIf
+    \EndIf
+\EndIf
+\State \Return $s^*$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{GLS/GFLS com penalidades persistentes e deadline}
+\begin{algorithmic}[1]
+\Require solução $s$, estado de penalidades $p$, $\alpha_{GLS}$, rodadas $R$, deadline
+\Ensure melhor solução pelo custo real
+\If{$p$ ainda não foi inicializado}
+    \State zere $p$ e calcule $\lambda_{GLS}$
+\EndIf
+\State ative todas as sub-vizinhanças de serviço
+\State $melhor\gets s$
+\For{$r=1$ \textbf{até} $R$}
+    \If{deadline atingido} \State \textbf{break} \EndIf
+    \Repeat
+        \State $movimento\gets\varnothing$; $melhor\Delta h\gets0$
+        \For{cada MOVE $(t,j_a,j_b)$ com $j_a$ ou $j_b$ ativo}
+            \If{deadline atingido} \State \textbf{break} \EndIf
+            \State calcule $\Delta h$
+            \If{$\Delta h<melhor\Delta h$ \textbf{e} movimento viável}
+                \State guarde o MOVE
+            \EndIf
+        \EndFor
+        \For{cada SWAP $(t_1,t_2)$ com serviço envolvido ativo}
+            \If{deadline atingido} \State \textbf{break} \EndIf
+            \State calcule $\Delta h$
+            \If{$\Delta h<melhor\Delta h$ \textbf{e} movimento viável}
+                \State guarde o SWAP
+            \EndIf
+        \EndFor
+        \If{deadline atingido} \State \textbf{break} \EndIf
+        \If{$movimento=\varnothing$}
+            \State desative as sub-vizinhanças examinadas; \textbf{break}
+        \EndIf
+        \State aplique o movimento e reative os serviços afetados
+        \If{$g(s)<g(melhor)$} \State $melhor\gets s$ \EndIf
+    \Until{mínimo local do objetivo aumentado}
+    \If{deadline atingido} \State \textbf{break} \EndIf
+    \State $U\gets\max_{(t,j)\in s} custo(t,j)/(1+p_{tj})$
+    \For{cada feature presente $(t,j)$ com utilidade $U$}
+        \State $p_{tj}\gets p_{tj}+1$ e reative o serviço $j$
+    \EndFor
+\EndFor
+\State \Return $melhor$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Adaptação das rodadas GLS ao tempo restante}
+\begin{algorithmic}[1]
+\Require rodadas solicitadas $R$, estimativa $\tau$ ms/rodada, deadline
+\Ensure $R'\in\{0,30,R\}$
+\State $disponível\gets deadline-\Call{Agora}{}-2$ ms
+\If{$disponível<30\tau$} \State \Return 0 \EndIf
+\If{$R>30$ \textbf{e} $disponível<R\tau$} \State \Return 30 \EndIf
+\State \Return $R$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Controle de tempo}
+
+Antes da correção, o relógio era consultado somente depois de uma chamada
+completa do ILS. Assim, uma instância com orçamento curto ainda executava 2.000
+ou 10.000 iterações e todas as chamadas GLS antes de parar. A versão atual:
+
+\begin{itemize}
+    \item verifica o deadline em cada iteração do ILS;
+    \item verifica o deadline entre rodadas e durante MOVE/SWAP na GLS;
+    \item reduz 60/120 rodadas para 30 quando necessário;
+    \item não inicia GLS se nem 30 rodadas couberem;
+    \item condiciona a intensificação final a tempo, estagnação e GAP relevante.
+\end{itemize}
+
+Com isso, a execução padrão caiu de aproximadamente 13 minutos para 3min44s
+internos. O orçamento pode ser escalado sem alterar o código:
+
+\begin{verbatim}
+# aproximadamente 3min44s internos
+./build/service-selection-optimizer
+
+# aproximadamente 8 minutos internos
+SSO_TIME_SCALE=2.14 ./build/service-selection-optimizer
+\end{verbatim}
+
+\section{Resultados com tempo rigorosamente igual}
+
+\subsection{Orçamento curto}
+
+Nas 94 instâncias, com três execuções por instância e o mesmo deadline:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Método & Tempo interno & GAP médio & Ótimos & V/E/D do GLS \\
+\midrule
+Best-fit + oscilação & 3min44,50s & 1,52\% & 62/94 & -- \\
+GLS + GFLS           & 3min44,45s & \textbf{1,37\%} & \textbf{66/94} & 17/69/8 \\
+\bottomrule
+\end{tabular}
+\caption{Comparação curta com deadline rigorosamente igual.}
+\end{table}
+
+\subsection{Orçamento longo}
+
+O A/B longo usa as versões atuais, $SSO\_TIME\_SCALE=2.14$, três execuções e
+deadline interno idêntico:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Método & Tempo interno & GAP médio & Ótimos & V/E/D do GLS \\
+\midrule
+Best-fit + oscilação & 7min59,88s & 1,21\% & 69/94 & -- \\
+GLS + GFLS           & 7min59,14s & \textbf{0,84\%} & \textbf{77/94} & 17/73/4 \\
+\bottomrule
+\end{tabular}
+\caption{Comparação longa atual com orçamento rigorosamente igual.}
+\end{table}
+
+O ganho médio do GLS foi de 0,37 unidade de custo por instância. Ao aumentar o
+tempo de 3min44s para aproximadamente 8 minutos, a oscilação ganhou 7 ótimos e
+reduziu o GAP em 0,31 ponto percentual; o GLS ganhou 11 ótimos e reduziu o GAP
+em 0,53 ponto percentual. Portanto, a GLS aproveitou melhor o tempo adicional.
+
+\subsection{Cinco instâncias difíceis no A/B longo}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ccrrrrr}
+\toprule
+Instância & Ótimo & Oscilação & GAP & GLS/GFLS & GAP & Ganho GLS \\
+\midrule
+100 & 101 & 132 & 30,7\% & \textbf{118} & 16,8\% & +14 \\
+129 & 100 & 106 &  6,0\% & \textbf{105} &  5,0\% &  +1 \\
+147 & 100 & 106 &  6,0\% & 106          &  6,0\% &   0 \\
+28  & 102 & 122 & 19,6\% & \textbf{116} & 13,7\% &  +6 \\
+128 & 101 & \textbf{109} & 7,9\% & 113      & 11,9\% &  -4 \\
+\midrule
+\multicolumn{3}{c}{\textbf{GAP médio}} & \textbf{14,0\%} &
+\multicolumn{2}{c}{\textbf{10,7\%}} & \textbf{+3,4} \\
+\bottomrule
+\end{tabular}
+\caption{Comparação longa nas cinco instâncias difíceis atuais.}
+\end{table}
+
+Nas difíceis, o GLS obteve três vitórias, um empate e uma derrota. A instância
+128 foi a exceção: a oscilação encontrou custo 109, contra 113 do GLS. Já na
+instância 100, principal gargalo do conjunto, a GLS reduziu o custo de 132 para
+118.
+
+\section{Conclusão}
+
+O mergulho inviável relaxava a SLA, enquanto o gargalo observado estava na
+capacidade. O híbrido best-fit + oscilação corrigiu esse desalinhamento e
+produziu o primeiro grande salto de qualidade. A solução atual acrescenta uma
+segunda forma de diversificação: a GLS penaliza atribuições tarefa--serviço
+caras e repetidamente presentes, enquanto a GFLS limita o trabalho às
+sub-vizinhanças relevantes.
+
+No A/B rigoroso de aproximadamente oito minutos, a configuração atual reduziu
+o GAP médio de 1,21\% para 0,84\% e aumentou o número de ótimos de 69 para 77.
+Ela não domina a oscilação em todas as sementes ou instâncias, mas apresenta o
+melhor resultado agregado e aproveita melhor orçamentos maiores. O deadline
+interno impede que essa qualidade seja obtida por ultrapassagem silenciosa do
+tempo, tornando a comparação reprodutível e justa.
+
+\end{document}

@@ -6,6 +6,7 @@
 #include <vector>
 #include <limits>
 #include <chrono>
+#include <cmath>
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>
@@ -59,6 +60,21 @@ static double envDouble(const char* name, double fallback) {
     if (parsed <= 0.0)
         throw std::invalid_argument(string(name) + " must be greater than zero");
     return parsed;
+}
+
+static vector<int> envInstanceList(const char* name) {
+    const char* value = std::getenv(name);
+    if (!value || !*value)
+        return {};
+
+    vector<int> instances;
+    std::istringstream input(value);
+    string token;
+    while (std::getline(input, token, ',')) {
+        if (!token.empty())
+            instances.push_back(std::stoi(token));
+    }
+    return instances;
 }
 
 static InstanceMatrix readInstance(int instanceCont) {
@@ -173,9 +189,14 @@ int main() {
     const int configuredIterations = envInt("SSO_ITERATIONS", -1);
     const double timeScale = envDouble("SSO_TIME_SCALE", 1.0);
     const double fixedTimeSeconds = envDouble("SSO_TIME_SECONDS", -1.0);
+    const bool stageTraceEnabled = envInt("SSO_STAGE_TRACE", 0) != 0;
+    const bool deadlineDisabled = envInt("SSO_DISABLE_DEADLINE", 0) != 0;
+    const bool javaBudgetMode = envInt("SSO_JAVA_BUDGET_MODE", 0) != 0;
+    const int configuredSeed = envInt("SSO_SEED", -1);
 
-    // To run all instances, leave targetInstances empty: {}
-    const vector<int> targetInstances = {};
+    // Empty means all 94; otherwise use a comma-separated list in
+    // SSO_INSTANCES, for example: 100,129,147,28,128.
+    const vector<int> targetInstances = envInstanceList("SSO_INSTANCES");
     const int numberOfInstances = targetInstances.empty() ? 94
                                                           : static_cast<int>(targetInstances.size());
 
@@ -196,14 +217,17 @@ int main() {
              ? std::to_string(configuredIterations) : "adaptive")
          << " timeScale=" << timeScale
          << " fixedTimeSeconds=" << (fixedTimeSeconds > 0.0
-             ? std::to_string(fixedTimeSeconds) : "adaptive") << endl;
+             ? std::to_string(fixedTimeSeconds) : "adaptive")
+         << " stageTrace=" << (stageTraceEnabled ? "on" : "off")
+         << " deadline=" << (deadlineDisabled ? "disabled"
+             : (javaBudgetMode ? "between-complete-ils-calls" : "internal"))
+         << " seed=" << (configuredSeed >= 0
+             ? std::to_string(configuredSeed) : "random")
+         << endl;
 
     for (const InstanceMatrix& instance : instanceArray) {
         algResults[instanceID].instanceName = instance.getInstanceName();
         cout << "Executing instance " << instanceID << endl;
-
-        double bestCost   = std::numeric_limits<double>::max();
-        double timeToBest = -1;
 
         const bool hasLogData = instance.getOptimalExecTime() > 0;
 
@@ -234,11 +258,22 @@ int main() {
         for (int r = 0; r < executionsPerInstance; r++) {
             cout << "r " << r << endl;
 
+            if (configuredSeed >= 0)
+                RandomUtil::setSeed(static_cast<unsigned>(
+                    configuredSeed + instanceID * 1009 + r * 9176));
+
             double instanceInitTime = nowMs();
+            const double repetitionDeadlineMs = (deadlineDisabled || javaBudgetMode)
+                ? std::numeric_limits<double>::infinity()
+                : instanceInitTime + execTimePerRepetition * 1000.0;
+            double repetitionBestCost = std::numeric_limits<double>::max();
+            double repetitionTimeToBest = -1;
             Allocation all;
+            int ilsCall = 0;
 
             do {
                 ILS ils;
+                ILSStageTrace stageTrace;
                 // ILS#1 (réplica de ArticleResult.java, repo dos autores):
                 // First Improvement, Perturbation Move, Neighborhood Move (código: SWAP), alpha = 0.4.
                 // Muito mais rápido que ILS#3 (Best Improvement) com resultado comparável.
@@ -248,40 +283,70 @@ int main() {
                     SearchMode::LOCAL_SEARCH,
                     ImprovementCondition::FIRST_IMPROVEMENT,
                     ImprovementMode::SWAP,
-                    PerturbationMode::MOVE);
+                    PerturbationMode::MOVE,
+                    repetitionDeadlineMs,
+                    stageTraceEnabled ? &stageTrace : nullptr);
 
-                if (all.getCurrentCost() < bestCost) {
-                    bestCost   = all.getCurrentCost();
-                    timeToBest = all.getTimeToBest();
+                if (stageTraceEnabled) {
+                    cout << "STAGE_TRACE"
+                         << " instance=" << instance.getInstanceName()
+                         << " repetition=" << r
+                         << " ilsCall=" << ilsCall
+                         << " optimum=" << instance.getOptimalCost()
+                         << " bestFit=" << stageTrace.constructedCost
+                         << " initialLocal=" << stageTrace.initialLocalCost
+                         << " initialOsc=" << stageTrace.initialOscillationCost
+                         << " preFirstGLS=" << stageTrace.bestBeforeFirstGls
+                         << " final=" << stageTrace.finalCost
+                         << " glsCalls=" << stageTrace.glsCalls
+                         << " normalLocalGain=" << stageTrace.normalLocalRecordGain
+                         << " normalOscGain=" << stageTrace.normalOscillationRecordGain
+                         << " glsDirectGain=" << stageTrace.glsDirectRecordGain
+                         << " glsLocalPolishGain=" << stageTrace.glsLocalPolishRecordGain
+                         << " glsOscPolishGain=" << stageTrace.glsOscillationPolishRecordGain
+                         << endl;
+                }
+                ++ilsCall;
+
+                if (all.getCurrentCost() < repetitionBestCost) {
+                    repetitionBestCost = all.getCurrentCost();
+                    repetitionTimeToBest = all.getTimeToBest();
                 }
 
                 if (instance.getOptimalCost() > 0 &&
                     all.getCurrentCost() == static_cast<double>(instance.getOptimalCost())) {
-                    timeToBest = all.getTimeToBest();
+                    repetitionTimeToBest = all.getTimeToBest();
                     break;
                 }
 
-            } while ((nowMs() - instanceInitTime) / 1000.0 <= execTimePerRepetition);
+            } while (!deadlineDisabled && (
+                javaBudgetMode
+                    // Replica ArticleResult.java: divisao inteira por 1000 e
+                    // verificacao somente depois que uma chamada ILS termina.
+                    ? std::floor((nowMs() - instanceInitTime) / 1000.0)
+                        <= execTimePerRepetition
+                    : (nowMs() - instanceInitTime) / 1000.0
+                        <= execTimePerRepetition));
 
             double repetitionExecTime = nowMs() - instanceInitTime;
 
-            timeToBest = (instance.getOptimalCost() > 0 &&
-                          bestCost == static_cast<double>(instance.getOptimalCost()))
-                ? timeToBest : repetitionExecTime;
+            repetitionTimeToBest = (instance.getOptimalCost() > 0 &&
+                          repetitionBestCost == static_cast<double>(instance.getOptimalCost()))
+                ? repetitionTimeToBest : repetitionExecTime;
 
             if (algResults[instanceID].bestResult == 0) {
-                algResults[instanceID].bestResult = bestCost;
-                algResults[instanceID].meanResult = bestCost / executionsPerInstance;
-                algResults[instanceID].timeToBest = timeToBest / executionsPerInstance;
+                algResults[instanceID].bestResult = repetitionBestCost;
+                algResults[instanceID].meanResult = repetitionBestCost / executionsPerInstance;
+                algResults[instanceID].timeToBest = repetitionTimeToBest / executionsPerInstance;
             } else {
-                algResults[instanceID].meanResult += bestCost / executionsPerInstance;
-                algResults[instanceID].timeToBest += timeToBest / executionsPerInstance;
-                if (bestCost < algResults[instanceID].bestResult)
-                    algResults[instanceID].bestResult = bestCost;
+                algResults[instanceID].meanResult += repetitionBestCost / executionsPerInstance;
+                algResults[instanceID].timeToBest += repetitionTimeToBest / executionsPerInstance;
+                if (repetitionBestCost < algResults[instanceID].bestResult)
+                    algResults[instanceID].bestResult = repetitionBestCost;
             }
 
             if (instance.getOptimalCost() > 0 &&
-                bestCost == static_cast<double>(instance.getOptimalCost()))
+                repetitionBestCost == static_cast<double>(instance.getOptimalCost()))
                 algResults[instanceID].countBests++;
         }
 
