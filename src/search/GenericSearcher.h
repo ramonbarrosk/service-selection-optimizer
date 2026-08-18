@@ -91,31 +91,16 @@ public:
         return false;
     }
 
-    // Dispatcher fino: escolhe a implementação de MOVE/SWAP conforme o modo e a condição de
-    // aceitação. FIRST_IMPROVEMENT roteia para a variante FLS (sub-vizinhanças com bit de
-    // ativação, ver flsMove/flsSwap) — ligada por padrão (ENABLE_FLS, comprovada pelo A/B de
-    // 94 instâncias: TtB médio -13.5%, gap e contagem de ótimos praticamente inalterados).
-    // ENABLE_FLS desligado (make FLS=0) cai na varredura completa de sempre
-    // (firstMoveFullScan/firstSwapFullScan), preservada como fallback. BEST_IMPROVEMENT nunca
-    // muda: sempre bestMove/bestSwap.
+    // FIRST_IMPROVEMENT always uses FLS sub-neighborhood activation. BEST_IMPROVEMENT
+    // keeps the exhaustive bestMove/bestSwap implementations.
     bool costImprovement(Allocation& all, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, ImprovementCondition condition, ImprovementMode mode) {
         if (mode == ImprovementMode::MOVE) {
-            if (condition == ImprovementCondition::FIRST_IMPROVEMENT) {
-#ifdef ENABLE_FLS
+            if (condition == ImprovementCondition::FIRST_IMPROVEMENT)
                 return flsMove(all, matrix, Vmax, Smax, Pmax, pScenario);
-#else
-                return firstMoveFullScan(all, matrix, Vmax, Smax, Pmax, pScenario);
-#endif
-            }
             return bestMove(all, matrix, Vmax, Smax, Pmax, pScenario);
         } else {
-            if (condition == ImprovementCondition::FIRST_IMPROVEMENT) {
-#ifdef ENABLE_FLS
+            if (condition == ImprovementCondition::FIRST_IMPROVEMENT)
                 return flsSwap(all, matrix, Vmax, Smax, Pmax, pScenario);
-#else
-                return firstSwapFullScan(all, matrix, Vmax, Smax, Pmax, pScenario);
-#endif
-            }
             return bestSwap(all, matrix, Vmax, Smax, Pmax, pScenario);
         }
     }
