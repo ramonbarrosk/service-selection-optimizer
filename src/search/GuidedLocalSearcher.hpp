@@ -13,14 +13,27 @@
 #include "SolutionValidator.hpp"
 #include "Task.h"
 
-// Guided Local Search for task->service assignment features. Penalties guide
-// the trajectory, while the returned allocation is always selected by real cost.
+// Busca Local Guiada (GLS) aplicada às atribuições tarefa--serviço.
+//
+// Cada atribuição (tarefa t no serviço j) é uma característica e possui uma penalidade
+// p[t][j]. A busca escolhe movimentos usando o objetivo aumentado
+//
+//     h(s) = custoReal(s) + lambda * somaDasPenalidadesPresentes(s).
+//
+// As penalidades ajudam a trajetória a abandonar combinações repetidas. Elas
+// servem apenas para guiar a busca: a solução devolvida é sempre a de menor
+// custo real encontrada e continua respeitando capacidade, Smax e SLA.
 class GuidedLocalSearcher {
     SolutionValidator validator_;
+    // penalties_[tarefa][serviço] registra quantas vezes a característica foi penalizada.
     std::vector<std::vector<int>> penalties_;
-    // The sub-neighborhood of a service contains every MOVE/SWAP that enters
-    // or leaves it. Penalized features reactivate their service neighborhood.
+
+    // Na GFLS, cada serviço representa uma sub-vizinhança formada pelos MOVEs e
+    // SWAPs que entram nele ou saem dele. Valor 1 significa que ela deve ser
+    // examinada; valor 0 evita repetir uma varredura que já não encontrou melhora.
     std::vector<unsigned char> activeServiceNeighborhoods_;
+
+    // Peso que converte a soma das penalidades para a escala do custo real.
     double lambda_ = 0.0;
 
     static double nowMs() {
@@ -34,10 +47,14 @@ class GuidedLocalSearcher {
     }
 
     void updateBest(const Allocation& candidate, Allocation& best) const {
+        // O incumbente é comparado exclusivamente pelo objetivo original.
         if (candidate.getCurrentCost() < best.getCurrentCost() - 1e-9)
             best = candidate;
     }
 
+    // Executa uma descida no objetivo aumentado h(s). Em cada iteração avalia
+    // MOVE e SWAP, escolhe o melhor delta negativo e aplica apenas movimentos
+    // viáveis. A descida termina quando não existe melhoria em h(s).
     bool guidedDescent(Allocation& current, Allocation& best,
                        const InstanceMatrix& matrix,
                        int Vmax, int Smax, double Pmax,
@@ -46,6 +63,7 @@ class GuidedLocalSearcher {
         const int numberOfServices = matrix.getNumberOfServices();
         bool appliedAnyMove = false;
 
+        // Na primeira utilização, todas as sub-vizinhanças começam ativas.
         if (static_cast<int>(activeServiceNeighborhoods_.size()) != numberOfServices)
             activeServiceNeighborhoods_.assign(numberOfServices, 1);
         if (std::none_of(activeServiceNeighborhoods_.begin(),
@@ -65,6 +83,7 @@ class GuidedLocalSearcher {
             int bestService = -1;
             bool timedOut = false;
 
+            // Vizinhança MOVE: transfere uma tarefa para outro serviço.
             for (int taskId = 0; taskId < numberOfTasks; ++taskId) {
                 if (deadlineReached(deadlineMs)) {
                     timedOut = true;
@@ -87,10 +106,13 @@ class GuidedLocalSearcher {
                     const double deltaPenalty =
                         penalties_[taskId][newService]
                         - penalties_[taskId][oldService];
+                    // deltaGuided é a variação de h(s), não apenas do custo real.
                     const double deltaGuided = deltaCost + lambda_ * deltaPenalty;
                     if (deltaGuided >= bestDelta)
                         continue;
 
+                    // Aplica temporariamente para validar as três restrições duras
+                    // e desfaz logo depois; o movimento ainda não foi escolhido.
                     Task task(taskId, matrix.getTaskConsumption(taskId));
                     current.replaceService(task, Service(newService), matrix);
                     const bool feasible = validator_.isFeasible(
@@ -110,6 +132,7 @@ class GuidedLocalSearcher {
             if (timedOut)
                 break;
 
+            // Vizinhança SWAP: troca os serviços de duas tarefas.
             for (int task1 = 0; task1 < numberOfTasks; ++task1) {
                 if (deadlineReached(deadlineMs)) {
                     timedOut = true;
@@ -164,11 +187,15 @@ class GuidedLocalSearcher {
                 break;
 
             if (bestKind == MoveKind::NONE) {
+                // Nenhuma sub-vizinhança ativa melhorou h(s): chegamos a um
+                // mínimo local desta rodada e podemos desativar todas elas.
                 std::fill(activeServiceNeighborhoods_.begin(),
                           activeServiceNeighborhoods_.end(), 0);
                 break;
             }
 
+            // Aplica definitivamente o melhor movimento e reativa somente os
+            // serviços afetados, pois suas sub-vizinhanças acabaram de mudar.
             if (bestKind == MoveKind::MOVE) {
                 const int oldService = current.getServiceForTask(bestTask1);
                 current.replaceService(
@@ -198,6 +225,8 @@ class GuidedLocalSearcher {
 
     void penalizeMaximumUtilityFeatures(const Allocation& localMinimum,
                                         const InstanceMatrix& matrix) {
+        // No mínimo local, a utilidade prioriza características caras e ainda pouco
+        // penalizadas: utilidade(t,j) = custo(t,j) / (1 + p[t][j]).
         double maximumUtility = -std::numeric_limits<double>::infinity();
         std::vector<int> selectedTasks;
 
@@ -217,6 +246,8 @@ class GuidedLocalSearcher {
             }
         }
 
+        // Em caso de empate, todas as características de utilidade máxima recebem
+        // penalidade. Seus serviços voltam a ficar ativos para a próxima descida.
         for (int taskId : selectedTasks) {
             const int serviceId = localMinimum.getServiceForTask(taskId);
             ++penalties_[taskId][serviceId];
@@ -238,17 +269,23 @@ public:
             || (!penalties_.empty()
                 && static_cast<int>(penalties_.front().size()) != numberOfServices);
 
+        // Inicializa o estado da GLS ou o recria quando muda o tamanho da instância.
+        // Com preservePenalties=true, chamadas posteriores reutilizam o aprendizado.
         if (!preservePenalties || dimensionsChanged || penalties_.empty()) {
             penalties_.assign(numberOfTasks, std::vector<int>(numberOfServices, 0));
+            // Escala clássica: alpha controla a influência relativa das penalidades.
             lambda_ = alpha * std::max(1.0, initial.getCurrentCost())
                 / std::max(1, numberOfTasks);
         }
-        // Normal search, oscillation and perturbation may change the allocation
-        // between calls, so activation bits do not persist with the penalties.
+        // A busca local, a oscilação e a perturbação podem mudar a solução entre
+        // chamadas. Por isso, os bits GFLS são reiniciados, embora as penalidades
+        // continuem persistentes.
         activeServiceNeighborhoods_.assign(numberOfServices, 1);
 
         Allocation current = initial;
         Allocation best = initial;
+        // Cada rodada desce até um mínimo local de h(s), penaliza as características de
+        // maior utilidade e então inicia uma nova descida com a paisagem alterada.
         for (int round = 0; round < penaltyRounds; ++round) {
             if (deadlineReached(deadlineMs))
                 break;

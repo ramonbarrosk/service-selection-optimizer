@@ -24,7 +24,7 @@ public:
 
     // ───────────────────────── Oscilação estratégica (proposta 2) ─────────────────────────
     //
-    // A busca cost-only (estritamente viável) fica presa em mínimos locais nas instâncias
+    // A busca somente por custo (estritamente viável) fica presa em mínimos locais nas instâncias
     // apertadas: para baratear é preciso ÀS VEZES piorar o custo agora — mover uma tarefa
     // para um serviço mais caro que LIBERA capacidade num serviço lotado — para consolidar e
     // eliminar um serviço depois. Ela nunca dá esse passo porque ele piora o custo no momento.
@@ -40,8 +40,8 @@ public:
     // Smax e SLA continuam restrições DURAS. Em instâncias folgadas a sobrecarga é sempre 0,
     // então o passo vira uma descida de custo comum e é inócuo.
     //
-    // Recebe uma solução VIÁVEL; retorna true e atualiza `solution` se achou outra viável mais
-    // barata, senão deixa `solution` intacta.
+    // Recebe uma solução VIÁVEL; devolve verdadeiro e atualiza `solution` se encontrou outra
+    // solução viável mais barata; caso contrário, deixa `solution` intacta.
     bool oscillationImprovement(Allocation& solution, const InstanceMatrix& matrix,
                                 int Vmax, int Smax, double Pmax,
                                 ProbabilityScenario pScenario, int oscillationRounds = 12) {
@@ -91,8 +91,8 @@ public:
         return false;
     }
 
-    // FIRST_IMPROVEMENT always uses FLS sub-neighborhood activation. BEST_IMPROVEMENT
-    // keeps the exhaustive bestMove/bestSwap implementations.
+    // FIRST_IMPROVEMENT usa a ativação de sub-vizinhanças da FLS. Já
+    // BEST_IMPROVEMENT mantém a varredura exaustiva de bestMove/bestSwap.
     bool costImprovement(Allocation& all, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, ImprovementCondition condition, ImprovementMode mode) {
         if (mode == ImprovementMode::MOVE) {
             if (condition == ImprovementCondition::FIRST_IMPROVEMENT)
@@ -175,7 +175,7 @@ private:
 
     // Fila de sub-vizinhanças ativas (uma por tarefa). Seedada com todas as tarefas no início de
     // cada chamada FLS; drenada até esvaziar — equivalente a "enquanto existir bit ativo" do
-    // pseudocódigo de Fast Local Search (Voudouris/Tsang, Handbook of Metaheuristics cap. 11).
+    // pseudocódigo da Busca Local Rápida (Voudouris/Tsang, Handbook of Metaheuristics, cap. 11).
     struct ActiveQueue {
         vector<char> inQueue;   // taskId -> já está na fila (evita duplicar)
         std::deque<int> worklist;
@@ -203,7 +203,7 @@ private:
         }
     };
 
-    // MODO MOVE, First Improvement, com FLS: em vez de reescanear todas as tarefas a cada
+    // MODO MOVE, primeira melhoria, com FLS: em vez de reexaminar todas as tarefas a cada
     // passada, mantém uma fila de tarefas "ativas". Ao aceitar um movimento de taskId de
     // currentServId para acceptedTarget, reativa taskId (que acaba entrando na lista de
     // acceptedTarget) e todas as outras tarefas atualmente nos dois serviços cuja carga mudou —
@@ -279,7 +279,7 @@ private:
         return globallyImproved;
     }
 
-    // MODO MOVE, First Improvement: varredura completa (sem sub-vizinhanças) — tenta mover
+    // MODO MOVE, primeira melhoria: varredura completa (sem sub-vizinhanças) — tenta mover
     // cada tarefa para um serviço diferente e aceita o primeiro movimento válido que melhora
     // o custo, seguindo para a próxima tarefa na mesma passada.
     bool firstMoveFullScan(Allocation& all, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario) {
@@ -338,7 +338,7 @@ private:
         return globallyImproved;
     }
 
-    // MODO MOVE, Best Improvement: avalia todos os movimentos possíveis na passada e aplica
+    // MODO MOVE, melhor melhoria: avalia todos os movimentos possíveis na passada e aplica
     // apenas o de maior ganho de custo.
     bool bestMove(Allocation& all, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario) {
         bool globallyImproved = false;
@@ -374,7 +374,7 @@ private:
                     bool probRestrictionRequired = matrix.getServiceProb(i) > matrix.getServiceProb(currentServId);
 
                     if (validator.isFeasible(matrix, all, Vmax, Smax, Pmax, pScenario, probRestrictionRequired)) {
-                        // Best Improvement: desfaz e guarda se for o melhor até agora
+                        // Melhor melhoria: desfaz e guarda se for o melhor até agora
                         all.replaceService(task, currentService, matrix);
 
                         int costGain = matrix.getTaskCost(taskId, currentServId) - matrix.getTaskCost(taskId, i);
@@ -415,7 +415,7 @@ private:
         return globallyImproved;
     }
 
-    // MODO SWAP, First Improvement, com FLS: mesma ideia de flsMove, mas cada movimento
+    // MODO SWAP, primeira melhoria, com FLS: mesma ideia de flsMove, mas cada movimento
     // aceito troca DOIS participantes entre dois serviços (currentTaskServId <-> partnerServId).
     // A checagem de SLA nunca roda para SWAP (permuta o multiset de probabilidades sem mudar
     // a distribuição de violação — ver comentário em firstSwapFullScan/isFeasible), então a
@@ -506,7 +506,7 @@ private:
         return globallyImproved;
     }
 
-    // MODO SWAP, First Improvement: varredura completa — tenta trocar o serviço de cada
+    // MODO SWAP, primeira melhoria: varredura completa — tenta trocar o serviço de cada
     // tarefa com o de outra tarefa e aceita a primeira troca válida que melhora o custo.
     bool firstSwapFullScan(Allocation& all, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario) {
         bool globallyImproved = false;
@@ -577,7 +577,7 @@ private:
         return globallyImproved;
     }
 
-    // MODO SWAP, Best Improvement: avalia todas as trocas possíveis na passada e aplica
+    // MODO SWAP, melhor melhoria: avalia todas as trocas possíveis na passada e aplica
     // apenas a de maior ganho de custo.
     bool bestSwap(Allocation& all, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario) {
         bool globallyImproved = false;
@@ -624,7 +624,7 @@ private:
                     all.replaceService(randomTask, currentService, matrix);
 
                     if (validator.isFeasible(matrix, all, Vmax, Smax, Pmax, pScenario, false)) {
-                        // Best Improvement: desfaz e guarda se for a melhor até agora
+                        // Melhor melhoria: desfaz e guarda se for a melhor até agora
                         all.replaceService(currentTask, currentService, matrix);
                         all.replaceService(randomTask, randomTaskService, matrix);
 
@@ -658,7 +658,7 @@ private:
                 }
             }
 
-            // Best improvement: aplica a melhor troca encontrada após avaliar todas as possibilidades
+            // Melhor melhoria: aplica a melhor troca encontrada após avaliar todas as possibilidades
             if (bestFound) {
                 locallyImproved = true;
                 globallyImproved = true;
@@ -690,7 +690,7 @@ private:
         return validator.computeViolationExcess(matrix, allocation, Vmax, Pmax, pScenario) <= 1e-12;
     }
 
-    // Descida "best-improvement" sobre o objetivo penalizado  f = custo + λ·sobrecarga,
+    // Descida por melhor melhoria sobre o objetivo penalizado f = custo + λ·sobrecarga,
     // usando apenas movimentos MOVE (uma tarefa muda de serviço). A cada passada escolhe o
     // MOVE que mais reduz f e o aplica; repete até nenhum MOVE reduzir f. Aceita mover para
     // um serviço sobrecarregado se o ganho líquido em f compensar (é isso que permite

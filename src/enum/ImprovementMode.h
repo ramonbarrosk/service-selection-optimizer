@@ -3,6 +3,7 @@
 
 using std::string;
 
+// Tipo de vizinhança: MOVE transfere uma tarefa; SWAP troca duas tarefas.
 enum class ImprovementMode {
     MOVE,
     SWAP

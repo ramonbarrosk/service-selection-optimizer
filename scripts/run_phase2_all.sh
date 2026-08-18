@@ -3,8 +3,8 @@
 # as instancias e imprime uma tabela-resumo, alem de salvar um CSV.
 #
 # Uso:  ./scripts/run_phase2_all.sh [N_REINICIOS] [ITERS_ILS]
-#   N_REINICIOS  numero de reinicios ILS pareados por seed (default 10)
-#   ITERS_ILS    iteracoes de ILS-oscilacao por reinicio    (default 50)
+#   N_REINICIOS  número de reinícios ILS pareados por semente (padrão: 10)
+#   ITERS_ILS    iterações de ILS-oscilação por reinício       (padrão: 50)
 
 set -euo pipefail
 cd "$(dirname "$0")/.."

@@ -3,9 +3,9 @@ CXXFLAGS = -std=c++17 -O3 -DNDEBUG -Wall -Wextra \
     -Isrc/basic -Isrc/enum -Isrc/instance -Isrc/util \
     -Isrc/validator -Isrc/search -Isrc/metaheuristic
 
-# Best-fit, strategic oscillation and Fast Local Search are permanent parts of
-# the algorithm. Guided Local Search, including GFLS, adaptive rounds and
-# persistent penalties, is the only optional feature.
+# O best-fit, a oscilação estratégica e a Fast Local Search (FLS) fazem parte
+# permanente do algoritmo. A Guided Local Search (GLS), já acompanhada da GFLS,
+# das rodadas adaptativas e das penalidades persistentes, é o único recurso opcional.
 GLS ?= 0
 ifneq ($(GLS),0)
 CXXFLAGS += -DENABLE_GLS
