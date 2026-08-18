@@ -16,6 +16,9 @@ using std::vector;
 
 class SolutionValidator {
 public:
+    // Verifica as restrições duras nesta ordem: número de serviços, capacidade
+    // e SLA probabilística. As duas primeiras são baratas e eliminam candidatos
+    // antes do cálculo mais custoso da distribuição de probabilidade.
     bool isFeasible(const InstanceMatrix& instance, Allocation& allocation,
                     int Vmax, int Smax, double Pmax, ProbabilityScenario& scenario,
                     bool verifyProbRestriction) {
@@ -38,6 +41,8 @@ public:
         }
 
         if (scenario == ProbabilityScenario::Ps) {
+            // Quando o movimento não pode piorar a SLA, o chamador pode evitar
+            // o cálculo dinâmico informando verifyProbRestriction=false.
             if (!verifyProbRestriction)
                 return true;
 
@@ -46,7 +51,8 @@ public:
             const vector<double>& probabilities = instance.getProbabilityPerService();
             const vector<int>& alloc = allocation.getAllocation();
 
-            // Buffer DP achatado e reutilizado entre chamadas (evita alocação no heap por chamada).
+            // A DP calcula a distribuição Poisson-binomial do número de violações.
+            // O buffer achatado é reutilizado para evitar alocações repetidas no heap.
             int cols = vMax + 1;
             int needed = (numberOfTasks + 1) * cols;
             if ((int)dp_.size() < needed) dp_.assign(needed, 0.0);
@@ -88,6 +94,41 @@ public:
         }
 
         return false;
+    }
+
+    // Retorna quanto a probabilidade de violação excede Pmax (0 se viável).
+    // Roda o DP completo sem early-exit para medir o grau de inviabilidade.
+    double computeViolationExcess(const InstanceMatrix& instance, const Allocation& allocation,
+                                  int Vmax, double Pmax, ProbabilityScenario& scenario) {
+        if (scenario != ProbabilityScenario::Ps)
+            return 0.0;
+
+        int numberOfTasks = instance.getNumberOfTasks();
+        const vector<double>& probabilities = instance.getProbabilityPerService();
+        const vector<int>& alloc = allocation.getAllocation();
+
+        int cols = Vmax + 1;
+        int needed = (numberOfTasks + 1) * cols;
+        if ((int)dp_.size() < needed) dp_.assign(needed, 0.0);
+        auto cell = [&](int i, int k) -> double& { return dp_[i * cols + k]; };
+
+        for (int i = 0; i <= numberOfTasks; ++i) {
+            double probi_1 = 0.0;
+            if (i > 0 && (i - 1) < (int)alloc.size() && alloc[i - 1] >= 0)
+                probi_1 = probabilities[alloc[i - 1]];
+            for (int k = 0; k <= Vmax; ++k) {
+                if (i == 0 && k == 0)       cell(i, k) = 1.0;
+                else if (k > i)             cell(i, k) = 0.0;
+                else if (k == 0)            cell(i, k) = cell(i-1, k) * (1 - probi_1);
+                else                        cell(i, k) = cell(i-1, k) * (1 - probi_1) + cell(i-1, k-1) * probi_1;
+            }
+        }
+
+        double pNotViolateSLA = 0.0;
+        for (int k = 0; k <= Vmax; ++k)
+            pNotViolateSLA += cell(numberOfTasks, k);
+
+        return std::max(0.0, (1.0 - pNotViolateSLA) - Pmax);
     }
 
     vector<int> removeEqual(const std::vector<int>& a_arr, const std::vector<int>& b_arr) {

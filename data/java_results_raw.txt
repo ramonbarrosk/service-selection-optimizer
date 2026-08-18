@@ -2,472 +2,112 @@ Executing instance 1
 r 0
 r 1
 r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
 Executing instance 2
 r 0
 r 1
 r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
 Executing instance 3
 r 0
 r 1
 r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
 Executing instance 4
 r 0
 r 1
 r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
 Executing instance 5
 r 0
 r 1
 r 2
-Executing instance 6
-r 0
-r 1
-r 2
-Executing instance 7
-r 0
-r 1
-r 2
-Executing instance 8
-r 0
-r 1
-r 2
-Executing instance 9
-r 0
-r 1
-r 2
-Executing instance 10
-r 0
-r 1
-r 2
-Executing instance 11
-r 0
-r 1
-r 2
-Executing instance 12
-r 0
-r 1
-r 2
-Executing instance 13
-r 0
-r 1
-r 2
-Executing instance 14
-r 0
-r 1
-r 2
-Executing instance 15
-r 0
-r 1
-r 2
-Executing instance 16
-r 0
-r 1
-r 2
-Executing instance 17
-r 0
-r 1
-r 2
-Executing instance 18
-r 0
-r 1
-r 2
-Executing instance 19
-r 0
-r 1
-r 2
-Executing instance 20
-r 0
-r 1
-r 2
-Executing instance 21
-r 0
-r 1
-r 2
-Executing instance 22
-r 0
-r 1
-r 2
-Executing instance 23
-r 0
-r 1
-r 2
-Executing instance 24
-r 0
-r 1
-r 2
-Executing instance 25
-r 0
-r 1
-r 2
-Executing instance 26
-r 0
-r 1
-r 2
-Executing instance 27
-r 0
-r 1
-r 2
-Executing instance 28
-r 0
-r 1
-r 2
-Executing instance 29
-r 0
-r 1
-r 2
-Executing instance 30
-r 0
-r 1
-r 2
-Executing instance 31
-r 0
-r 1
-r 2
-Executing instance 32
-r 0
-r 1
-r 2
-Executing instance 33
-r 0
-r 1
-r 2
-Executing instance 34
-r 0
-r 1
-r 2
-Executing instance 35
-r 0
-r 1
-r 2
-Executing instance 36
-r 0
-r 1
-r 2
-Executing instance 37
-r 0
-r 1
-r 2
-Executing instance 38
-r 0
-r 1
-r 2
-Executing instance 39
-r 0
-r 1
-r 2
-Executing instance 40
-r 0
-r 1
-r 2
-Executing instance 41
-r 0
-r 1
-r 2
-Executing instance 42
-r 0
-r 1
-r 2
-Executing instance 43
-r 0
-r 1
-r 2
-Executing instance 44
-r 0
-r 1
-r 2
-Executing instance 45
-r 0
-r 1
-r 2
-Executing instance 46
-r 0
-r 1
-r 2
-Executing instance 47
-r 0
-r 1
-r 2
-Executing instance 48
-r 0
-r 1
-r 2
-Executing instance 49
-r 0
-r 1
-r 2
-Executing instance 50
-r 0
-r 1
-r 2
-Executing instance 51
-r 0
-r 1
-r 2
-Executing instance 52
-r 0
-r 1
-r 2
-Executing instance 53
-r 0
-r 1
-r 2
-Executing instance 54
-r 0
-r 1
-r 2
-Executing instance 55
-r 0
-r 1
-r 2
-Executing instance 56
-r 0
-r 1
-r 2
-Executing instance 57
-r 0
-r 1
-r 2
-Executing instance 58
-r 0
-r 1
-r 2
-Executing instance 59
-r 0
-r 1
-r 2
-Executing instance 60
-r 0
-r 1
-r 2
-Executing instance 61
-r 0
-r 1
-r 2
-Executing instance 62
-r 0
-r 1
-r 2
-Executing instance 63
-r 0
-r 1
-r 2
-Executing instance 64
-r 0
-r 1
-r 2
-Executing instance 65
-r 0
-r 1
-r 2
-Executing instance 66
-r 0
-r 1
-r 2
-Executing instance 67
-r 0
-r 1
-r 2
-Executing instance 68
-r 0
-r 1
-r 2
-Executing instance 69
-r 0
-r 1
-r 2
-Executing instance 70
-r 0
-r 1
-r 2
-Executing instance 71
-r 0
-r 1
-r 2
-Executing instance 72
-r 0
-r 1
-r 2
-Executing instance 73
-r 0
-r 1
-r 2
-Executing instance 74
-r 0
-r 1
-r 2
-Executing instance 75
-r 0
-r 1
-r 2
-Executing instance 76
-r 0
-r 1
-r 2
-Executing instance 77
-r 0
-r 1
-r 2
-Executing instance 78
-r 0
-r 1
-r 2
-Executing instance 79
-r 0
-r 1
-r 2
-Executing instance 80
-r 0
-r 1
-r 2
-Executing instance 81
-r 0
-r 1
-r 2
-Executing instance 82
-r 0
-r 1
-r 2
-Executing instance 83
-r 0
-r 1
-r 2
-Executing instance 84
-r 0
-r 1
-r 2
-Executing instance 85
-r 0
-r 1
-r 2
-Executing instance 86
-r 0
-r 1
-r 2
-Executing instance 87
-r 0
-r 1
-r 2
-Executing instance 88
-r 0
-r 1
-r 2
-Executing instance 89
-r 0
-r 1
-r 2
-Executing instance 90
-r 0
-r 1
-r 2
-Executing instance 91
-r 0
-r 1
-r 2
-Executing instance 92
-r 0
-r 1
-r 2
-Executing instance 93
-r 0
-r 1
-r 2
-Executing instance 94
-r 0
-r 1
-r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
 Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost |  Mean time to Best 
-Instance_10_10_120 101 0.52 101.0 101.0 2.645 
-Instance_10_10_135 100 1.02 100.0 100.0 3.754 
-Instance_10_10_144 101 0.51 101.0 101.0 2.485333333333333 
-Instance_10_10_110 100 1.04 100.0 100.0 3.518 
-Instance_10_10_60 100 1.78 101.0 101.0 3.984 
-Instance_10_10_137 101 0.58 102.33333333333334 101.0 3.582333333333333 
-Instance_10_10_19 102 1.59 107.66666666666666 107.0 2.788666666666667 
-Instance_10_10_35 101 1.13 105.33333333333334 102.0 2.467666666666667 
-Instance_10_10_88 101 0.94 103.0 101.0 2.816666666666667 
-Instance_10_10_85 101 0.55 101.0 101.0 4.263666666666667 
-Instance_10_10_67 100 1.43 100.0 100.0 4.698333333333333 
-Instance_10_10_145 101 0.52 101.33333333333331 101.0 3.255666666666667 
-Instance_10_10_42 100 2.14 100.33333333333334 100.0 9.895 
-Instance_10_10_1 100 1.16 100.66666666666666 100.0 2.982666666666667 
-Instance_10_10_142 100 0.58 101.66666666666669 100.0 3.6296666666666666 
-Instance_10_10_125 100 0.58 104.0 102.0 2.8833333333333333 
-Instance_10_10_31 100 0.53 100.0 100.0 2.6413333333333333 
-Instance_10_10_51 100 0.53 100.0 100.0 4.043333333333333 
-Instance_10_10_54 100 0.51 100.0 100.0 2.737 
-Instance_10_10_23 100 1.04 100.0 100.0 3.6673333333333336 
-Instance_10_10_40 101 3.43 106.0 106.0 6.840666666666667 
-Instance_10_10_11 100 53.08 118.0 118.0 10.94 
-Instance_10_10_24 102 1.81 113.33333333333334 112.0 2.6123333333333334 
-Instance_10_10_21 101 1.02 101.66666666666666 101.0 2.4303333333333335 
-Instance_10_10_89 101 1.0 101.0 101.0 2.606333333333333 
-Instance_10_10_22 101 0.54 103.0 102.0 3.4223333333333334 
-Instance_10_10_132 103 0.98 103.0 103.0 4.430666666666667 
-Instance_10_10_102 100 1.29 100.0 100.0 2.812 
-Instance_10_10_15 100 1.27 100.0 100.0 6.124333333333334 
-Instance_10_10_149 100 0.53 100.0 100.0 3.273666666666667 
-Instance_10_10_150 100 0.61 101.0 101.0 2.436 
-Instance_10_10_17 100 1.05 102.0 102.0 6.432666666666666 
-Instance_10_10_81 101 1.89 101.0 101.0 2.239 
-Instance_10_10_76 100 0.51 100.0 100.0 1.8536666666666666 
-Instance_10_10_84 100 0.54 100.0 100.0 2.9766666666666666 
-Instance_10_10_28 102 124.9 297.0 297.0 19.166 
-Instance_10_10_33 100 1.52 100.33333333333334 100.0 3.171 
-Instance_10_10_50 100 0.98 101.66666666666669 100.0 2.473 
-Instance_10_10_98 101 1.21 103.0 103.0 3.6473333333333335 
-Instance_10_10_124 102 2.03 104.33333333333334 102.0 6.745 
-Instance_10_10_123 100 0.51 100.0 100.0 2.3813333333333335 
-Instance_10_10_77 103 1.62 107.0 103.0 3.2859999999999996 
-Instance_10_10_87 101 0.62 101.0 101.0 2.8536666666666664 
-Instance_10_10_73 102 1.03 108.0 106.0 2.516 
-Instance_10_10_109 101 0.54 101.0 101.0 3.799666666666667 
-Instance_10_10_129 100 60.67 133.0 133.0 10.699 
-Instance_10_10_7 100 0.52 101.0 100.0 2.0356666666666667 
-Instance_10_10_29 101 1.0 101.0 101.0 1.7283333333333335 
-Instance_10_10_56 101 1.59 105.66666666666666 101.0 4.664333333333333 
-Instance_10_10_30 102 0.54 102.0 102.0 3.7990000000000004 
-Instance_10_10_8 101 1.03 101.0 101.0 2.3526666666666665 
-Instance_10_10_14 101 1.28 101.0 101.0 3.373666666666667 
-Instance_10_10_52 101 0.98 101.0 101.0 3.221 
-Instance_10_10_5 100 38.78 113.0 112.0 6.609333333333333 
-Instance_10_10_86 102 0.56 104.33333333333331 104.0 2.048666666666667 
-Instance_10_10_57 100 0.55 100.0 100.0 2.891 
-Instance_10_10_111 100 1.03 100.0 100.0 3.8856666666666664 
-Instance_10_10_63 100 0.53 100.0 100.0 2.106 
-Instance_10_10_43 100 0.71 103.0 103.0 3.038 
-Instance_10_10_41 101 0.54 101.0 101.0 2.2646666666666664 
-Instance_10_10_128 101 50.13 188.0 154.0 7.153666666666666 
-Instance_10_10_119 100 1.15 104.0 100.0 2.354 
-Instance_10_10_122 100 0.91 100.0 100.0 1.587 
-Instance_10_10_131 100 0.53 100.0 100.0 3.255333333333333 
-Instance_10_10_13 101 0.53 101.0 101.0 1.7733333333333332 
-Instance_10_10_47 100 1.46 100.0 100.0 2.148333333333333 
-Instance_10_10_64 100 0.52 100.0 100.0 2.062666666666667 
-Instance_10_10_90 100 1.31 102.66666666666666 102.0 1.573666666666667 
-Instance_10_10_138 100 0.53 100.0 100.0 2.427 
-Instance_10_10_65 100 1.11 106.0 106.0 2.237666666666667 
-Instance_10_10_148 101 0.52 101.0 101.0 3.5353333333333334 
-Instance_10_10_116 101 0.53 101.0 101.0 2.399666666666667 
-Instance_10_10_44 101 0.91 103.0 101.0 1.9766666666666666 
-Instance_10_10_146 100 1.72 123.33333333333334 110.0 2.297666666666667 
-Instance_10_10_58 100 0.5 103.66666666666669 100.0 3.571333333333333 
-Instance_10_10_95 100 0.96 100.33333333333334 100.0 4.352333333333333 
-Instance_10_10_101 100 74.44 112.0 112.0 11.725333333333333 
-Instance_10_10_130 101 0.61 101.66666666666666 101.0 2.8366666666666664 
-Instance_10_10_100 101 216.78 510.0 477.0 23.707 
-Instance_10_10_121 100 2.54 104.0 100.0 8.889333333333333 
-Instance_10_10_108 100 1.47 100.0 100.0 2.1703333333333337 
-Instance_10_10_74 100 0.96 100.0 100.0 2.1246666666666667 
-Instance_10_10_75 100 0.51 100.0 100.0 3.585 
-Instance_10_10_141 101 0.52 101.0 101.0 2.287 
-Instance_10_10_25 103 0.56 103.0 103.0 2.3826666666666667 
-Instance_10_10_99 100 1.0 100.66666666666669 100.0 2.2276666666666665 
-Instance_10_10_45 100 0.95 100.0 100.0 4.494333333333333 
-Instance_10_10_134 101 1.2 105.33333333333334 102.0 3.071333333333333 
-Instance_10_10_82 100 0.51 100.0 100.0 2.9486666666666665 
-Instance_10_10_147 100 80.7 206.66666666666666 188.0 10.978666666666665 
-Instance_10_10_48 101 1.0 101.0 101.0 2.5406666666666666 
-Instance_10_10_127 100 0.8 108.66666666666667 105.0 2.464 
-Instance_10_10_143 100 0.95 105.0 102.0 2.7853333333333334 
-Instance_10_10_61 101 1.66 106.0 101.0 2.5186666666666664 
-MEAN BEST COSTS: 109.64893617021279
-REACHED OPTIMALL: 67/94 instances
+Instance_10_10_11 100 53.08 111.19999999999999 106.0 9.458249999999998 
+Instance_10_10_28 102 124.9 320.45 300.0 17.06575 
+Instance_10_10_100 101 216.78 452.74999999999983 339.0 26.408300000000008 
+Instance_10_10_128 101 50.13 155.54999999999998 154.0 6.884549999999999 
+Instance_10_10_129 100 60.67 115.84999999999995 112.0 11.841149999999999 
+MEAN BEST COSTS: 202.20000000000002
+REACHED OPTIMALL: 0/5 instances

@@ -1,0 +1,29 @@
+Executing instance 1
+r 0
+r 1
+r 2
+Executing instance 2
+r 0
+r 1
+r 2
+Executing instance 3
+r 0
+r 1
+r 2
+Executing instance 4
+r 0
+r 1
+r 2
+Executing instance 5
+r 0
+r 1
+r 2
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal
+Instance_10_10_11 100 53.08 155.333 154 5.39433 NO
+Instance_10_10_28 102 124.9 165 165 12.8887 NO
+Instance_10_10_100 101 216.78 176.333 168 21.98 NO
+Instance_10_10_128 101 50.13 161 161 5.43133 NO
+Instance_10_10_129 100 60.67 159 159 6.57333 NO
+
+MEAN BEST COSTS: 161.4
+REACHED OPTIMALL: 0/5 instances

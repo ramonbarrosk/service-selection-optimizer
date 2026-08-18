@@ -1,0 +1,521 @@
+Executing instance 1
+r 0
+r 1
+r 2
+Executing instance 2
+r 0
+r 1
+r 2
+Executing instance 3
+r 0
+r 1
+r 2
+Executing instance 4
+r 0
+r 1
+r 2
+Executing instance 5
+r 0
+r 1
+r 2
+Executing instance 6
+r 0
+r 1
+r 2
+Executing instance 7
+r 0
+r 1
+r 2
+Executing instance 8
+r 0
+r 1
+r 2
+Executing instance 9
+r 0
+r 1
+r 2
+Executing instance 10
+r 0
+r 1
+r 2
+Executing instance 11
+r 0
+r 1
+r 2
+Executing instance 12
+r 0
+r 1
+r 2
+Executing instance 13
+r 0
+r 1
+r 2
+Executing instance 14
+r 0
+r 1
+r 2
+Executing instance 15
+r 0
+r 1
+r 2
+Executing instance 16
+r 0
+r 1
+r 2
+Executing instance 17
+r 0
+r 1
+r 2
+Executing instance 18
+r 0
+r 1
+r 2
+Executing instance 19
+r 0
+r 1
+r 2
+Executing instance 20
+r 0
+r 1
+r 2
+Executing instance 21
+r 0
+r 1
+r 2
+Executing instance 22
+r 0
+r 1
+r 2
+Executing instance 23
+r 0
+r 1
+r 2
+Executing instance 24
+r 0
+r 1
+r 2
+Executing instance 25
+r 0
+r 1
+r 2
+Executing instance 26
+r 0
+r 1
+r 2
+Executing instance 27
+r 0
+r 1
+r 2
+Executing instance 28
+r 0
+r 1
+r 2
+Executing instance 29
+r 0
+r 1
+r 2
+Executing instance 30
+r 0
+r 1
+r 2
+Executing instance 31
+r 0
+r 1
+r 2
+Executing instance 32
+r 0
+r 1
+r 2
+Executing instance 33
+r 0
+r 1
+r 2
+Executing instance 34
+r 0
+r 1
+r 2
+Executing instance 35
+r 0
+r 1
+r 2
+Executing instance 36
+r 0
+r 1
+r 2
+Executing instance 37
+r 0
+r 1
+r 2
+Executing instance 38
+r 0
+r 1
+r 2
+Executing instance 39
+r 0
+r 1
+r 2
+Executing instance 40
+r 0
+r 1
+r 2
+Executing instance 41
+r 0
+r 1
+r 2
+Executing instance 42
+r 0
+r 1
+r 2
+Executing instance 43
+r 0
+r 1
+r 2
+Executing instance 44
+r 0
+r 1
+r 2
+Executing instance 45
+r 0
+r 1
+r 2
+Executing instance 46
+r 0
+r 1
+r 2
+Executing instance 47
+r 0
+r 1
+r 2
+Executing instance 48
+r 0
+r 1
+r 2
+Executing instance 49
+r 0
+r 1
+r 2
+Executing instance 50
+r 0
+r 1
+r 2
+Executing instance 51
+r 0
+r 1
+r 2
+Executing instance 52
+r 0
+r 1
+r 2
+Executing instance 53
+r 0
+r 1
+r 2
+Executing instance 54
+r 0
+r 1
+r 2
+Executing instance 55
+r 0
+r 1
+r 2
+Executing instance 56
+r 0
+r 1
+r 2
+Executing instance 57
+r 0
+r 1
+r 2
+Executing instance 58
+r 0
+r 1
+r 2
+Executing instance 59
+r 0
+r 1
+r 2
+Executing instance 60
+r 0
+r 1
+r 2
+Executing instance 61
+r 0
+r 1
+r 2
+Executing instance 62
+r 0
+r 1
+r 2
+Executing instance 63
+r 0
+r 1
+r 2
+Executing instance 64
+r 0
+r 1
+r 2
+Executing instance 65
+r 0
+r 1
+r 2
+Executing instance 66
+r 0
+r 1
+r 2
+Executing instance 67
+r 0
+r 1
+r 2
+Executing instance 68
+r 0
+r 1
+r 2
+Executing instance 69
+r 0
+r 1
+r 2
+Executing instance 70
+r 0
+r 1
+r 2
+Executing instance 71
+r 0
+r 1
+r 2
+Executing instance 72
+r 0
+r 1
+r 2
+Executing instance 73
+r 0
+r 1
+r 2
+Executing instance 74
+r 0
+r 1
+r 2
+Executing instance 75
+r 0
+r 1
+r 2
+Executing instance 76
+r 0
+r 1
+r 2
+Executing instance 77
+r 0
+r 1
+r 2
+Executing instance 78
+r 0
+r 1
+r 2
+Executing instance 79
+r 0
+r 1
+r 2
+Executing instance 80
+r 0
+r 1
+r 2
+Executing instance 81
+r 0
+r 1
+r 2
+Executing instance 82
+r 0
+r 1
+r 2
+Executing instance 83
+r 0
+r 1
+r 2
+Executing instance 84
+r 0
+r 1
+r 2
+Executing instance 85
+r 0
+r 1
+r 2
+Executing instance 86
+r 0
+r 1
+r 2
+Executing instance 87
+r 0
+r 1
+r 2
+Executing instance 88
+r 0
+r 1
+r 2
+Executing instance 89
+r 0
+r 1
+r 2
+Executing instance 90
+r 0
+r 1
+r 2
+Executing instance 91
+r 0
+r 1
+r 2
+Executing instance 92
+r 0
+r 1
+r 2
+Executing instance 93
+r 0
+r 1
+r 2
+Executing instance 94
+r 0
+r 1
+r 2
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal
+Instance_10_10_1 100 1.16 101.333 101 1.39367 NO
+Instance_10_10_100 101 216.78 142 142 27.501 NO
+Instance_10_10_101 100 74.44 131.333 129 10.352 NO
+Instance_10_10_102 100 1.29 102 102 1.76033 NO
+Instance_10_10_108 100 1.47 105 105 1.56767 NO
+Instance_10_10_109 101 0.54 101 101 1.33333e-06 YES (3/3)
+Instance_10_10_11 100 53.08 133 133 8.34267 NO
+Instance_10_10_110 100 1.04 100 100 0.000351333 YES (3/3)
+Instance_10_10_111 100 1.03 104 104 1.64533 NO
+Instance_10_10_116 101 0.53 101 101 3.33333e-06 YES (3/3)
+Instance_10_10_119 100 1.15 109.333 109 1.47667 NO
+Instance_10_10_120 101 0.52 101 101 1.23333e-05 YES (3/3)
+Instance_10_10_121 100 2.54 107 107 9.99633 NO
+Instance_10_10_122 100 0.91 105 105 1.23633 NO
+Instance_10_10_123 100 0.51 100 100 1e-06 YES (3/3)
+Instance_10_10_124 102 2.03 108 108 9.06233 NO
+Instance_10_10_125 100 0.58 105.333 105 1.41167 NO
+Instance_10_10_127 100 0.8 101.333 101 2.051 NO
+Instance_10_10_128 101 50.13 125 125 11.7157 NO
+Instance_10_10_129 100 60.67 125.333 123 11.0987 NO
+Instance_10_10_13 101 0.53 101.333 101 0.437854 YES (2/3)
+Instance_10_10_130 101 0.61 101 101 1.66667e-06 YES (3/3)
+Instance_10_10_131 100 0.53 100 100 1e-06 YES (3/3)
+Instance_10_10_132 103 0.98 103 103 2.66667e-06 YES (3/3)
+Instance_10_10_134 101 1.2 102.333 102 2.06067 NO
+Instance_10_10_135 100 1.02 100 100 0.00039 YES (3/3)
+Instance_10_10_137 101 0.58 105 105 1.50133 NO
+Instance_10_10_138 100 0.53 100 100 2.46667e-05 YES (3/3)
+Instance_10_10_14 101 1.28 102 102 1.36267 NO
+Instance_10_10_141 101 0.52 101 101 1.33333e-06 YES (3/3)
+Instance_10_10_142 100 0.58 103.667 103 1.24 NO
+Instance_10_10_143 100 0.95 102.333 102 1.36267 NO
+Instance_10_10_144 101 0.51 101 101 1e-06 YES (3/3)
+Instance_10_10_145 101 0.52 101 101 6.66667e-06 YES (3/3)
+Instance_10_10_146 100 1.72 107 107 2.148 NO
+Instance_10_10_147 100 80.7 119 119 9.655 NO
+Instance_10_10_148 101 0.52 101 101 1e-06 YES (3/3)
+Instance_10_10_149 100 0.53 100 100 1e-06 YES (3/3)
+Instance_10_10_15 100 1.27 100.333 100 0.539361 YES (2/3)
+Instance_10_10_150 100 0.61 108 108 1.546 NO
+Instance_10_10_17 100 1.05 100 100 0.000138 YES (3/3)
+Instance_10_10_19 102 1.59 107 107 1.44833 NO
+Instance_10_10_21 101 1.02 101 101 1.66667e-05 YES (3/3)
+Instance_10_10_22 101 0.54 101 101 1.43333e-05 YES (3/3)
+Instance_10_10_23 100 1.04 101 101 1.46133 NO
+Instance_10_10_24 102 1.81 108 108 2.305 NO
+Instance_10_10_25 103 0.56 103 103 3e-06 YES (3/3)
+Instance_10_10_28 102 124.9 143 143 22.6007 NO
+Instance_10_10_29 101 1 105.333 105 1.302 NO
+Instance_10_10_30 102 0.54 102 102 1e-06 YES (3/3)
+Instance_10_10_31 100 0.53 100 100 1.33333e-06 YES (3/3)
+Instance_10_10_33 100 1.52 104.667 104 1.48767 NO
+Instance_10_10_35 101 1.13 107 107 1.721 NO
+Instance_10_10_40 101 3.43 120.667 120 10.554 NO
+Instance_10_10_41 101 0.54 101 101 1e-06 YES (3/3)
+Instance_10_10_42 100 2.14 102 102 7.27233 NO
+Instance_10_10_43 100 0.71 103 103 2.13567 NO
+Instance_10_10_44 101 0.91 104.333 104 1.28433 NO
+Instance_10_10_45 100 0.95 100 100 6.6e-05 YES (3/3)
+Instance_10_10_47 100 1.46 101.333 101 1.39967 NO
+Instance_10_10_48 101 1 101 101 1e-06 YES (3/3)
+Instance_10_10_5 100 38.78 109 109 10.3933 NO
+Instance_10_10_50 100 0.98 104 104 1.61933 NO
+Instance_10_10_51 100 0.53 100 100 1.33333e-06 YES (3/3)
+Instance_10_10_52 101 0.98 101 101 4.33333e-06 YES (3/3)
+Instance_10_10_54 100 0.51 100 100 1.33333e-06 YES (3/3)
+Instance_10_10_56 101 1.59 101 101 9.33333e-06 YES (3/3)
+Instance_10_10_57 100 0.55 100 100 1e-06 YES (3/3)
+Instance_10_10_58 100 0.5 100 100 1.33333e-06 YES (3/3)
+Instance_10_10_60 100 1.78 101 101 2.21433 NO
+Instance_10_10_61 101 1.66 103.667 103 2.08067 NO
+Instance_10_10_63 100 0.53 100 100 2.96667e-05 YES (3/3)
+Instance_10_10_64 100 0.52 100 100 5.66667e-06 YES (3/3)
+Instance_10_10_65 100 1.11 106 106 1.77433 NO
+Instance_10_10_67 100 1.43 100 100 3.33333e-06 YES (3/3)
+Instance_10_10_7 100 0.52 103 103 1.32067 NO
+Instance_10_10_73 102 1.03 105.333 105 1.909 NO
+Instance_10_10_74 100 0.96 100 100 1e-06 YES (3/3)
+Instance_10_10_75 100 0.51 100 100 1.66667e-06 YES (3/3)
+Instance_10_10_76 100 0.51 103 103 1.33067 NO
+Instance_10_10_77 103 1.62 105 105 1.773 NO
+Instance_10_10_8 101 1.03 101 101 2.3e-05 YES (3/3)
+Instance_10_10_81 101 1.89 104 104 1.762 NO
+Instance_10_10_82 100 0.51 100 100 1e-06 YES (3/3)
+Instance_10_10_84 100 0.54 100 100 1.33333e-06 YES (3/3)
+Instance_10_10_85 101 0.55 101 101 3.66667e-06 YES (3/3)
+Instance_10_10_86 102 0.56 102 102 5.33333e-06 YES (3/3)
+Instance_10_10_87 101 0.62 101 101 0.000267 YES (3/3)
+Instance_10_10_88 101 0.94 101 101 4.93333e-05 YES (3/3)
+Instance_10_10_89 101 1 101 101 0.0002 YES (3/3)
+Instance_10_10_90 100 1.31 105.333 105 1.29267 NO
+Instance_10_10_95 100 0.96 101.333 101 1.80567 NO
+Instance_10_10_98 101 1.21 106.667 106 2.21967 NO
+Instance_10_10_99 100 1 100 100 1e-05 YES (3/3)
+
+MEAN BEST COSTS: 104.649
+REACHED OPTIMALL: 46/94 instances
+INSTANCES THAT REACHED OPTIMAL:
+  Instance_10_10_109
+  Instance_10_10_110
+  Instance_10_10_116
+  Instance_10_10_120
+  Instance_10_10_123
+  Instance_10_10_13
+  Instance_10_10_130
+  Instance_10_10_131
+  Instance_10_10_132
+  Instance_10_10_135
+  Instance_10_10_138
+  Instance_10_10_141
+  Instance_10_10_144
+  Instance_10_10_145
+  Instance_10_10_148
+  Instance_10_10_149
+  Instance_10_10_15
+  Instance_10_10_17
+  Instance_10_10_21
+  Instance_10_10_22
+  Instance_10_10_25
+  Instance_10_10_30
+  Instance_10_10_31
+  Instance_10_10_41
+  Instance_10_10_45
+  Instance_10_10_48
+  Instance_10_10_51
+  Instance_10_10_52
+  Instance_10_10_54
+  Instance_10_10_56
+  Instance_10_10_57
+  Instance_10_10_58
+  Instance_10_10_63
+  Instance_10_10_64
+  Instance_10_10_67
+  Instance_10_10_74
+  Instance_10_10_75
+  Instance_10_10_8
+  Instance_10_10_82
+  Instance_10_10_84
+  Instance_10_10_85
+  Instance_10_10_86
+  Instance_10_10_87
+  Instance_10_10_88
+  Instance_10_10_89
+  Instance_10_10_99
