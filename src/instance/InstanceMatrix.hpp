@@ -9,6 +9,8 @@
 using std::vector;
 
 
+// Reúne todos os dados fixos de uma instância: custos, probabilidades, consumos,
+// limites das restrições e, quando conhecido, o ótimo usado na avaliação.
 class InstanceMatrix {
 public:
     InstanceMatrix() : 
@@ -54,7 +56,7 @@ public:
     int getNumberOfTasks() const { return numberOfTasks; }
     void setNumberOfTasks(int num) { numberOfTasks = num; }
 
-    // -- Probability -- 
+    // -- Probabilidades de violação da SLA --
 
     double getServiceProb(int serviceId) const {
         return probabilityPerService.at(serviceId);
@@ -74,7 +76,7 @@ public:
         probabilityPerService[serviceId] = probability;
     }
 
-    // -- Resource Capacity -- 
+    // -- Capacidade de recurso dos serviços --
 
     const vector<int>& getServResourceCapacity() const { return servResourceCapacity; }
     void setServiceFullResourceCapacity(const vector<int>& capacities) { servResourceCapacity = capacities; }
@@ -83,7 +85,7 @@ public:
         servResourceCapacity[serviceId] = capacity;
     }
 
-    // -- Task Consumption --
+    // -- Consumo de recurso das tarefas --
 
     const vector<int>& getTaskConsumption() const { return taskResourceConsumption; }
 
@@ -99,7 +101,7 @@ public:
         taskResourceConsumption[taskId] = consumption;
     }
 
-    // -- Cost Matrix --
+    // -- Matriz de custos tarefa--serviço --
 
     void setTaskCost(int taskId, int serviceId, int taskCost) {
         costMatrix[taskId][serviceId] = taskCost;
@@ -109,7 +111,7 @@ public:
         return costMatrix.at(taskId).at(serviceId);
     }
 
-    // -- Cost Queries --
+    // -- Consultas auxiliares de custo --
 
     double getMinCostForTask(int taskId) const {
        double minCost = std::numeric_limits<double>::max();

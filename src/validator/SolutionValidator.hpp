@@ -16,6 +16,9 @@ using std::vector;
 
 class SolutionValidator {
 public:
+    // Verifica as restrições duras nesta ordem: número de serviços, capacidade
+    // e SLA probabilística. As duas primeiras são baratas e eliminam candidatos
+    // antes do cálculo mais custoso da distribuição de probabilidade.
     bool isFeasible(const InstanceMatrix& instance, Allocation& allocation,
                     int Vmax, int Smax, double Pmax, ProbabilityScenario& scenario,
                     bool verifyProbRestriction) {
@@ -38,6 +41,8 @@ public:
         }
 
         if (scenario == ProbabilityScenario::Ps) {
+            // Quando o movimento não pode piorar a SLA, o chamador pode evitar
+            // o cálculo dinâmico informando verifyProbRestriction=false.
             if (!verifyProbRestriction)
                 return true;
 
@@ -46,7 +51,8 @@ public:
             const vector<double>& probabilities = instance.getProbabilityPerService();
             const vector<int>& alloc = allocation.getAllocation();
 
-            // Buffer DP achatado e reutilizado entre chamadas (evita alocação no heap por chamada).
+            // A DP calcula a distribuição Poisson-binomial do número de violações.
+            // O buffer achatado é reutilizado para evitar alocações repetidas no heap.
             int cols = vMax + 1;
             int needed = (numberOfTasks + 1) * cols;
             if ((int)dp_.size() < needed) dp_.assign(needed, 0.0);

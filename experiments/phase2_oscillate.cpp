@@ -1,12 +1,12 @@
-// Fase 2: testa as propostas (1) construtivo best-fit cheapest-feasible e
+// Fase 2: testa as propostas (1) construtivo best-fit com escolha do mais barato viável e
 // (2) busca local com OSCILACAO ESTRATEGICA (aceita violar capacidade sob
 // penalidade adaptativa) para ver se quebram o teto de ~70% na instancia 100.
 //
 // Mede, por instancia:
-//   (B)  best-fit guloso (1 construcao)            -> baseline ja conhecido
-//   (D)  best-fit + VND atual (cost-only)          -> teto atual ~70%
-//   (F)  best-fit + oscillating search             -> proposta (2)
-//   (G)  multistart best-fit-RCL + oscillating x N -> proposta (1)+(2)
+//   (B)  best-fit guloso (1 construção)            -> referência já conhecida
+//   (D)  best-fit + VND atual (somente custo)       -> teto atual ~70%
+//   (F)  best-fit + busca por oscilação             -> proposta (2)
+//   (G)  múltiplos inícios best-fit-RCL + oscilação -> propostas (1) e (2)
 
 #include <iostream>
 #include <fstream>
@@ -51,7 +51,7 @@ static InstanceMatrix readInstance(int n) {
 static int loadOptimal(int n){ std::ifstream f("data/Log/Instance_10_10_"+std::to_string(n)); string last,l;
     while(std::getline(f,l)) last=l; auto p=last.rfind("= "); return p!=string::npos?std::stoi(last.substr(p+2)):0; }
 
-// ---- construtivo best-fit decreasing + cheapest-feasible (alpha>0 => RCL) ----
+// ---- construtivo best-fit decrescente + mais barato viável (alpha>0 => RCL) ----
 static Allocation buildCheapestFeasibleAlloc(const InstanceMatrix& m, double alpha, bool& ok) {
     SolutionValidator val; ProbabilityScenario sc = ProbabilityScenario::Ps;
     int n = m.getNumberOfTasks(), S = m.getNumberOfServices();
@@ -108,7 +108,7 @@ struct Oscillator {
         return val.computeViolationExcess(m, a, Vmax, Pmax, sc) <= 1e-12;
     }
 
-    // Descida best-improvement no objetivo penalizado f. Retorna true se mexeu.
+    // Descida por melhor melhoria no objetivo penalizado f. Devolve verdadeiro se alterou a solução.
     bool penalizedDescent(Allocation& a, double lambda) {
         bool any=false, improved=true;
         int n=m.getNumberOfTasks(), S=m.getNumberOfServices();
@@ -233,7 +233,7 @@ int main(int argc, char** argv){
              << "  ("<<dt<<"s)"<<endl;
     }
     {
-        // (G) ILS com oscilacao: N reinicios pareados por seed, cada um best-fit + ILS-osc.
+        // (G) ILS com oscilação: N reinícios pareados por semente, cada um com best-fit + ILS-osc.
         double best=std::numeric_limits<double>::max(), sum=0; int succ=0;
         auto t0=std::chrono::steady_clock::now();
         for(int r=0;r<N;r++){
@@ -248,7 +248,8 @@ int main(int argc, char** argv){
         double mean = succ? sum/succ : 0;
         cout << "(G) ILS-osc x"<<N<<" (iters="<<rounds<<")    : best="<<(succ?std::to_string((int)best):"FAILED")
              << (succ?gap(best,opt):"")<<"  (feasible "<<succ<<"/"<<N<<", "<<dt<<"s)"<<endl;
-        // linha machine-readable p/ o visualize.py: nome opt opt_time mean best time
+        // Linha legível por máquina para visualize.py: nome, ótimo, tempo do ótimo,
+        // média, melhor resultado e tempo.
         if(succ)
             cout << "RESULT Instance_10_10_"<<inst<<" "<<opt<<" 0 "
                  << mean<<" "<<best<<" "<<dt<<endl;

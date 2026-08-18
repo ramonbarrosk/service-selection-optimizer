@@ -28,6 +28,7 @@ using std::string;
 using std::vector;
 
 struct AlgResult {
+    // Estatísticas agregadas das repetições de uma única instância.
     double bestResult  = 0;
     double meanResult  = 0;
     double timeToBest  = 0;
@@ -62,6 +63,7 @@ static double envDouble(const char* name, double fallback) {
 }
 
 static InstanceMatrix readInstance(int instanceCont) {
+    // Converte o arquivo textual da instância para as estruturas usadas pelo algoritmo.
     string path = "data/instances/Instance_10_10_" + std::to_string(instanceCont);
     std::ifstream file(path);
     if (!file.is_open())
@@ -109,6 +111,7 @@ static InstanceMatrix readInstance(int instanceCont) {
 }
 
 static void loadInstanceLog(InstanceMatrix& instance, const string& filename) {
+    // O log de referência fornece o custo ótimo conhecido e o tempo do método exato.
     std::ifstream logFile("data/Log/" + filename);
     if (!logFile.is_open()) return;
 
@@ -127,7 +130,7 @@ static void loadInstanceLog(InstanceMatrix& instance, const string& filename) {
         }
         lastLine = logLine;
     }
-    // Last line: "... = <optimalCost>"
+    // A última linha do log tem o formato "... = <custo ótimo>".
     auto eq = lastLine.rfind("= ");
     if (eq != string::npos)
         instance.setOptimalCost(std::stoi(lastLine.substr(eq + 2)));
@@ -154,7 +157,7 @@ static void initiateInstanceArray(vector<InstanceMatrix>& instanceArray,
     for (const auto& filePath : files) {
         string filename = filePath.filename().string();
 
-        // Parse instance number from "Instance_10_10_<N>"
+        // Extrai o número N do nome "Instance_10_10_<N>".
         vector<string> parts;
         std::istringstream ss(filename);
         string part;
@@ -169,13 +172,15 @@ static void initiateInstanceArray(vector<InstanceMatrix>& instanceArray,
 
 int main() {
     const double programStartTime = nowMs();
+    // Parâmetros de experimento configuráveis por variáveis de ambiente.
+    // SSO_TIME_SECONDS limita cada repetição de cada instância, não o programa inteiro.
     const int executionsPerInstance = envInt("SSO_REPETITIONS", 3);
     const int configuredIterations = envInt("SSO_ITERATIONS", -1);
     const double timeScale = envDouble("SSO_TIME_SCALE", 1.0);
     const double fixedTimeSeconds = envDouble("SSO_TIME_SECONDS", -1.0);
     const bool deadlineDisabled = envInt("SSO_DISABLE_DEADLINE", 0) != 0;
 
-    // To run all instances, leave targetInstances empty: {}
+    // Para executar todas as instâncias, mantenha targetInstances vazio: {}.
     const vector<int> targetInstances = {};
     const int numberOfInstances = targetInstances.empty() ? 94
                                                           : static_cast<int>(targetInstances.size());
@@ -235,6 +240,8 @@ int main() {
             cout << "r " << r << endl;
 
             double instanceInitTime = nowMs();
+            // Cada repetição recebe seu próprio deadline absoluto. O ILS e a GLS
+            // consultam esse valor internamente para encerrar de forma organizada.
             const double repetitionDeadlineMs = deadlineDisabled
                 ? std::numeric_limits<double>::infinity()
                 : instanceInitTime + execTimePerRepetition * 1000.0;
@@ -245,8 +252,9 @@ int main() {
             do {
                 ILS ils;
                 // ILS#1 (réplica de ArticleResult.java, repo dos autores):
-                // First Improvement, Perturbation Move, Neighborhood Move (código: SWAP), alpha = 0.4.
-                // Muito mais rápido que ILS#3 (Best Improvement) com resultado comparável.
+                // Primeira melhoria, perturbação MOVE e vizinhança configurada como SWAP; alpha = 0,4.
+                // É mais rápido que o ILS#3, que usa a estratégia de melhor melhoria,
+                // e produz um resultado comparável.
                 all = ils.ILS_run(instance, 0.4, ITERATIONS, instanceInitTime,
                     ProbabilityScenario::Ps,
                     ImprovementHeuristic::COST_IMPROVEMENT,
@@ -277,6 +285,7 @@ int main() {
                           repetitionBestCost == static_cast<double>(instance.getOptimalCost()))
                 ? repetitionTimeToBest : repetitionExecTime;
 
+            // Acumula média, melhor custo e tempo até a melhor solução entre repetições.
             if (algResults[instanceID].bestResult == 0) {
                 algResults[instanceID].bestResult = repetitionBestCost;
                 algResults[instanceID].meanResult = repetitionBestCost / executionsPerInstance;
@@ -296,6 +305,7 @@ int main() {
         instanceID++;
     }
 
+    // Ao final, imprime uma linha por instância e um resumo agregado do experimento.
     cout << "Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal" << endl;
     double instances    = static_cast<double>(algResults.size());
     double meanBestCost = 0;

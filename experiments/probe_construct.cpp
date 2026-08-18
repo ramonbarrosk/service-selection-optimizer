@@ -1,10 +1,10 @@
 // Probe: compara a QUALIDADE da solução inicial viável de tres construtores,
 // para checar se existe caminho ate perto do otimo numa instancia apertada.
 //
-//   (A) prob-based  : o fallback deterministico atual (ordena por prob de SLA)
-//   (B) cheapest-feasible (best-fit decreasing por recurso): ordena tarefas por
+//   (A) baseado em probabilidade: alternativa determinística atual (ordena por SLA)
+//   (B) mais barato viável (best-fit decrescente por recurso): ordena tarefas por
 //       consumo decrescente e atribui o serviço mais BARATO que mantem viavel.
-//   (C) cheapest-feasible randomizado (RCL sobre custo) -> varios sorteios.
+//   (C) mais barato viável aleatório (RCL sobre custo) -> vários sorteios.
 
 #include <iostream>
 #include <fstream>
@@ -48,7 +48,7 @@ static InstanceMatrix readInstance(int n) {
 static int loadOptimal(int n){ std::ifstream f("data/Log/Instance_10_10_"+std::to_string(n)); string last,l;
     while(std::getline(f,l)) last=l; auto p=last.rfind("= "); return p!=string::npos?std::stoi(last.substr(p+2)):0; }
 
-// cheapest-feasible best-fit decreasing. alpha>0 => RCL randomizada sobre custo.
+// Best-fit decrescente com escolha do mais barato viável. alpha>0 => RCL aleatória por custo.
 static Allocation buildCheapestFeasibleAlloc(const InstanceMatrix& m, double alpha, bool& ok);
 static double buildCheapestFeasible(const InstanceMatrix& m, double alpha, bool& ok) {
     Allocation a = buildCheapestFeasibleAlloc(m, alpha, ok);
@@ -64,7 +64,7 @@ static Allocation buildCheapestFeasibleAlloc(const InstanceMatrix& m, double alp
     ok = true;
     for (int taskId : order) {
         Task task(taskId, m.getTaskConsumption(taskId));
-        vector<std::pair<int,int>> svc; svc.reserve(S);       // (cost, servId)
+        vector<std::pair<int,int>> svc; svc.reserve(S);       // (custo, identificador do serviço)
         for (int s=0;s<S;s++) svc.emplace_back(m.getTaskCost(taskId,s), s);
         std::sort(svc.begin(),svc.end());
         bool placed=false;

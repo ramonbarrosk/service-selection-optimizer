@@ -13,7 +13,8 @@ public:
         return gen;
     }
 
-    // Reseeds the thread-local engine for reproducible/paired experiments.
+    // Redefine a semente do gerador local ao fluxo de execução. Isso permite repetir um
+    // experimento ou comparar duas configurações usando as mesmas escolhas aleatórias.
     static void setSeed(unsigned s) { engine().seed(s); }
 
     static int getRandomInt(int min, int max) {

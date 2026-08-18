@@ -27,6 +27,8 @@ class ILS {
     SolutionValidator validator;
 
 #ifdef ENABLE_GLS
+    // Parâmetros fixos da GLS. Após cada chamada sem melhoria, o número de
+    // rodadas dobra de 30 para 60 e depois para o teto de 120.
     static constexpr double kGlsAlpha = 0.3;
     static constexpr int kGlsRounds = 30;
     static constexpr int kGlsMaxRounds = 120;
@@ -40,12 +42,17 @@ class ILS {
 public:
     ILS() = default;
 
-    // ILS with best-fit construction, FLS and strategic oscillation.
+    // Fluxo principal do ILS: constrói uma solução, melhora-a e então alterna
+    // perturbação e busca local. A melhor solução global é guardada separadamente
+    // da solução corrente usada para continuar a caminhada.
     Allocation ILS_run(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode, double deadlineMs = std::numeric_limits<double>::infinity()) {
         const auto deadlineReached = [&]() {
+            // O deadline usa relógio monotônico para não ser afetado por ajustes
+            // no relógio do sistema durante a execução.
             return std::isfinite(deadlineMs) && nowMs() >= deadlineMs;
         };
-        // Start from best-fit and fall back to the historical greedy constructor.
+        // Primeiro tenta o best-fit determinístico. Se ele não conseguir alocar
+        // todas as tarefas, usa o construtivo guloso histórico como alternativa.
         bool bfOk = false;
         Allocation currentAllocation = bestFitInitialSolution(matrix, 0.0, bfOk);
         if (!bfOk)
@@ -57,6 +64,8 @@ public:
         bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
 
 #ifdef ENABLE_GLS
+        // A GLS só é chamada após um período de estagnação. O mesmo objeto é
+        // mantido durante todo o ILS para preservar as penalidades aprendidas.
         int iterationsWithoutImprovement = 0;
         int consecutiveUnsuccessfulGlsCalls = 0;
         GuidedLocalSearcher guidedSearcher;
@@ -69,10 +78,11 @@ public:
 
             Allocation perturbed = pertubation(currentAllocation, matrix, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, i, IT_MAX, pertubationMode);
 
+            // A busca de vizinhança combina descida por custo, FLS e oscilação.
             Allocation improved = neighborhoodSearch(matrix, perturbed, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
 
-            // Let the ILS walk advance through different basins even when the
-            // candidate does not improve the global best.
+            // A caminhada do ILS avança mesmo quando o candidato não supera a
+            // melhor solução global. Isso permite explorar outras bacias de atração.
             currentAllocation = improved;
 
             if (improved.getCurrentCost() < bestCost) {
@@ -92,6 +102,8 @@ public:
 #ifdef ENABLE_GLS
             if (iterationsWithoutImprovement >= glsStagnationThreshold
                     && !deadlineReached()) {
+                // Chamadas consecutivas sem ganho recebem mais rodadas para
+                // diversificar com maior intensidade: 30, 60 e no máximo 120.
                 const int multiplier =
                     1 << std::min(consecutiveUnsuccessfulGlsCalls, 2);
                 const int guidedRounds = std::min(
@@ -102,8 +114,8 @@ public:
                     matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
                     kGlsAlpha, guidedRounds, true, deadlineMs);
 
-                // Polish the best real-cost solution returned by GLS using the
-                // established local-search and strategic-oscillation pipeline.
+                // A GLS devolve sua melhor solução pelo custo real. Em seguida,
+                // aplicamos novamente a busca local e a oscilação para refiná-la.
                 if (!deadlineReached()) {
                     guided = neighborhoodSearch(
                         matrix, guided, matrix.getVmax(), matrix.getSmax(),
@@ -130,7 +142,8 @@ public:
         }
 
 #ifdef ENABLE_GLS
-        // Intensify the best basin one last time with the learned penalties.
+        // Intensificação final: reaproveita as penalidades aprendidas pela GLS
+        // para explorar uma última vez a região da melhor solução encontrada.
         const int finalGuidedRounds = std::min(
             kGlsMaxRounds,
             kGlsRounds * (1 << std::min(consecutiveUnsuccessfulGlsCalls, 2)));
@@ -167,6 +180,7 @@ public:
 
 private:
     Allocation pertubation(Allocation allocation, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX, PerturbationMode pertubationMode) {
+        // A perturbação afasta a solução do mínimo local antes da próxima descida.
         if (pertubationMode == PerturbationMode::MOVE) {
             return pertubationMove(std::move(allocation), matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
         } else if (pertubationMode == PerturbationMode::SWAP) {
@@ -177,6 +191,7 @@ private:
 
     Allocation pertubationSwap(Allocation allocation, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX) {
         int numberOfTasks = matrix.getNumberOfTasks();
+        // A intensidade cai gradualmente de aproximadamente 6 para 1 troca.
         int limit = static_cast<int>(6 - (i / (IT_MAX * 1.0)) * 5);
 
         for (int j = 0; j < limit;) {
@@ -214,6 +229,7 @@ private:
     Allocation pertubationMove(Allocation allocation, const InstanceMatrix& matrix, int Vmax, int Smax, double Pmax, ProbabilityScenario pScenario, int i, int IT_MAX) {
         int numberOfTasks = matrix.getNumberOfTasks();
         int numberOfServices = matrix.getNumberOfServices(); // todos os serviços disponíveis, não apenas os já em uso
+        // No começo diversifica mais; perto do fim faz alterações menores.
         int limit = static_cast<int>(6 - (i / (IT_MAX * 1.0)) * 5);
 
         for (int j = 0; j < limit;) {
@@ -254,7 +270,8 @@ private:
                 GenericSearcher searcher;
                 if (improvementHeuristic == ImprovementHeuristic::COST_IMPROVEMENT)
                     searcher.costImprovement(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition, improvementMode);
-                // Rebalance capacity after the cost-only descent.
+                // Depois da descida por custo, a oscilação tenta reorganizar a
+                // capacidade e escapar de mínimos locais estritamente viáveis.
                 searcher.oscillationImprovement(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario);
             } else if (mode == SearchMode::VND) {
                 Allocation r = GenericSearcher().VND(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition);
@@ -265,7 +282,7 @@ private:
             return currentAllocation;
 
     }
-    // ───────────── Construtivo best-fit-decrescente + cheapest-feasible (proposta 1) ─────────────
+    // ───────── Construtivo best-fit decrescente + mais barato viável (proposta 1) ─────────
     //
     // Constrói uma solução inicial "empacotada" — a estrutura que a oscilação (proposta 2)
     // precisa para render nas instâncias apertadas. A ideia tem dois passos:
@@ -273,7 +290,7 @@ private:
     //   1. "decreasing": aloca as tarefas MAIS PESADAS (maior consumo de recurso) primeiro.
     //      É a sabedoria do bin-packing First-Fit-Decreasing: encaixe as "pedras grandes"
     //      antes, senão elas não cabem em lugar nenhum no fim.
-    //   2. "cheapest-feasible": para cada tarefa, escolhe o serviço MAIS BARATO que mantém a
+    //   2. "mais barato viável": para cada tarefa, escolhe o serviço MAIS BARATO que mantém a
     //      solução viável em TODAS as restrições (capacidade, Smax, SLA) — checa a viabilidade
     //      ANTES de fixar a alocação, em vez de alocar cego e reparar depois.
     //
@@ -290,7 +307,8 @@ private:
         const int Vmax = matrix.getVmax();
         const int Smax = matrix.getSmax();
         const double Pmax = matrix.getPmax();
-        ProbabilityScenario scenario = ProbabilityScenario::Ps;   // isFeasible pede ref não-const
+        // O validador recebe o cenário por referência não constante.
+        ProbabilityScenario scenario = ProbabilityScenario::Ps;
 
         Allocation allocation;
 
@@ -316,7 +334,7 @@ private:
             // Monta a ORDEM DE TENTATIVA (índices em servicesByCost):
             //   - Lista candidata RCL = serviços com custo ≤ limiar (todos, se alpha==0);
             //   - se alpha>0, embaralha a RCL para diversificar a construção;
-            //   - anexa os demais serviços depois, como fallback, ainda em ordem de custo.
+            //   - anexa os demais serviços depois, como alternativa, ainda em ordem de custo.
             const int cheapestCost = servicesByCost.front().first;
             const int priciestCost = servicesByCost.back().first;
             const int rclThreshold = cheapestCost + (int)(alpha * (priciestCost - cheapestCost));

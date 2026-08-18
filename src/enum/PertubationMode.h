@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 
+// Movimento usado para afastar o ILS do mínimo local atual.
 enum class PerturbationMode {
     MOVE,
     SWAP,
