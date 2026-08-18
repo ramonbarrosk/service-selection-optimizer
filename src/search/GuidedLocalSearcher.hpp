@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <limits>
 #include <vector>
@@ -24,6 +25,16 @@ class GuidedLocalSearcher {
 #endif
     double lambda_ = 0.0;
 
+    static double nowMs() {
+        using namespace std::chrono;
+        return static_cast<double>(duration_cast<milliseconds>(
+            steady_clock::now().time_since_epoch()).count());
+    }
+
+    static bool deadlineReached(double deadlineMs) {
+        return std::isfinite(deadlineMs) && nowMs() >= deadlineMs;
+    }
+
     void updateBest(const Allocation& candidate, Allocation& best) const {
         if (candidate.getCurrentCost() < best.getCurrentCost() - 1e-9)
             best = candidate;
@@ -32,7 +43,7 @@ class GuidedLocalSearcher {
     bool guidedDescent(Allocation& current, Allocation& best,
                        const InstanceMatrix& matrix,
                        int Vmax, int Smax, double Pmax,
-                       ProbabilityScenario pScenario) {
+                       ProbabilityScenario pScenario, double deadlineMs) {
         const int numberOfTasks = matrix.getNumberOfTasks();
         const int numberOfServices = matrix.getNumberOfServices();
         bool appliedAnyMove = false;
@@ -47,14 +58,22 @@ class GuidedLocalSearcher {
 #endif
 
         while (true) {
+            if (deadlineReached(deadlineMs))
+                break;
+
             enum class MoveKind { NONE, MOVE, SWAP };
             MoveKind bestKind = MoveKind::NONE;
             double bestDelta = -1e-9;
             int bestTask1 = -1;
             int bestTask2 = -1;
             int bestService = -1;
+            bool timedOut = false;
 
             for (int taskId = 0; taskId < numberOfTasks; ++taskId) {
+                if (deadlineReached(deadlineMs)) {
+                    timedOut = true;
+                    break;
+                }
                 const int oldService = current.getServiceForTask(taskId);
                 if (oldService < 0)
                     continue;
@@ -94,7 +113,14 @@ class GuidedLocalSearcher {
                 }
             }
 
+            if (timedOut)
+                break;
+
             for (int task1 = 0; task1 < numberOfTasks; ++task1) {
+                if (deadlineReached(deadlineMs)) {
+                    timedOut = true;
+                    break;
+                }
                 const int service1 = current.getServiceForTask(task1);
                 if (service1 < 0)
                     continue;
@@ -141,6 +167,9 @@ class GuidedLocalSearcher {
                     }
                 }
             }
+
+            if (timedOut)
+                break;
 
             if (bestKind == MoveKind::NONE) {
 #ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
@@ -218,7 +247,8 @@ public:
                        int Vmax, int Smax, double Pmax,
                        ProbabilityScenario pScenario,
                        double alpha = 0.3, int penaltyRounds = 30,
-                       bool preservePenalties = false) {
+                       bool preservePenalties = false,
+                       double deadlineMs = std::numeric_limits<double>::infinity()) {
         const int numberOfTasks = matrix.getNumberOfTasks();
         const int numberOfServices = matrix.getNumberOfServices();
         const bool dimensionsChanged =
@@ -240,7 +270,12 @@ public:
         Allocation current = initial;
         Allocation best = initial;
         for (int round = 0; round < penaltyRounds; ++round) {
-            guidedDescent(current, best, matrix, Vmax, Smax, Pmax, pScenario);
+            if (deadlineReached(deadlineMs))
+                break;
+            guidedDescent(current, best, matrix, Vmax, Smax, Pmax, pScenario,
+                          deadlineMs);
+            if (deadlineReached(deadlineMs))
+                break;
             penalizeMaximumUtilityFeatures(current, matrix);
         }
         return best;

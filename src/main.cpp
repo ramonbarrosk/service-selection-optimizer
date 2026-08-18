@@ -173,6 +173,7 @@ int main() {
     const int configuredIterations = envInt("SSO_ITERATIONS", -1);
     const double timeScale = envDouble("SSO_TIME_SCALE", 1.0);
     const double fixedTimeSeconds = envDouble("SSO_TIME_SECONDS", -1.0);
+    const bool deadlineDisabled = envInt("SSO_DISABLE_DEADLINE", 0) != 0;
 
     // To run all instances, leave targetInstances empty: {}
     const vector<int> targetInstances = {};
@@ -196,14 +197,13 @@ int main() {
              ? std::to_string(configuredIterations) : "adaptive")
          << " timeScale=" << timeScale
          << " fixedTimeSeconds=" << (fixedTimeSeconds > 0.0
-             ? std::to_string(fixedTimeSeconds) : "adaptive") << endl;
+             ? std::to_string(fixedTimeSeconds) : "adaptive")
+         << " deadline=" << (deadlineDisabled ? "disabled" : "internal")
+         << endl;
 
     for (const InstanceMatrix& instance : instanceArray) {
         algResults[instanceID].instanceName = instance.getInstanceName();
         cout << "Executing instance " << instanceID << endl;
-
-        double bestCost   = std::numeric_limits<double>::max();
-        double timeToBest = -1;
 
         const bool hasLogData = instance.getOptimalExecTime() > 0;
 
@@ -235,6 +235,11 @@ int main() {
             cout << "r " << r << endl;
 
             double instanceInitTime = nowMs();
+            const double repetitionDeadlineMs = deadlineDisabled
+                ? std::numeric_limits<double>::infinity()
+                : instanceInitTime + execTimePerRepetition * 1000.0;
+            double repetitionBestCost = std::numeric_limits<double>::max();
+            double repetitionTimeToBest = -1;
             Allocation all;
 
             do {
@@ -248,40 +253,43 @@ int main() {
                     SearchMode::LOCAL_SEARCH,
                     ImprovementCondition::FIRST_IMPROVEMENT,
                     ImprovementMode::SWAP,
-                    PerturbationMode::MOVE);
+                    PerturbationMode::MOVE,
+                    repetitionDeadlineMs);
 
-                if (all.getCurrentCost() < bestCost) {
-                    bestCost   = all.getCurrentCost();
-                    timeToBest = all.getTimeToBest();
+                if (all.getCurrentCost() < repetitionBestCost) {
+                    repetitionBestCost = all.getCurrentCost();
+                    repetitionTimeToBest = all.getTimeToBest();
                 }
 
                 if (instance.getOptimalCost() > 0 &&
                     all.getCurrentCost() == static_cast<double>(instance.getOptimalCost())) {
-                    timeToBest = all.getTimeToBest();
+                    repetitionTimeToBest = all.getTimeToBest();
                     break;
                 }
 
-            } while ((nowMs() - instanceInitTime) / 1000.0 <= execTimePerRepetition);
+            } while (!deadlineDisabled
+                     && (nowMs() - instanceInitTime) / 1000.0
+                            <= execTimePerRepetition);
 
             double repetitionExecTime = nowMs() - instanceInitTime;
 
-            timeToBest = (instance.getOptimalCost() > 0 &&
-                          bestCost == static_cast<double>(instance.getOptimalCost()))
-                ? timeToBest : repetitionExecTime;
+            repetitionTimeToBest = (instance.getOptimalCost() > 0 &&
+                          repetitionBestCost == static_cast<double>(instance.getOptimalCost()))
+                ? repetitionTimeToBest : repetitionExecTime;
 
             if (algResults[instanceID].bestResult == 0) {
-                algResults[instanceID].bestResult = bestCost;
-                algResults[instanceID].meanResult = bestCost / executionsPerInstance;
-                algResults[instanceID].timeToBest = timeToBest / executionsPerInstance;
+                algResults[instanceID].bestResult = repetitionBestCost;
+                algResults[instanceID].meanResult = repetitionBestCost / executionsPerInstance;
+                algResults[instanceID].timeToBest = repetitionTimeToBest / executionsPerInstance;
             } else {
-                algResults[instanceID].meanResult += bestCost / executionsPerInstance;
-                algResults[instanceID].timeToBest += timeToBest / executionsPerInstance;
-                if (bestCost < algResults[instanceID].bestResult)
-                    algResults[instanceID].bestResult = bestCost;
+                algResults[instanceID].meanResult += repetitionBestCost / executionsPerInstance;
+                algResults[instanceID].timeToBest += repetitionTimeToBest / executionsPerInstance;
+                if (repetitionBestCost < algResults[instanceID].bestResult)
+                    algResults[instanceID].bestResult = repetitionBestCost;
             }
 
             if (instance.getOptimalCost() > 0 &&
-                bestCost == static_cast<double>(instance.getOptimalCost()))
+                repetitionBestCost == static_cast<double>(instance.getOptimalCost()))
                 algResults[instanceID].countBests++;
         }
 

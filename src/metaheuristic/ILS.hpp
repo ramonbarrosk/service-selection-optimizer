@@ -5,6 +5,8 @@
 #include <numeric>
 #include <chrono>
 #include <climits>
+#include <cmath>
+#include <limits>
 #include "Allocation.h"
 #include "InstanceMatrix.hpp"
 #include "SolutionValidator.hpp"
@@ -159,7 +161,10 @@ public:
 
     // ILS Clássico sem restart
 
-    Allocation ILS_run(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode) {
+    Allocation ILS_run(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode, double deadlineMs = std::numeric_limits<double>::infinity()) {
+        const auto deadlineReached = [&]() {
+            return std::isfinite(deadlineMs) && nowMs() >= deadlineMs;
+        };
 #ifdef ENABLE_OSCILLATION
         // Híbrido (proposta 1): parte do construtivo best-fit; cai no guloso se não fechar viável.
         bool bfOk = false;
@@ -183,6 +188,9 @@ public:
 #endif
 
         for (int i = 0; i < IT_MAX; ++i) {
+            if (deadlineReached())
+                break;
+
             Allocation perturbed = pertubation(currentAllocation, matrix, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, i, IT_MAX, pertubationMode);
 
             Allocation improved = neighborhoodSearch(matrix, perturbed, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
@@ -206,7 +214,8 @@ public:
             }
 
 #ifdef ENABLE_GLS
-            if (iterationsWithoutImprovement >= glsStagnationThreshold) {
+            if (iterationsWithoutImprovement >= glsStagnationThreshold
+                    && !deadlineReached()) {
                 int guidedRounds = GLS_ROUNDS;
 #ifdef ENABLE_ADAPTIVE_GLS_ROUNDS
                 const int multiplier =
@@ -223,14 +232,16 @@ public:
                 Allocation guided = guidedSearcher.improve(
                     currentAllocation, matrix,
                     matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
-                    GLS_ALPHA, guidedRounds, preservePenalties);
+                    GLS_ALPHA, guidedRounds, preservePenalties, deadlineMs);
 
                 // Polish the best real-cost solution returned by GLS using the
                 // established local-search and strategic-oscillation pipeline.
-                guided = neighborhoodSearch(
-                    matrix, guided, matrix.getVmax(), matrix.getSmax(),
-                    matrix.getPmax(), pScenario, searchMode,
-                    improvementCondition, ImprovementHeuristic, improvementMode);
+                if (!deadlineReached()) {
+                    guided = neighborhoodSearch(
+                        matrix, guided, matrix.getVmax(), matrix.getSmax(),
+                        matrix.getPmax(), pScenario, searchMode,
+                        improvementCondition, ImprovementHeuristic, improvementMode);
+                }
                 currentAllocation = guided;
 
                 if (guided.getCurrentCost() < bestCost) {
@@ -264,18 +275,22 @@ public:
             GLS_MAX_ROUNDS,
             GLS_ROUNDS * (1 << std::min(consecutiveUnsuccessfulGlsCalls, 2)));
 #endif
-        Allocation guidedBest = guidedSearcher.improve(
-            bestAllocation, matrix,
-            matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
-            GLS_ALPHA, finalGuidedRounds, preserveFinalPenalties);
-        guidedBest = neighborhoodSearch(
-            matrix, guidedBest, matrix.getVmax(), matrix.getSmax(),
-            matrix.getPmax(), pScenario, searchMode, improvementCondition,
-            ImprovementHeuristic, improvementMode);
-        if (guidedBest.getCurrentCost() < bestCost) {
-            bestAllocation = guidedBest;
-            bestAllocation.setTimeToBest(
-                (nowMs() - instanceInitTime) / 1000.0);
+        if (!deadlineReached()) {
+            Allocation guidedBest = guidedSearcher.improve(
+                bestAllocation, matrix,
+                matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
+                GLS_ALPHA, finalGuidedRounds, preserveFinalPenalties, deadlineMs);
+            if (!deadlineReached()) {
+                guidedBest = neighborhoodSearch(
+                    matrix, guidedBest, matrix.getVmax(), matrix.getSmax(),
+                    matrix.getPmax(), pScenario, searchMode, improvementCondition,
+                    ImprovementHeuristic, improvementMode);
+            }
+            if (guidedBest.getCurrentCost() < bestCost) {
+                bestAllocation = guidedBest;
+                bestAllocation.setTimeToBest(
+                    (nowMs() - instanceInitTime) / 1000.0);
+            }
         }
 #endif
 
