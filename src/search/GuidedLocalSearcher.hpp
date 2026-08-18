@@ -18,11 +18,9 @@
 class GuidedLocalSearcher {
     SolutionValidator validator_;
     std::vector<std::vector<int>> penalties_;
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
     // The sub-neighborhood of a service contains every MOVE/SWAP that enters
     // or leaves it. Penalized features reactivate their service neighborhood.
     std::vector<unsigned char> activeServiceNeighborhoods_;
-#endif
     double lambda_ = 0.0;
 
     static double nowMs() {
@@ -48,14 +46,12 @@ class GuidedLocalSearcher {
         const int numberOfServices = matrix.getNumberOfServices();
         bool appliedAnyMove = false;
 
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
         if (static_cast<int>(activeServiceNeighborhoods_.size()) != numberOfServices)
             activeServiceNeighborhoods_.assign(numberOfServices, 1);
         if (std::none_of(activeServiceNeighborhoods_.begin(),
                          activeServiceNeighborhoods_.end(),
                          [](unsigned char active) { return active != 0; }))
             return false;
-#endif
 
         while (true) {
             if (deadlineReached(deadlineMs))
@@ -81,11 +77,9 @@ class GuidedLocalSearcher {
                 for (int newService = 0; newService < numberOfServices; ++newService) {
                     if (newService == oldService)
                         continue;
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
                     if (!activeServiceNeighborhoods_[oldService]
                             && !activeServiceNeighborhoods_[newService])
                         continue;
-#endif
 
                     const double deltaCost =
                         matrix.getTaskCost(taskId, newService)
@@ -129,11 +123,9 @@ class GuidedLocalSearcher {
                     const int service2 = current.getServiceForTask(task2);
                     if (service2 < 0 || service1 == service2)
                         continue;
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
                     if (!activeServiceNeighborhoods_[service1]
                             && !activeServiceNeighborhoods_[service2])
                         continue;
-#endif
 
                     const double deltaCost =
                         matrix.getTaskCost(task1, service2)
@@ -172,24 +164,18 @@ class GuidedLocalSearcher {
                 break;
 
             if (bestKind == MoveKind::NONE) {
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
                 std::fill(activeServiceNeighborhoods_.begin(),
                           activeServiceNeighborhoods_.end(), 0);
-#endif
                 break;
             }
 
             if (bestKind == MoveKind::MOVE) {
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
                 const int oldService = current.getServiceForTask(bestTask1);
-#endif
                 current.replaceService(
                     Task(bestTask1, matrix.getTaskConsumption(bestTask1)),
                     Service(bestService), matrix);
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
                 activeServiceNeighborhoods_[oldService] = 1;
                 activeServiceNeighborhoods_[bestService] = 1;
-#endif
             } else {
                 const int service1 = current.getServiceForTask(bestTask1);
                 const int service2 = current.getServiceForTask(bestTask2);
@@ -199,10 +185,8 @@ class GuidedLocalSearcher {
                 current.replaceService(
                     Task(bestTask2, matrix.getTaskConsumption(bestTask2)),
                     Service(service1), matrix);
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
                 activeServiceNeighborhoods_[service1] = 1;
                 activeServiceNeighborhoods_[service2] = 1;
-#endif
             }
 
             appliedAnyMove = true;
@@ -236,9 +220,7 @@ class GuidedLocalSearcher {
         for (int taskId : selectedTasks) {
             const int serviceId = localMinimum.getServiceForTask(taskId);
             ++penalties_[taskId][serviceId];
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
             activeServiceNeighborhoods_[serviceId] = 1;
-#endif
         }
     }
 
@@ -261,11 +243,9 @@ public:
             lambda_ = alpha * std::max(1.0, initial.getCurrentCost())
                 / std::max(1, numberOfTasks);
         }
-#ifdef ENABLE_GUIDED_FAST_LOCAL_SEARCH
         // Normal search, oscillation and perturbation may change the allocation
         // between calls, so activation bits do not persist with the penalties.
         activeServiceNeighborhoods_.assign(numberOfServices, 1);
-#endif
 
         Allocation current = initial;
         Allocation best = initial;

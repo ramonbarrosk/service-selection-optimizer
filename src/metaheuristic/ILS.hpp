@@ -22,21 +22,15 @@
 #endif
 #include "PertubationMode.h"
 
-#ifndef GLS_ALPHA
-#define GLS_ALPHA 0.3
-#endif
-
-#ifndef GLS_ROUNDS
-#define GLS_ROUNDS 30
-#endif
-
-#ifndef GLS_MAX_ROUNDS
-#define GLS_MAX_ROUNDS 120
-#endif
-
 class ILS {
 
     SolutionValidator validator;
+
+#ifdef ENABLE_GLS
+    static constexpr double kGlsAlpha = 0.3;
+    static constexpr int kGlsRounds = 30;
+    static constexpr int kGlsMaxRounds = 120;
+#endif
 
     static double nowMs() {
         using namespace std::chrono;
@@ -46,134 +40,16 @@ class ILS {
 public:
     ILS() = default;
 
-
-    // ILS com restart se a solução não melhorar por um número determinado de iterações
-
-    Allocation ILSWithRestart(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode) {
-#ifdef ENABLE_OSCILLATION
-        // Híbrido (proposta 1): parte do construtivo best-fit; cai no guloso se não fechar viável.
-        bool bfOk = false;
-        Allocation currentAllocation = bestFitInitialSolution(matrix, 0.0, bfOk);
-        if (!bfOk)
-            currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
-#else
-        Allocation currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
-#endif
-
-        currentAllocation = neighborhoodSearch(matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
-
-        Allocation bestAllocation = currentAllocation;
-        double bestCost = currentAllocation.getCurrentCost();
-        bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
-
-        int contNotImproved = 0;
-        int restartStreak   = 0;  // reinicios consecutivos sem melhora global
-
-        for (int i = 0; i < IT_MAX; ++i) {
-            currentAllocation = pertubation(currentAllocation, matrix, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, i, IT_MAX, pertubationMode);
-
-            currentAllocation = neighborhoodSearch(matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
-
-            if (currentAllocation.getCurrentCost() < bestCost) {
-                bestAllocation = currentAllocation;
-                bestCost = currentAllocation.getCurrentCost();
-                bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
-                contNotImproved = 0;
-                restartStreak   = 0;  // melhora global: volta ao construtivo por custo
-#ifdef INSTRUMENT
-                extern long g_improveTotal, g_improveAfterRestart, g_seenRestart;
-                g_improveTotal++;
-                if (g_seenRestart) g_improveAfterRestart++;
-#endif
-            } else {
-                contNotImproved++;
-            }
-
-            if (contNotImproved > IT_MAX / 10) {
-                contNotImproved = 0;
-#ifdef INSTRUMENT
-                extern long g_restartBranch, g_divePromising, g_diveFeasible, g_adaptiveWpos, g_maxStreak, g_seenRestart;
-                g_restartBranch++;
-                g_seenRestart = 1;
-#endif
-
-                // IGrAl (Caramia 2008): mergulha em soluções inviáveis para escapar do ótimo local.
-                // Em vez de reparar deterministicamente (o que desfaz a diversidade), penaliza a
-                // solução inviável e deixa o VND encontrar o caminho de volta à viabilidade por conta
-                // própria — explorando uma bacia diferente da já varrida.
-                Allocation diveAllocation = pertubationInfeasible(currentAllocation, matrix, matrix.getSmax(), i, IT_MAX);
-
-                double violationExcess = validator.computeViolationExcess(
-                    matrix, diveAllocation, matrix.getVmax(), matrix.getPmax(), pScenario);
-                // λ escala o excesso de violação na mesma ordem de grandeza dos custos:
-                // excesso igual a Pmax ≅ penalidade igual a bestCost.
-                double lambda = bestCost / std::max(matrix.getPmax(), 1e-9);
-                double penalizedCost = diveAllocation.getCurrentCost() + lambda * violationExcess;
-
-                // w cresce com reinicios consecutivos sem melhora: começa guiado por custo
-                // (w=0) e migra progressivamente para guiado por probabilidade (w=1) a cada
-                // reinicio frustrado, diversificando a região de partida da busca.
-#ifdef DISABLE_ADAPTIVE
-                double w = 0.0;   // baseline: construtivo sempre guloso por custo
-#else
-                double w = std::min(0.5, restartStreak / 5.0);
-#endif
-
-#ifdef INSTRUMENT
-                if (w > 0.0) g_adaptiveWpos++;
-                if (penalizedCost < bestCost) g_divePromising++;
-                if (restartStreak > g_maxStreak) g_maxStreak = restartStreak;
-#endif
-
-                if (penalizedCost < bestCost) {
-                    // Dive promissor: roda VND a partir do ponto inviável sem reparar.
-                    // O VND só aceita moves que resultem em soluções viáveis, então migra
-                    // naturalmente para uma região viável diferente da já explorada.
-                    Allocation explored = neighborhoodSearch(matrix, diveAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
-
-                    if (validator.isFeasible(matrix, explored, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, true)) {
-                        if (explored.getCurrentCost() < bestCost) {
-                            bestAllocation = explored;
-                            bestCost = explored.getCurrentCost();
-                            bestAllocation.setTimeToBest((nowMs() - instanceInitTime) / 1000.0);
-                            restartStreak = 0;
-                        }
-                        currentAllocation = explored;
-#ifdef INSTRUMENT
-                        g_diveFeasible++;
-#endif
-                    } else {
-                        // VND não conseguiu voltar à viabilidade — reinicia o construtivo
-                        currentAllocation = restartConstruction(matrix, alpha, w, pScenario);
-                        restartStreak++;
-                    }
-                } else {
-                    // Dive não promissor — reinicia o construtivo
-                    currentAllocation = restartConstruction(matrix, alpha, w, pScenario);
-                    restartStreak++;
-                }
-            }
-        }
-
-        return bestAllocation;
-    }
-
-
-    // ILS Clássico sem restart
-
+    // ILS with best-fit construction, FLS and strategic oscillation.
     Allocation ILS_run(const InstanceMatrix& matrix, double alpha, int IT_MAX, double instanceInitTime, ProbabilityScenario pScenario, ImprovementHeuristic ImprovementHeuristic, SearchMode searchMode, ImprovementCondition improvementCondition, ImprovementMode improvementMode, PerturbationMode pertubationMode, double deadlineMs = std::numeric_limits<double>::infinity()) {
         const auto deadlineReached = [&]() {
             return std::isfinite(deadlineMs) && nowMs() >= deadlineMs;
         };
-#ifdef ENABLE_OSCILLATION
-        // Híbrido (proposta 1): parte do construtivo best-fit; cai no guloso se não fechar viável.
+        // Start from best-fit and fall back to the historical greedy constructor.
         bool bfOk = false;
         Allocation currentAllocation = bestFitInitialSolution(matrix, 0.0, bfOk);
         if (!bfOk)
             currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
-#else
-        Allocation currentAllocation = greedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario);
-#endif
 
         Allocation bestAllocation = neighborhoodSearch(matrix, currentAllocation, matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, searchMode, improvementCondition, ImprovementHeuristic, improvementMode);
         double bestCost = bestAllocation.getCurrentCost();
@@ -216,23 +92,15 @@ public:
 #ifdef ENABLE_GLS
             if (iterationsWithoutImprovement >= glsStagnationThreshold
                     && !deadlineReached()) {
-                int guidedRounds = GLS_ROUNDS;
-#ifdef ENABLE_ADAPTIVE_GLS_ROUNDS
                 const int multiplier =
                     1 << std::min(consecutiveUnsuccessfulGlsCalls, 2);
-                guidedRounds = std::min(
-                    GLS_MAX_ROUNDS, GLS_ROUNDS * multiplier);
-#endif
-#ifdef ENABLE_PERSISTENT_GLS
-                const bool preservePenalties = true;
-#else
-                const bool preservePenalties = false;
-#endif
+                const int guidedRounds = std::min(
+                    kGlsMaxRounds, kGlsRounds * multiplier);
                 const double bestCostBeforeGls = bestCost;
                 Allocation guided = guidedSearcher.improve(
                     currentAllocation, matrix,
                     matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
-                    GLS_ALPHA, guidedRounds, preservePenalties, deadlineMs);
+                    kGlsAlpha, guidedRounds, true, deadlineMs);
 
                 // Polish the best real-cost solution returned by GLS using the
                 // established local-search and strategic-oscillation pipeline.
@@ -262,24 +130,15 @@ public:
         }
 
 #ifdef ENABLE_GLS
-        // Intensify the best basin one last time, retaining the learned
-        // penalties when persistence is enabled.
-#ifdef ENABLE_PERSISTENT_GLS
-        const bool preserveFinalPenalties = true;
-#else
-        const bool preserveFinalPenalties = false;
-#endif
-        int finalGuidedRounds = GLS_ROUNDS;
-#ifdef ENABLE_ADAPTIVE_GLS_ROUNDS
-        finalGuidedRounds = std::min(
-            GLS_MAX_ROUNDS,
-            GLS_ROUNDS * (1 << std::min(consecutiveUnsuccessfulGlsCalls, 2)));
-#endif
+        // Intensify the best basin one last time with the learned penalties.
+        const int finalGuidedRounds = std::min(
+            kGlsMaxRounds,
+            kGlsRounds * (1 << std::min(consecutiveUnsuccessfulGlsCalls, 2)));
         if (!deadlineReached()) {
             Allocation guidedBest = guidedSearcher.improve(
                 bestAllocation, matrix,
                 matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario,
-                GLS_ALPHA, finalGuidedRounds, preserveFinalPenalties, deadlineMs);
+                kGlsAlpha, finalGuidedRounds, true, deadlineMs);
             if (!deadlineReached()) {
                 guidedBest = neighborhoodSearch(
                     matrix, guidedBest, matrix.getVmax(), matrix.getSmax(),
@@ -312,34 +171,6 @@ private:
             return pertubationMove(std::move(allocation), matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
         } else if (pertubationMode == PerturbationMode::SWAP) {
             return pertubationSwap(std::move(allocation), matrix, Vmax, Smax, Pmax, pScenario, i, IT_MAX);
-        } else if (pertubationMode == PerturbationMode::INFEASIBLE_DIVE) {
-            return pertubationInfeasible(std::move(allocation), matrix, Smax, i, IT_MAX);
-        }
-        return allocation;
-    }
-
-    // Perturbação que ignora intencionalmente a restrição de probabilidade.
-    // Análogo ao Small_Perturbation do IGrAl (Caramia 2008): ao ficar preso num ótimo
-    // local, força movimentos que violam Pmax para explorar regiões infeasíveis.
-    // Apenas restrições duras de recurso (Smax, Vres) são mantidas.
-    Allocation pertubationInfeasible(Allocation allocation, const InstanceMatrix& matrix, int Smax, int i, int IT_MAX) {
-        int numberOfTasks    = matrix.getNumberOfTasks();
-        int numberOfServices = matrix.getNumberOfServices();
-        int limit = std::max(1, static_cast<int>(6 - (i / (IT_MAX * 1.0)) * 5));
-
-        for (int j = 0; j < limit; ++j) {
-            int taskId = RandomUtil::getRandomInt(0, numberOfTasks - 1);
-            Task    task(taskId, matrix.getTaskConsumption(taskId));
-            Service oldService(allocation.getServiceForTask(taskId));
-            Service newService(RandomUtil::getRandomInt(0, numberOfServices - 1));
-
-            allocation.replaceService(task, newService, matrix);
-
-            // Desfaz apenas se violar restrições duras (Smax ou capacidade de recurso)
-            if (allocation.getNumberOfEmployedServices() > Smax ||
-                !allocation.respectsResourceRestriction(matrix)) {
-                allocation.replaceService(task, oldService, matrix);
-            }
         }
         return allocation;
     }
@@ -423,118 +254,17 @@ private:
                 GenericSearcher searcher;
                 if (improvementHeuristic == ImprovementHeuristic::COST_IMPROVEMENT)
                     searcher.costImprovement(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition, improvementMode);
-#ifdef ENABLE_OSCILLATION
-                // Híbrido (proposta 2): após a descida cost-only, reequilibra capacidade
-                // via oscilação estratégica. Inócuo em instâncias folgadas, decisivo nas apertadas.
+                // Rebalance capacity after the cost-only descent.
                 searcher.oscillationImprovement(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario);
-#endif
             } else if (mode == SearchMode::VND) {
                 Allocation r = GenericSearcher().VND(currentAllocation, matrix, Vmax, Smax, Pmax, pScenario, improvementCondition);
-#ifdef ENABLE_OSCILLATION
                 GenericSearcher().oscillationImprovement(r, matrix, Vmax, Smax, Pmax, pScenario);
-#endif
                 return r;
             }
 
             return currentAllocation;
 
     }
-    // Construtivo guloso adaptativo: desloca o critério de seleção de custo puro (w=0)
-    // para probabilidade pura (w=1) conforme o número de reinicios consecutivos cresce.
-    // Quando w=0 o comportamento é idêntico ao greedyInitialSolution original.
-    Allocation adaptiveGreedyInitialSolution(const InstanceMatrix& matrix, double alpha,
-            int numberOfTasks, int Vmax, int Smax, double Pmax,
-            ProbabilityScenario pScenario, double w) {
-
-        if (w <= 0.0)
-            return greedyInitialSolution(matrix, alpha, numberOfTasks, Vmax, Smax, Pmax, pScenario);
-
-        Allocation allocation;
-        vector<int> tasksToAllocate;
-        for (int i = 0; i < numberOfTasks; ++i)
-            tasksToAllocate.push_back(i);
-
-        // Intervalo global de probabilidade para normalização [0,1]
-        int nServices = matrix.getNumberOfServices();
-        double minProb = std::numeric_limits<double>::max();
-        double maxProb = std::numeric_limits<double>::lowest();
-        for (int s = 0; s < nServices; ++s) {
-            double p = matrix.getServiceProb(s);
-            minProb = std::min(minProb, p);
-            maxProb = std::max(maxProb, p);
-        }
-        double probRange = (maxProb - minProb) > 1e-9 ? (maxProb - minProb) : 1.0;
-
-        int cont = 0;
-        while (allocation.numberOfTasksAllocated() < numberOfTasks) {
-            if (cont > 3 * numberOfTasks) {
-#ifdef INSTRUMENT
-                extern long g_fallbackAdaptive;
-                g_fallbackAdaptive++;
-#endif
-                return ProbabilityBasedInitialSolution(matrix, alpha, numberOfTasks, Vmax, Smax, Pmax, pScenario);
-            }
-
-            int idx    = RandomUtil::getRandomInt(0, (int)tasksToAllocate.size() - 1);
-            int taskId = tasksToAllocate[idx];
-
-            double minCost  = matrix.getMinCostForTask(taskId);
-            double maxCost  = matrix.getMaxCostForTask(taskId);
-            double costRange = (maxCost - minCost) > 1e-9 ? (maxCost - minCost) : 1.0;
-
-            // Score blended para cada serviço: menor é melhor.
-            // score = (1-w)*custo_norm + w*prob_norm
-            vector<std::pair<double, int>> scored;
-            scored.reserve(nServices);
-            for (int s = 0; s < nServices; ++s) {
-                double costNorm = (matrix.getTaskCost(taskId, s) - minCost) / costRange;
-                double probNorm = (matrix.getServiceProb(s)       - minProb) / probRange;
-                scored.emplace_back((1.0 - w) * costNorm + w * probNorm, s);
-            }
-            std::sort(scored.begin(), scored.end());
-
-            // RCL: serviços com score dentro do limiar alpha (mesmo mecanismo do GRASP original)
-            double minScore   = scored.front().first;
-            double maxScore   = scored.back().first;
-            double threshold  = minScore + alpha * (maxScore - minScore);
-
-            vector<Service> rcl;
-            for (auto& [score, sId] : scored) {
-                if (score > threshold) break;  // lista ordenada, pode parar cedo
-                rcl.emplace_back(sId, matrix.getTaskCost(taskId, sId));
-            }
-
-            Service chosen = RandomUtil::getRandomService(rcl);
-            Task    task(taskId, matrix.getTaskConsumption(taskId));
-
-            tasksToAllocate.erase(tasksToAllocate.begin() + idx);
-            allocation.addTask(task, chosen, matrix);
-
-            if (!validator.isFeasible(matrix, allocation, Vmax, Smax, Pmax, pScenario, true)) {
-                allocation.removeTask(task, matrix);
-                tasksToAllocate.push_back(taskId);
-            }
-
-            cont++;
-        }
-
-        return allocation;
-    }
-
-    // Reconstrução usada nos restarts. No modo híbrido usa best-fit randomizado
-    // (RCL α=0.3) para diversificar; sem a flag mantém o construtivo adaptativo original.
-    Allocation restartConstruction(const InstanceMatrix& matrix, double alpha, double w, ProbabilityScenario pScenario) {
-#ifdef ENABLE_OSCILLATION
-        (void)w;
-        bool ok = false;
-        Allocation a = bestFitInitialSolution(matrix, 0.3, ok);
-        if (ok) return a;
-        return adaptiveGreedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, w);
-#else
-        return adaptiveGreedyInitialSolution(matrix, alpha, matrix.getNumberOfTasks(), matrix.getVmax(), matrix.getSmax(), matrix.getPmax(), pScenario, w);
-#endif
-    }
-
     // ───────────── Construtivo best-fit-decrescente + cheapest-feasible (proposta 1) ─────────────
     //
     // Constrói uma solução inicial "empacotada" — a estrutura que a oscilação (proposta 2)
@@ -547,10 +277,10 @@ private:
     //      solução viável em TODAS as restrições (capacidade, Smax, SLA) — checa a viabilidade
     //      ANTES de fixar a alocação, em vez de alocar cego e reparar depois.
     //
-    // Parâmetro `alpha` (diversificação GRASP/RCL, usado nos restarts):
+    // Parâmetro `alpha` para diversificação GRASP/RCL:
     //   - alpha == 0 → determinístico: sempre tenta do serviço mais barato ao mais caro.
     //   - alpha  > 0 → entre os serviços "baratos o suficiente" (custo ≤ limiar RCL), tenta
-    //                  numa ordem ALEATÓRIA, gerando soluções iniciais diferentes por restart.
+    //                  numa ordem ALEATÓRIA, gerando soluções iniciais diferentes.
     //
     // `feasibleComplete` sai `false` se alguma tarefa não coube em nenhum serviço (instância
     // apertada demais para o construtivo) — o chamador então cai no guloso original.
@@ -585,7 +315,7 @@ private:
 
             // Monta a ORDEM DE TENTATIVA (índices em servicesByCost):
             //   - Lista candidata RCL = serviços com custo ≤ limiar (todos, se alpha==0);
-            //   - se alpha>0, embaralha a RCL (diversifica os restarts);
+            //   - se alpha>0, embaralha a RCL para diversificar a construção;
             //   - anexa os demais serviços depois, como fallback, ainda em ordem de custo.
             const int cheapestCost = servicesByCost.front().first;
             const int priciestCost = servicesByCost.back().first;
@@ -634,10 +364,6 @@ private:
 
         while (allocation.numberOfTasksAllocated() < numberOfTasks) {
             if (cont > 3 * numberOfTasks) {
-#ifdef INSTRUMENT
-                extern long g_fallbackGreedy;
-                g_fallbackGreedy++;
-#endif
                 return ProbabilityBasedInitialSolution(matrix, alpha, numberOfTasks, Vmax, Smax, Pmax, pScenario);
             }
 
