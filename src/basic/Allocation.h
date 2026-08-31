@@ -99,6 +99,10 @@ public:
     // estratégica para medir sobrecarga de capacidade sem reconstruir.
     const vector<int>& getResourcePerService() const { return resourcePerService_; }
 
+    // serviceId -> quantidade de tarefas. Permite validar MOVE e Smax sem
+    // aplicar e desfazer temporariamente cada movimento candidato.
+    const vector<int>& getTaskCountPerService() const { return employedServices_; }
+
     // taskId -> serviceId; -1 quando não alocado.
     const vector<int>& getAllocation() const { return allocation_; }
 
