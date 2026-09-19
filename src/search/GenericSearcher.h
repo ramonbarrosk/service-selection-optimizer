@@ -6,6 +6,8 @@
 #include <climits>
 #include <limits>
 #include <algorithm>
+#include <chrono>
+#include <cmath>
 #include "Allocation.h"
 #include "InstanceMatrix.hpp"
 #include "SolutionValidator.hpp"
@@ -44,7 +46,8 @@ public:
     // solução viável mais barata; caso contrário, deixa `solution` intacta.
     bool oscillationImprovement(Allocation& solution, const InstanceMatrix& matrix,
                                 int Vmax, int Smax, double Pmax,
-                                ProbabilityScenario pScenario, int oscillationRounds = 12) {
+                                ProbabilityScenario pScenario, int oscillationRounds = 12,
+                                double deadlineMs = std::numeric_limits<double>::infinity()) {
         const int Vres = matrix.getVres();
         const double startingCost = solution.getCurrentCost();
 
@@ -63,7 +66,10 @@ public:
         double lambda = std::max(1.0, meanMinCost * 2.0);
 
         for (int round = 0; round < oscillationRounds; ++round) {
-            descendOnPenalizedObjective(candidate, matrix, Vres, Vmax, Smax, Pmax, pScenario, lambda);
+            if (deadlineReached(deadlineMs))
+                break;
+            descendOnPenalizedObjective(candidate, matrix, Vres, Vmax, Smax,
+                                         Pmax, pScenario, lambda, deadlineMs);
 
             if (totalCapacityOverload(candidate, Vres) == 0) {          // caiu numa região viável
                 if (candidate.getCurrentCost() < bestFeasibleCost) {
@@ -78,7 +84,11 @@ public:
         }
 
         // Descida final com λ alto para garantir que a solução termine viável.
-        descendOnPenalizedObjective(candidate, matrix, Vres, Vmax, Smax, Pmax, pScenario, lambda * 8.0);
+        if (!deadlineReached(deadlineMs)) {
+            descendOnPenalizedObjective(candidate, matrix, Vres, Vmax, Smax,
+                                         Pmax, pScenario, lambda * 8.0,
+                                         deadlineMs);
+        }
         if (totalCapacityOverload(candidate, Vres) == 0 && candidate.getCurrentCost() < bestFeasibleCost) {
             bestFeasible = candidate;
             bestFeasibleCost = candidate.getCurrentCost();
@@ -136,6 +146,16 @@ public:
     }
 
 private:
+    static double monotonicNowMs() {
+        using namespace std::chrono;
+        return static_cast<double>(duration_cast<milliseconds>(
+            steady_clock::now().time_since_epoch()).count());
+    }
+
+    static bool deadlineReached(double deadlineMs) {
+        return std::isfinite(deadlineMs) && monotonicNowMs() >= deadlineMs;
+    }
+
     // ───────────────────────── FLS: sub-vizinhanças com bit de ativação ─────────────────────────
     //
     // Índice reverso serviço -> tarefas nele alocadas. Não vive em Allocation (que é copiada por
@@ -698,13 +718,14 @@ private:
     // que os violaria é descartado antes de ser aceito.
     bool descendOnPenalizedObjective(Allocation& allocation, const InstanceMatrix& matrix,
                                      int Vres, int Vmax, int Smax, double Pmax,
-                                     ProbabilityScenario pScenario, double lambda) {
+                                     ProbabilityScenario pScenario, double lambda,
+                                     double deadlineMs = std::numeric_limits<double>::infinity()) {
         const int numberOfTasks    = matrix.getNumberOfTasks();
         const int numberOfServices = matrix.getNumberOfServices();
 
         bool appliedAnyMove = false;
         bool improvedThisPass = true;
-        while (improvedThisPass) {
+        while (improvedThisPass && !deadlineReached(deadlineMs)) {
             improvedThisPass = false;
 
             int bestTask = -1, bestService = -1;
@@ -712,6 +733,8 @@ private:
 
             const auto& taskToService = allocation.getAllocation();
             for (int taskId = 0; taskId < numberOfTasks; ++taskId) {
+                if (deadlineReached(deadlineMs))
+                    break;
                 int currentService = taskToService[taskId];
                 if (currentService < 0) continue;
                 int consumption = matrix.getTaskConsumption(taskId);
