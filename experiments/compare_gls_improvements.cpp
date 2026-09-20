@@ -174,9 +174,21 @@ void loadOptimum(InstanceMatrix& instance, int id) {
                                  + std::to_string(id));
     std::string line;
     std::string lastLine;
-    while (std::getline(file, line))
+    while (std::getline(file, line)) {
+        if (line.rfind("Total", 0) == 0) {
+            const auto equalTotal = line.find('=');
+            const auto seconds = line.find("sec");
+            if (equalTotal != std::string::npos) {
+                const std::string value = line.substr(
+                    equalTotal + 1,
+                    seconds == std::string::npos
+                        ? std::string::npos : seconds - equalTotal - 1);
+                instance.setOptimalExecTime(std::stod(value));
+            }
+        }
         if (!line.empty())
             lastLine = line;
+    }
     const auto equal = lastLine.rfind("= ");
     if (equal == std::string::npos)
         throw std::runtime_error("Ótimo ausente no log da instância "
@@ -488,6 +500,9 @@ int main() {
     const int repetitions = envInt("SSO_REPETITIONS", 3);
     const int baseSeed = envInt("SSO_SEED", 20260831);
     const std::vector<double> budgets = selectedBudgets();
+    const char* articleRaw = std::getenv("SSO_ARTICLE_PROTOCOL");
+    const bool articleProtocol = articleRaw && *articleRaw
+        && std::string(articleRaw) != "0";
     const std::string outputPath = envString(
         "SSO_EXPERIMENT_OUTPUT",
         "data/experiments/gls_improvements_difficult5.csv");
@@ -500,7 +515,9 @@ int main() {
               << " | orçamentos:";
     for (double budget : budgets)
         std::cout << ' ' << budget << "s";
-    std::cout << " por variante\n";
+    std::cout << (articleProtocol
+        ? " por variante (orçamento do artigo por instância)\n"
+        : " por variante\n");
 
     std::vector<Row> rows;
     rows.reserve(experimentInstances.size() * experimentVariants.size()
@@ -510,6 +527,11 @@ int main() {
       for (int instanceId : experimentInstances) {
         InstanceMatrix matrix = readInstance(instanceId);
         loadOptimum(matrix, instanceId);
+        const double articleBudget = matrix.getOptimalExecTime() > 0.0
+            ? matrix.getOptimalExecTime()
+                / (matrix.getOptimalExecTime() < 2.0 ? 20.0 : 10.0)
+            : budgets.front();
+        const double runBudget = articleProtocol ? articleBudget : budgetSeconds;
         const Allocation initial = probabilityInitialSolution(matrix);
         validateIncrementalEvaluation(initial, matrix);
         std::cout << "\nInstância " << instanceId
@@ -521,10 +543,10 @@ int main() {
                 baseSeed + instanceId * 1009 + repetition * 9176);
             for (const Variant& variant : experimentVariants) {
                 const Result result = runVariant(
-                    initial, matrix, variant, budgetSeconds);
+                    initial, matrix, variant, runBudget);
                 rows.push_back({
                     instanceId, repetition, seed, matrix.getOptimalCost(),
-                    budgetSeconds, initial.getCurrentCost(), variant, result
+                    runBudget, initial.getCurrentCost(), variant, result
                 });
                 std::cout << "  rep " << repetition << " | "
                           << std::left << std::setw(29) << variant.label
