@@ -1,46 +1,36 @@
+// Executa a GLS promovida sobre as instâncias do artigo de referência.
+//
+// Protocolo: cada instância roda SSO_REPETITIONS vezes (padrão 3), cada uma com
+// orçamento fixo de SSO_TIME_SECONDS (padrão 10 s), encerrando antes se alcançar
+// o ótimo conhecido. SSO_INSTANCES=1,28,100 restringe as instâncias executadas.
+
+#include <cstdlib>
 #include <iostream>
-#include <fstream>
-#include <filesystem>
-#include <string>
-#include <map>
-#include <vector>
-#include <limits>
-#include <chrono>
-#include <algorithm>
 #include <sstream>
 #include <stdexcept>
-#include <cstdlib>
+#include <string>
+#include <vector>
 
-#include "basic/Allocation.h"
-#include "instance/InstanceMatrix.hpp"
-#include "metaheuristic/ILS.hpp"
-#include "enum/ImprovementCondition.h"
-#include "enum/ImprovementHeuristic.h"
-#include "enum/ImprovementMode.h"
-#include "enum/PertubationMode.h"
-#include "enum/ProbabilityScenario.h"
-#include "enum/SearchMode.h"
+#include "GlsSolver.hpp"
+#include "InitialSolution.hpp"
+#include "InstanceMatrix.hpp"
+#include "InstanceReader.hpp"
 
-namespace fs = std::filesystem;
 using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
 
-struct AlgResult {
+struct InstanceSummary {
     // Estatísticas agregadas das repetições de uma única instância.
-    double bestResult  = 0;
-    double meanResult  = 0;
-    double timeToBest  = 0;
-    double countBests  = 0;
     string instanceName;
+    int optimalCost = 0;
+    double optimalExecTime = 0.0;
+    double bestCost = 0.0;
+    double meanCost = 0.0;
+    double meanTimeToBestMs = 0.0;
+    int reachedOptimal = 0;
 };
-
-static double nowMs() {
-    using namespace std::chrono;
-    return static_cast<double>(
-        duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count());
-}
 
 static int envInt(const char* name, int fallback) {
     const char* value = std::getenv(name);
@@ -48,7 +38,7 @@ static int envInt(const char* name, int fallback) {
         return fallback;
     const int parsed = std::stoi(value);
     if (parsed <= 0)
-        throw std::invalid_argument(string(name) + " must be greater than zero");
+        throw std::invalid_argument(string(name) + " deve ser positivo");
     return parsed;
 }
 
@@ -58,300 +48,103 @@ static double envDouble(const char* name, double fallback) {
         return fallback;
     const double parsed = std::stod(value);
     if (parsed <= 0.0)
-        throw std::invalid_argument(string(name) + " must be greater than zero");
+        throw std::invalid_argument(string(name) + " deve ser positivo");
     return parsed;
 }
 
-static InstanceMatrix readInstance(int instanceCont) {
-    // Converte o arquivo textual da instância para as estruturas usadas pelo algoritmo.
-    string path = "data/instances/Instance_10_10_" + std::to_string(instanceCont);
-    std::ifstream file(path);
-    if (!file.is_open())
-        throw std::runtime_error("Cannot open: " + path);
-
-    bool initLine = true;
-    InstanceMatrix instance;
-    string line;
-
-    while (std::getline(file, line)) {
-        if (line.empty()) continue;
-
-        std::istringstream iss(line);
-        vector<string> tokens;
-        string tok;
-        while (iss >> tok) tokens.push_back(tok);
-        if (tokens.empty()) continue;
-
-        if (initLine) {
-            int numberOfServices = std::stoi(tokens[1]);
-            int numberOfTasks    = std::stoi(tokens[2]);
-            int vMax             = std::stoi(tokens[3]);
-            double pMax          = std::stod(tokens[4]);
-            int Smax             = std::stoi(tokens[5]);
-            int Vres             = std::stoi(tokens[6]);
-
-            instance = InstanceMatrix(numberOfTasks, numberOfServices, vMax, Smax, pMax, Vres);
-            initLine = false;
-        } else {
-            if (tokens[0] == "r") {
-                instance.setResourceConsumption(std::stoi(tokens[1]) - 1, std::stoi(tokens[2]));
-            } else if (tokens[0] == "p") {
-                instance.setSlaViolationProbability(std::stoi(tokens[1]) - 1, std::stod(tokens[2]));
-            } else if (tokens[0] == "c") {
-                instance.setTaskCost(std::stoi(tokens[2]) - 1, std::stoi(tokens[1]) - 1, std::stoi(tokens[3]));
-            }
-        }
-    }
-
-    for (int i = 0; i < instance.getNumberOfServices(); i++)
-        instance.setServResourceCapacity(i, instance.getVres());
-
-    instance.setInstanceName("Instance_10_10_" + std::to_string(instanceCont));
-    return instance;
-}
-
-static void loadInstanceLog(InstanceMatrix& instance, const string& filename) {
-    // O log de referência fornece o custo ótimo conhecido e o tempo do método exato.
-    std::ifstream logFile("data/Log/" + filename);
-    if (!logFile.is_open()) return;
-
-    string lastLine, logLine;
-    while (std::getline(logFile, logLine)) {
-        if (logLine.rfind("Total", 0) == 0) {
-            auto eq = logLine.find('=');
-            if (eq != string::npos) {
-                string rest = logLine.substr(eq + 1);
-                auto sec = rest.find("sec");
-                if (sec != string::npos) rest = rest.substr(0, sec);
-                rest.erase(0, rest.find_first_not_of(" \t"));
-                rest.erase(rest.find_last_not_of(" \t") + 1);
-                instance.setOptimalExecTime(std::stod(rest));
-            }
-        }
-        lastLine = logLine;
-    }
-    // A última linha do log tem o formato "... = <custo ótimo>".
-    auto eq = lastLine.rfind("= ");
-    if (eq != string::npos)
-        instance.setOptimalCost(std::stoi(lastLine.substr(eq + 2)));
-}
-
-static void initiateInstanceArray(vector<InstanceMatrix>& instanceArray,
-                                  const vector<int>& filter = {}) {
-    if (!filter.empty()) {
-        for (int i = 0; i < static_cast<int>(filter.size()); i++) {
-            int num = filter[i];
-            instanceArray[i] = readInstance(num);
-            loadInstanceLog(instanceArray[i], "Instance_10_10_" + std::to_string(num));
-        }
-        return;
-    }
-
-    const string folder = "data/instances/";
-    vector<fs::path> files;
-    for (const auto& entry : fs::directory_iterator(folder))
-        files.push_back(entry.path());
-    std::sort(files.begin(), files.end());
-
-    int cont = 0;
-    for (const auto& filePath : files) {
-        string filename = filePath.filename().string();
-
-        // Extrai o número N do nome "Instance_10_10_<N>".
-        vector<string> parts;
-        std::istringstream ss(filename);
-        string part;
-        while (std::getline(ss, part, '_'))
-            parts.push_back(part);
-
-        instanceArray[cont] = readInstance(std::stoi(parts[3]));
-        loadInstanceLog(instanceArray[cont], filename);
-        cont++;
-    }
+static vector<int> selectedInstances() {
+    const char* raw = std::getenv("SSO_INSTANCES");
+    if (!raw || !*raw)
+        return listInstanceIds();
+    vector<int> ids;
+    std::istringstream input(raw);
+    string token;
+    while (std::getline(input, token, ','))
+        ids.push_back(std::stoi(token));
+    return ids;
 }
 
 int main() {
-    const double programStartTime = nowMs();
-    // Parâmetros de experimento configuráveis por variáveis de ambiente.
-    // SSO_TIME_SECONDS limita cada repetição de cada instância, não o programa inteiro.
-    const int executionsPerInstance = envInt("SSO_REPETITIONS", 3);
-    const int configuredIterations = envInt("SSO_ITERATIONS", -1);
-    const double timeScale = envDouble("SSO_TIME_SCALE", 1.0);
-    const double fixedTimeSeconds = envDouble("SSO_TIME_SECONDS", -1.0);
-    const bool deadlineDisabled = envInt("SSO_DISABLE_DEADLINE", 0) != 0;
+    const double programStart = glsNowMs();
+    const int repetitions = envInt("SSO_REPETITIONS", 3);
+    const double budgetSeconds = envDouble("SSO_TIME_SECONDS", 10.0);
+    const vector<int> instanceIds = selectedInstances();
 
-    // Para executar todas as instâncias, mantenha targetInstances vazio: {}.
-    const vector<int> targetInstances = {};
-    const int numberOfInstances = targetInstances.empty() ? 94
-                                                          : static_cast<int>(targetInstances.size());
+    cout << "CONFIG algorithm=GLS repetitions=" << repetitions
+         << " timeSeconds=" << budgetSeconds
+         << " alpha=" << kGlsAlpha
+         << " roundsPerCycle=" << kGlsRoundsPerCycle << endl;
 
-    int optimalExecTimeDivisor = 10;
-    int ITERATIONS = 10000;
+    vector<InstanceSummary> summaries;
+    for (int id : instanceIds) {
+        InstanceMatrix instance = readInstance(id);
+        loadReferenceLog(instance, id);
+        const Allocation initial = buildInitialSolution(instance);
+        const bool hasOptimal = instance.getOptimalCost() > 0;
 
-    vector<InstanceMatrix> instanceArray(numberOfInstances);
-    initiateInstanceArray(instanceArray, targetInstances);
+        InstanceSummary summary;
+        summary.instanceName = instance.getInstanceName();
+        summary.optimalCost = instance.getOptimalCost();
+        summary.optimalExecTime = instance.getOptimalExecTime();
+        cout << "Executing instance " << id << endl;
 
-    std::map<int, AlgResult> algResults;
-    for (int i = 1; i <= numberOfInstances; i++)
-        algResults[i] = AlgResult{};
+        for (int repetition = 0; repetition < repetitions; ++repetition) {
+            cout << "r " << repetition << endl;
+            const GlsRunResult run = runGuidedLocalSearch(initial, instance, budgetSeconds);
+            const double cost = run.best.getCurrentCost();
+            const bool optimal = hasOptimal && cost <= instance.getOptimalCost();
 
-    int instanceID = 1;
-
-    cout << "CONFIG repetitions=" << executionsPerInstance
-         << " iterations=" << (configuredIterations > 0
-             ? std::to_string(configuredIterations) : "adaptive")
-         << " timeScale=" << timeScale
-         << " fixedTimeSeconds=" << (fixedTimeSeconds > 0.0
-             ? std::to_string(fixedTimeSeconds) : "adaptive")
-         << " deadline=" << (deadlineDisabled ? "disabled" : "internal")
-         << endl;
-
-    for (const InstanceMatrix& instance : instanceArray) {
-        algResults[instanceID].instanceName = instance.getInstanceName();
-        cout << "Executing instance " << instanceID << endl;
-
-        const bool hasLogData = instance.getOptimalExecTime() > 0;
-
-        if (hasLogData) {
-            if (instance.getOptimalExecTime() < 2) {
-                ITERATIONS             = 2000;
-                optimalExecTimeDivisor = 20;
-            } else {
-                ITERATIONS             = 10000;
-                optimalExecTimeDivisor = 10;
-            }
-        } else {
-            ITERATIONS             = 10000;
-            optimalExecTimeDivisor = 10;
+            // Sem ótimo, o tempo até a melhor solução conta como o orçamento inteiro,
+            // como no relatório do artigo de referência.
+            const double timeToBestMs = optimal ? run.timeToBestMs : run.elapsedMs;
+            if (repetition == 0 || cost < summary.bestCost)
+                summary.bestCost = cost;
+            summary.meanCost += cost / repetitions;
+            summary.meanTimeToBestMs += timeToBestMs / repetitions;
+            if (optimal)
+                ++summary.reachedOptimal;
         }
-
-        if (configuredIterations > 0)
-            ITERATIONS = configuredIterations;
-
-        // Sem log: usa 60s fixos por repetição (replica o comportamento Java)
-        const double adaptiveTimeSeconds = hasLogData
-            ? instance.getOptimalExecTime() / optimalExecTimeDivisor
-            : 60.0;
-        const double execTimePerRepetition = fixedTimeSeconds > 0.0
-            ? fixedTimeSeconds
-            : adaptiveTimeSeconds * timeScale;
-
-        for (int r = 0; r < executionsPerInstance; r++) {
-            cout << "r " << r << endl;
-
-            double instanceInitTime = nowMs();
-            // Cada repetição recebe seu próprio deadline absoluto. O ILS e a GLS
-            // consultam esse valor internamente para encerrar de forma organizada.
-            const double repetitionDeadlineMs = deadlineDisabled
-                ? std::numeric_limits<double>::infinity()
-                : instanceInitTime + execTimePerRepetition * 1000.0;
-            double repetitionBestCost = std::numeric_limits<double>::max();
-            double repetitionTimeToBest = -1;
-            Allocation all;
-
-            do {
-                ILS ils;
-                // ILS#1 (réplica de ArticleResult.java, repo dos autores):
-                // Primeira melhoria, perturbação MOVE e vizinhança configurada como SWAP; alpha = 0,4.
-                // É mais rápido que o ILS#3, que usa a estratégia de melhor melhoria,
-                // e produz um resultado comparável.
-                all = ils.ILS_run(instance, 0.4, ITERATIONS, instanceInitTime,
-                    ProbabilityScenario::Ps,
-                    ImprovementHeuristic::COST_IMPROVEMENT,
-                    SearchMode::LOCAL_SEARCH,
-                    ImprovementCondition::FIRST_IMPROVEMENT,
-                    ImprovementMode::SWAP,
-                    PerturbationMode::MOVE,
-                    repetitionDeadlineMs);
-
-                if (all.getCurrentCost() < repetitionBestCost) {
-                    repetitionBestCost = all.getCurrentCost();
-                    repetitionTimeToBest = all.getTimeToBest();
-                }
-
-                if (instance.getOptimalCost() > 0 &&
-                    all.getCurrentCost() == static_cast<double>(instance.getOptimalCost())) {
-                    repetitionTimeToBest = all.getTimeToBest();
-                    break;
-                }
-
-            } while (!deadlineDisabled
-                     && (nowMs() - instanceInitTime) / 1000.0
-                            <= execTimePerRepetition);
-
-            double repetitionExecTime = nowMs() - instanceInitTime;
-
-            repetitionTimeToBest = (instance.getOptimalCost() > 0 &&
-                          repetitionBestCost == static_cast<double>(instance.getOptimalCost()))
-                ? repetitionTimeToBest : repetitionExecTime;
-
-            // Acumula média, melhor custo e tempo até a melhor solução entre repetições.
-            if (algResults[instanceID].bestResult == 0) {
-                algResults[instanceID].bestResult = repetitionBestCost;
-                algResults[instanceID].meanResult = repetitionBestCost / executionsPerInstance;
-                algResults[instanceID].timeToBest = repetitionTimeToBest / executionsPerInstance;
-            } else {
-                algResults[instanceID].meanResult += repetitionBestCost / executionsPerInstance;
-                algResults[instanceID].timeToBest += repetitionTimeToBest / executionsPerInstance;
-                if (repetitionBestCost < algResults[instanceID].bestResult)
-                    algResults[instanceID].bestResult = repetitionBestCost;
-            }
-
-            if (instance.getOptimalCost() > 0 &&
-                repetitionBestCost == static_cast<double>(instance.getOptimalCost()))
-                algResults[instanceID].countBests++;
-        }
-
-        instanceID++;
+        summaries.push_back(summary);
     }
 
-    // Ao final, imprime uma linha por instância e um resumo agregado do experimento.
+    // Uma linha por instância e um resumo agregado do experimento.
     cout << "Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal" << endl;
-    double instances    = static_cast<double>(algResults.size());
-    double meanBestCost = 0;
-
-    int totalReachedOptimal   = 0;
-    int totalWithKnownOptimal = 0;
+    double meanBestCost = 0.0;
+    int withKnownOptimal = 0;
     vector<string> optimalInstances;
-
-    for (auto& [id, result] : algResults) {
-        bool hasOptimal     = instanceArray[id - 1].getOptimalCost() > 0;
-        bool reachedOptimal = hasOptimal && result.countBests > 0;
-
-        cout << result.instanceName                         << " ";
-        cout << instanceArray[id - 1].getOptimalCost()     << " ";
-        cout << instanceArray[id - 1].getOptimalExecTime() << " ";
-        cout << result.meanResult                          << " ";
-        cout << result.bestResult                          << " ";
-        meanBestCost += result.bestResult / instances;
-        cout << result.timeToBest / 1000.0                 << " ";
-        cout << (reachedOptimal
-            ? "YES (" + std::to_string((int)result.countBests) + "/" + std::to_string(executionsPerInstance) + ")"
-            : (hasOptimal ? "NO" : "N/A")) << endl;
-
+    for (const InstanceSummary& summary : summaries) {
+        const bool hasOptimal = summary.optimalCost > 0;
+        cout << summary.instanceName << " "
+             << summary.optimalCost << " "
+             << summary.optimalExecTime << " "
+             << summary.meanCost << " "
+             << summary.bestCost << " "
+             << summary.meanTimeToBestMs / 1000.0 << " "
+             << (summary.reachedOptimal > 0
+                 ? "YES (" + std::to_string(summary.reachedOptimal) + "/"
+                     + std::to_string(repetitions) + ")"
+                 : (hasOptimal ? "NO" : "N/A"))
+             << endl;
+        meanBestCost += summary.bestCost / summaries.size();
         if (hasOptimal) {
-            totalWithKnownOptimal++;
-            if (reachedOptimal) {
-                totalReachedOptimal++;
-                optimalInstances.push_back(result.instanceName);
-            }
+            ++withKnownOptimal;
+            if (summary.reachedOptimal > 0)
+                optimalInstances.push_back(summary.instanceName);
         }
     }
 
     cout << "\nMEAN BEST COSTS: " << meanBestCost << endl;
-    cout << "REACHED OPTIMALL: " << totalReachedOptimal << "/" << totalWithKnownOptimal << " instances" << endl;
-
+    cout << "REACHED OPTIMALL: " << optimalInstances.size() << "/"
+         << withKnownOptimal << " instances" << endl;
     if (!optimalInstances.empty()) {
         cout << "INSTANCES THAT REACHED OPTIMAL:" << endl;
-        for (const auto& name : optimalInstances)
+        for (const string& name : optimalInstances)
             cout << "  " << name << endl;
     }
 
-
-    const double totalSeconds = (nowMs() - programStartTime) / 1000.0;
+    const double totalSeconds = (glsNowMs() - programStart) / 1000.0;
     const int totalMinutes = static_cast<int>(totalSeconds) / 60;
     cout << "TOTAL EXECUTION TIME: " << totalMinutes << "m "
          << totalSeconds - totalMinutes * 60 << "s" << endl;
-
     return 0;
 }

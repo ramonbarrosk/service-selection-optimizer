@@ -257,10 +257,10 @@ por tempo), variando **apenas** a flag `OSC`. É o número que vale para o paper
 Reprodução (as duas saídas, mesma config):
 
 ```bash
-make          && ./build/service-selection-optimizer | tee data/fair_hybrid.txt
-make OSC=0    && ./build/service-selection-optimizer | tee data/fair_baseline.txt
-PYTHONPATH=scripts python3 scripts/table_phase2.py --cpp-results data/fair_hybrid.txt   --output-dir data/charts_fair_hybrid
-PYTHONPATH=scripts python3 scripts/table_phase2.py --cpp-results data/fair_baseline.txt --output-dir data/charts_fair_baseline
+make          && ./build/service-selection-optimizer | tee experiments/02_hibrido_best_fit_oscilacao/results/fair_hybrid.txt
+make OSC=0    && ./build/service-selection-optimizer | tee experiments/02_hibrido_best_fit_oscilacao/results/fair_baseline.txt
+PYTHONPATH=scripts python3 experiments/02_hibrido_best_fit_oscilacao/scripts/table_phase2.py --cpp-results experiments/02_hibrido_best_fit_oscilacao/results/fair_hybrid.txt   --output-dir experiments/02_hibrido_best_fit_oscilacao/charts/fair_hybrid
+PYTHONPATH=scripts python3 experiments/02_hibrido_best_fit_oscilacao/scripts/table_phase2.py --cpp-results experiments/02_hibrido_best_fit_oscilacao/results/fair_baseline.txt --output-dir experiments/02_hibrido_best_fit_oscilacao/charts/fair_baseline
 ```
 
 ---
@@ -430,8 +430,8 @@ ganho e adiciona complexidade — **revertida** ao original (mantém o código f
 ### 5.4 — Relatório 3-way (ILS#1): efeito do best-fit
 
 Comparação Java (referência) × C++ baseline (`OSC=0`) × C++ híbrido (best-fit), **mesma config
-ILS#1**, 94 instâncias, 3 execuções (`data/report_java.txt`, `report_cpp_baseline.txt`,
-`report_cpp_hybrid.txt`; tabela em `data/charts_3way/table_3way.png`):
+ILS#1**, 94 instâncias, 3 execuções (`experiments/02_hibrido_best_fit_oscilacao/results/report_java.txt`, `report_cpp_baseline.txt`,
+`report_cpp_hybrid.txt`; tabela em `experiments/02_hibrido_best_fit_oscilacao/charts/3way/table_3way.png`):
 
 | Versão | GAP médio | Ótimos (GAP=0) |
 |---|---|---|
