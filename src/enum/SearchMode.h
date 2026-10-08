@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 
+// Seleciona uma única busca local ou a descida em vizinhança variável (VND).
 enum class SearchMode {
     LOCAL_SEARCH,
     VND

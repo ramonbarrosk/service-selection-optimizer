@@ -1,5 +1,7 @@
 #pragma once
 
+// Representa uma tarefa do problema e seu consumo fixo de recurso.
+// A decisão de qual serviço a executará fica armazenada em Allocation.
 class Task {
 public:
     Task(int id, int resourceConsumption)

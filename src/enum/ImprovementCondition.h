@@ -3,6 +3,8 @@
 
 using std::string;
 
+// Define se a busca aceita a primeira melhoria encontrada ou examina toda a
+// vizinhança para escolher a melhor melhoria da rodada.
 enum class ImprovementCondition {
     FIRST_IMPROVEMENT,
     BEST_IMPROVEMENT

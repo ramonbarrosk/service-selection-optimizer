@@ -1,0 +1,9 @@
+# Recorte da execucao completa report_current_best_all94.txt.
+# Configuracao promovida: GLS alpha=0.3, rodadas adaptativas 30/60/120,
+# penalidades persistentes e GFLS; 94 instancias, 3 repeticoes.
+# Formato compativel com os relatorios: instancia otimo tempo media melhor tempo-melhor status
+Instance_10_10_11 100 53.08 105.667 103 7.46967 NO
+Instance_10_10_28 102 124.9 119.333 115 17.9133 NO
+Instance_10_10_100 101 216.78 126 121 23.19 NO
+Instance_10_10_128 101 50.13 114 114 9.52 NO
+Instance_10_10_129 100 60.67 106 105 8.94967 NO

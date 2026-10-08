@@ -5,6 +5,8 @@
 using std::string;
 using std::to_string;
 
+// Identifica um serviço candidato. A capacidade efetivamente usada pela
+// otimização pertence à instância e à alocação; este objeto é uma referência leve.
 class Service {
 public:
     Service(int id, int capacity)

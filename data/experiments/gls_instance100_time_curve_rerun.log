@@ -1,0 +1,46 @@
+Experimento GLS/GFLS
+Instâncias: 1 | repetições: 3 | orçamentos: 1s 2s 5s 10s 30s 60s por variante
+
+=== Orçamento 1 s ===
+
+Instância 100 | ótimo 101 | inicial 972
+  rep 1 | I=1 S=1 L=0 R=1               custo   111 | GAP 9.90% | rodadas 2342
+  rep 2 | I=1 S=1 L=0 R=1               custo 111.00 | GAP 9.90% | rodadas 2566
+  rep 3 | I=1 S=1 L=0 R=1               custo 111.00 | GAP 9.90% | rodadas 2580
+
+=== Orçamento 2.00 s ===
+
+Instância 100 | ótimo 101 | inicial 972.00
+  rep 1 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 6369
+  rep 2 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 6504
+  rep 3 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 6390
+
+=== Orçamento 5.00 s ===
+
+Instância 100 | ótimo 101 | inicial 972.00
+  rep 1 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 15698
+  rep 2 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 16440
+  rep 3 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 16536
+
+=== Orçamento 10.00 s ===
+
+Instância 100 | ótimo 101 | inicial 972.00
+  rep 1 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 29030
+  rep 2 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 30150
+  rep 3 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 30480
+
+=== Orçamento 30.00 s ===
+
+Instância 100 | ótimo 101 | inicial 972.00
+  rep 1 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 88119
+  rep 2 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 87780
+  rep 3 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 87159
+
+=== Orçamento 60.00 s ===
+
+Instância 100 | ótimo 101 | inicial 972.00
+  rep 1 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 152266
+  rep 2 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 156780
+  rep 3 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 153330
+
+CSV salvo em data/experiments/gls_instance100_time_curve_rerun.csv
