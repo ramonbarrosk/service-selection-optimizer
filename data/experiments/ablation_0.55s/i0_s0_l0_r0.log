@@ -1,0 +1,476 @@
+Experimento GLS/GFLS
+Instâncias: 94 | repetições: 3 | orçamentos: 0.55s por variante
+
+=== Orçamento 0.55 s ===
+
+Instância 1 | ótimo 100 | inicial 1103
+  rep 1 | I=0 S=0 L=0 R=0               custo   104 | GAP 4.00% | rodadas 141
+  rep 2 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 4.00% | rodadas 141
+  rep 3 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 4.00% | rodadas 150
+
+Instância 5 | ótimo 100 | inicial 1045.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 125.00 | GAP 25.00% | rodadas 240
+  rep 2 | I=0 S=0 L=0 R=0               custo 125.00 | GAP 25.00% | rodadas 249
+  rep 3 | I=0 S=0 L=0 R=0               custo 125.00 | GAP 25.00% | rodadas 249
+
+Instância 7 | ótimo 100 | inicial 1051.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 189
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 189
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 189
+
+Instância 8 | ótimo 101 | inicial 1104.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 150
+
+Instância 11 | ótimo 100 | inicial 1131.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 124.00 | GAP 24.00% | rodadas 210
+  rep 2 | I=0 S=0 L=0 R=0               custo 124.00 | GAP 24.00% | rodadas 210
+  rep 3 | I=0 S=0 L=0 R=0               custo 124.00 | GAP 24.00% | rodadas 193
+
+Instância 13 | ótimo 101 | inicial 1042.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 3.96% | rodadas 133
+  rep 2 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 1.98% | rodadas 144
+  rep 3 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 1.98% | rodadas 144
+
+Instância 14 | ótimo 101 | inicial 993.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 5.94% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 5.94% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 5.94% | rodadas 160
+
+Instância 15 | ótimo 100 | inicial 988.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 149
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 133
+
+Instância 17 | ótimo 100 | inicial 1102.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 158
+  rep 3 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 155
+
+Instância 19 | ótimo 102 | inicial 1029.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 114.00 | GAP 11.76% | rodadas 270
+  rep 2 | I=0 S=0 L=0 R=0               custo 114.00 | GAP 11.76% | rodadas 270
+  rep 3 | I=0 S=0 L=0 R=0               custo 114.00 | GAP 11.76% | rodadas 268
+
+Instância 21 | ótimo 101 | inicial 1134.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 150
+
+Instância 22 | ótimo 101 | inicial 1069.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 1.98% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 1.98% | rodadas 166
+  rep 3 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 1.98% | rodadas 164
+
+Instância 23 | ótimo 100 | inicial 1070.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 189
+  rep 2 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 188
+  rep 3 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 188
+
+Instância 24 | ótimo 102 | inicial 1062.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 112.00 | GAP 9.80% | rodadas 180
+  rep 2 | I=0 S=0 L=0 R=0               custo 112.00 | GAP 9.80% | rodadas 181
+  rep 3 | I=0 S=0 L=0 R=0               custo 112.00 | GAP 9.80% | rodadas 190
+
+Instância 25 | ótimo 103 | inicial 1062.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 106.00 | GAP 2.91% | rodadas 180
+  rep 2 | I=0 S=0 L=0 R=0               custo 106.00 | GAP 2.91% | rodadas 180
+  rep 3 | I=0 S=0 L=0 R=0               custo 106.00 | GAP 2.91% | rodadas 173
+
+Instância 28 | ótimo 102 | inicial 1085.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 139.00 | GAP 36.27% | rodadas 324
+  rep 2 | I=0 S=0 L=0 R=0               custo 139.00 | GAP 36.27% | rodadas 284
+  rep 3 | I=0 S=0 L=0 R=0               custo 139.00 | GAP 36.27% | rodadas 317
+
+Instância 29 | ótimo 101 | inicial 926.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 106.00 | GAP 4.95% | rodadas 133
+  rep 2 | I=0 S=0 L=0 R=0               custo 106.00 | GAP 4.95% | rodadas 133
+  rep 3 | I=0 S=0 L=0 R=0               custo 106.00 | GAP 4.95% | rodadas 150
+
+Instância 30 | ótimo 102 | inicial 1103.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.00% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.00% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.00% | rodadas 150
+
+Instância 31 | ótimo 100 | inicial 1060.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 2 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 3 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+
+Instância 33 | ótimo 100 | inicial 1097.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 4.00% | rodadas 163
+  rep 2 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 4.00% | rodadas 175
+  rep 3 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 4.00% | rodadas 166
+
+Instância 35 | ótimo 101 | inicial 1031.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 117.00 | GAP 15.84% | rodadas 213
+  rep 2 | I=0 S=0 L=0 R=0               custo 118.00 | GAP 16.83% | rodadas 187
+  rep 3 | I=0 S=0 L=0 R=0               custo 118.00 | GAP 16.83% | rodadas 180
+
+Instância 40 | ótimo 101 | inicial 1081.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 117.00 | GAP 15.84% | rodadas 208
+  rep 2 | I=0 S=0 L=0 R=0               custo 117.00 | GAP 15.84% | rodadas 210
+  rep 3 | I=0 S=0 L=0 R=0               custo 117.00 | GAP 15.84% | rodadas 197
+
+Instância 41 | ótimo 101 | inicial 1113.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 120
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 120
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 120
+
+Instância 42 | ótimo 100 | inicial 1032.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 110.00 | GAP 10.00% | rodadas 100
+  rep 2 | I=0 S=0 L=0 R=0               custo 110.00 | GAP 10.00% | rodadas 120
+  rep 3 | I=0 S=0 L=0 R=0               custo 110.00 | GAP 10.00% | rodadas 120
+
+Instância 43 | ótimo 100 | inicial 1013.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 115.00 | GAP 15.00% | rodadas 168
+  rep 2 | I=0 S=0 L=0 R=0               custo 115.00 | GAP 15.00% | rodadas 159
+  rep 3 | I=0 S=0 L=0 R=0               custo 115.00 | GAP 15.00% | rodadas 162
+
+Instância 44 | ótimo 101 | inicial 1023.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 111.00 | GAP 9.90% | rodadas 170
+  rep 2 | I=0 S=0 L=0 R=0               custo 111.00 | GAP 9.90% | rodadas 180
+  rep 3 | I=0 S=0 L=0 R=0               custo 111.00 | GAP 9.90% | rodadas 180
+
+Instância 45 | ótimo 100 | inicial 1109.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 158
+  rep 2 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 150
+
+Instância 47 | ótimo 100 | inicial 1035.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 209
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 210
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 209
+
+Instância 48 | ótimo 101 | inicial 1074.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+
+Instância 50 | ótimo 100 | inicial 1003.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 177
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 145
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 175
+
+Instância 51 | ótimo 100 | inicial 1002.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 123
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 133
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 147
+
+Instância 52 | ótimo 101 | inicial 985.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 103
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 111
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 120
+
+Instância 54 | ótimo 100 | inicial 1041.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 138
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 130
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 131
+
+Instância 56 | ótimo 101 | inicial 1000.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 5.94% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 5.94% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 5.94% | rodadas 150
+
+Instância 57 | ótimo 100 | inicial 1048.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 2 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 3 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+
+Instância 58 | ótimo 100 | inicial 987.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 120
+  rep 2 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 120
+  rep 3 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 120
+
+Instância 60 | ótimo 100 | inicial 1064.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 4.00% | rodadas 143
+  rep 2 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 4.00% | rodadas 143
+  rep 3 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 4.00% | rodadas 136
+
+Instância 61 | ótimo 101 | inicial 1095.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 114.00 | GAP 12.87% | rodadas 176
+  rep 2 | I=0 S=0 L=0 R=0               custo 114.00 | GAP 12.87% | rodadas 176
+  rep 3 | I=0 S=0 L=0 R=0               custo 114.00 | GAP 12.87% | rodadas 180
+
+Instância 63 | ótimo 100 | inicial 989.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 133
+  rep 2 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 134
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 120
+
+Instância 64 | ótimo 100 | inicial 1018.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 120
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 120
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 120
+
+Instância 65 | ótimo 100 | inicial 1073.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 116.00 | GAP 16.00% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 116.00 | GAP 16.00% | rodadas 171
+  rep 3 | I=0 S=0 L=0 R=0               custo 116.00 | GAP 16.00% | rodadas 180
+
+Instância 67 | ótimo 100 | inicial 1110.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 150
+
+Instância 73 | ótimo 102 | inicial 958.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 108.00 | GAP 5.88% | rodadas 167
+  rep 2 | I=0 S=0 L=0 R=0               custo 108.00 | GAP 5.88% | rodadas 160
+  rep 3 | I=0 S=0 L=0 R=0               custo 108.00 | GAP 5.88% | rodadas 172
+
+Instância 74 | ótimo 100 | inicial 1047.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 140
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 150
+
+Instância 75 | ótimo 100 | inicial 1008.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 2 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 3 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+
+Instância 76 | ótimo 100 | inicial 996.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 204
+  rep 2 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 198
+  rep 3 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 204
+
+Instância 77 | ótimo 103 | inicial 1004.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 110.00 | GAP 6.80% | rodadas 180
+  rep 2 | I=0 S=0 L=0 R=0               custo 110.00 | GAP 6.80% | rodadas 185
+  rep 3 | I=0 S=0 L=0 R=0               custo 110.00 | GAP 6.80% | rodadas 180
+
+Instância 81 | ótimo 101 | inicial 1013.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 116.00 | GAP 14.85% | rodadas 206
+  rep 2 | I=0 S=0 L=0 R=0               custo 116.00 | GAP 14.85% | rodadas 210
+  rep 3 | I=0 S=0 L=0 R=0               custo 116.00 | GAP 14.85% | rodadas 210
+
+Instância 82 | ótimo 100 | inicial 973.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 90
+  rep 2 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 90
+  rep 3 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 90
+
+Instância 84 | ótimo 100 | inicial 1073.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 2 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 3 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+
+Instância 85 | ótimo 101 | inicial 1070.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 181
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 180
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 180
+
+Instância 86 | ótimo 102 | inicial 1005.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 1.96% | rodadas 176
+  rep 2 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 1.96% | rodadas 176
+  rep 3 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 1.96% | rodadas 165
+
+Instância 87 | ótimo 101 | inicial 951.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 2.97% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 2.97% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 2.97% | rodadas 151
+
+Instância 88 | ótimo 101 | inicial 1110.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 2.97% | rodadas 208
+  rep 2 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 2.97% | rodadas 202
+  rep 3 | I=0 S=0 L=0 R=0               custo 104.00 | GAP 2.97% | rodadas 208
+
+Instância 89 | ótimo 101 | inicial 1088.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 1.98% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 1.98% | rodadas 154
+  rep 3 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 1.98% | rodadas 150
+
+Instância 90 | ótimo 100 | inicial 1052.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 203
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 202
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 197
+
+Instância 95 | ótimo 100 | inicial 1148.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 126
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 129
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 132
+
+Instância 98 | ótimo 101 | inicial 1021.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 115.00 | GAP 13.86% | rodadas 200
+  rep 2 | I=0 S=0 L=0 R=0               custo 115.00 | GAP 13.86% | rodadas 180
+  rep 3 | I=0 S=0 L=0 R=0               custo 115.00 | GAP 13.86% | rodadas 180
+
+Instância 99 | ótimo 100 | inicial 1045.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 149
+  rep 2 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 129
+  rep 3 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 150
+
+Instância 100 | ótimo 101 | inicial 972.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 164.00 | GAP 62.38% | rodadas 330
+  rep 2 | I=0 S=0 L=0 R=0               custo 164.00 | GAP 62.38% | rodadas 330
+  rep 3 | I=0 S=0 L=0 R=0               custo 164.00 | GAP 62.38% | rodadas 316
+
+Instância 101 | ótimo 100 | inicial 1040.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 142.00 | GAP 42.00% | rodadas 266
+  rep 2 | I=0 S=0 L=0 R=0               custo 142.00 | GAP 42.00% | rodadas 270
+  rep 3 | I=0 S=0 L=0 R=0               custo 142.00 | GAP 42.00% | rodadas 265
+
+Instância 102 | ótimo 100 | inicial 1012.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 211
+  rep 2 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 191
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 208
+
+Instância 108 | ótimo 100 | inicial 1000.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 106.00 | GAP 6.00% | rodadas 259
+  rep 2 | I=0 S=0 L=0 R=0               custo 106.00 | GAP 6.00% | rodadas 259
+  rep 3 | I=0 S=0 L=0 R=0               custo 106.00 | GAP 6.00% | rodadas 259
+
+Instância 109 | ótimo 101 | inicial 1118.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+
+Instância 110 | ótimo 100 | inicial 1036.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 170
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 175
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 169
+
+Instância 111 | ótimo 100 | inicial 1240.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 171
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 179
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 179
+
+Instância 116 | ótimo 101 | inicial 1079.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 120
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 120
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 120
+
+Instância 119 | ótimo 100 | inicial 1054.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 111.00 | GAP 11.00% | rodadas 205
+  rep 2 | I=0 S=0 L=0 R=0               custo 111.00 | GAP 11.00% | rodadas 205
+  rep 3 | I=0 S=0 L=0 R=0               custo 111.00 | GAP 11.00% | rodadas 205
+
+Instância 120 | ótimo 101 | inicial 1052.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 162
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 162
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 162
+
+Instância 121 | ótimo 100 | inicial 1145.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 112.00 | GAP 12.00% | rodadas 180
+  rep 2 | I=0 S=0 L=0 R=0               custo 112.00 | GAP 12.00% | rodadas 189
+  rep 3 | I=0 S=0 L=0 R=0               custo 112.00 | GAP 12.00% | rodadas 187
+
+Instância 122 | ótimo 100 | inicial 1075.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 186
+  rep 2 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 186
+  rep 3 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 185
+
+Instância 123 | ótimo 100 | inicial 1001.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 126
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 138
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 1.00% | rodadas 150
+
+Instância 124 | ótimo 102 | inicial 1046.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 117.00 | GAP 14.71% | rodadas 179
+  rep 2 | I=0 S=0 L=0 R=0               custo 117.00 | GAP 14.71% | rodadas 157
+  rep 3 | I=0 S=0 L=0 R=0               custo 117.00 | GAP 14.71% | rodadas 180
+
+Instância 125 | ótimo 100 | inicial 1079.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 159
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 177
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 167
+
+Instância 127 | ótimo 100 | inicial 1039.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 175
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 181
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 7.00% | rodadas 180
+
+Instância 128 | ótimo 101 | inicial 1035.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 145.00 | GAP 43.56% | rodadas 318
+  rep 2 | I=0 S=0 L=0 R=0               custo 145.00 | GAP 43.56% | rodadas 328
+  rep 3 | I=0 S=0 L=0 R=0               custo 145.00 | GAP 43.56% | rodadas 328
+
+Instância 129 | ótimo 100 | inicial 1041.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 126.00 | GAP 26.00% | rodadas 300
+  rep 2 | I=0 S=0 L=0 R=0               custo 126.00 | GAP 26.00% | rodadas 297
+  rep 3 | I=0 S=0 L=0 R=0               custo 126.00 | GAP 26.00% | rodadas 300
+
+Instância 130 | ótimo 101 | inicial 1097.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+
+Instância 131 | ótimo 100 | inicial 1044.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 2 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+  rep 3 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 30
+
+Instância 132 | ótimo 103 | inicial 1069.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 3.88% | rodadas 180
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 3.88% | rodadas 182
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 3.88% | rodadas 186
+
+Instância 134 | ótimo 101 | inicial 1036.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 5.94% | rodadas 171
+  rep 2 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 5.94% | rodadas 156
+  rep 3 | I=0 S=0 L=0 R=0               custo 107.00 | GAP 5.94% | rodadas 164
+
+Instância 135 | ótimo 100 | inicial 1049.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 157
+  rep 2 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 157
+  rep 3 | I=0 S=0 L=0 R=0               custo 103.00 | GAP 3.00% | rodadas 157
+
+Instância 137 | ótimo 101 | inicial 1132.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 111.00 | GAP 9.90% | rodadas 219
+  rep 2 | I=0 S=0 L=0 R=0               custo 111.00 | GAP 9.90% | rodadas 214
+  rep 3 | I=0 S=0 L=0 R=0               custo 111.00 | GAP 9.90% | rodadas 223
+
+Instância 138 | ótimo 100 | inicial 1032.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 151
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 152
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 2.00% | rodadas 150
+
+Instância 141 | ótimo 101 | inicial 1001.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 150
+
+Instância 142 | ótimo 100 | inicial 1124.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 180
+  rep 2 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 180
+  rep 3 | I=0 S=0 L=0 R=0               custo 105.00 | GAP 5.00% | rodadas 180
+
+Instância 143 | ótimo 100 | inicial 1090.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 203
+  rep 2 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 203
+  rep 3 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 203
+
+Instância 144 | ótimo 101 | inicial 1020.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 172
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 180
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 180
+
+Instância 145 | ótimo 101 | inicial 1132.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 150
+  rep 2 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 150
+  rep 3 | I=0 S=0 L=0 R=0               custo 102.00 | GAP 0.99% | rodadas 150
+
+Instância 146 | ótimo 100 | inicial 981.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 110.00 | GAP 10.00% | rodadas 178
+  rep 2 | I=0 S=0 L=0 R=0               custo 110.00 | GAP 10.00% | rodadas 178
+  rep 3 | I=0 S=0 L=0 R=0               custo 110.00 | GAP 10.00% | rodadas 178
+
+Instância 147 | ótimo 100 | inicial 1083.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 136.00 | GAP 36.00% | rodadas 262
+  rep 2 | I=0 S=0 L=0 R=0               custo 136.00 | GAP 36.00% | rodadas 260
+  rep 3 | I=0 S=0 L=0 R=0               custo 136.00 | GAP 36.00% | rodadas 255
+
+Instância 148 | ótimo 101 | inicial 1077.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+  rep 2 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+  rep 3 | I=0 S=0 L=0 R=0               custo 101.00 | GAP 0.00% | rodadas 30
+
+Instância 149 | ótimo 100 | inicial 985.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 108
+  rep 2 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 113
+  rep 3 | I=0 S=0 L=0 R=0               custo 100.00 | GAP 0.00% | rodadas 112
+
+Instância 150 | ótimo 100 | inicial 1009.00
+  rep 1 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 173
+  rep 2 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 173
+  rep 3 | I=0 S=0 L=0 R=0               custo 109.00 | GAP 9.00% | rodadas 169
+
+CSV salvo em data/experiments/ablation_0.55s/i0_s0_l0_r0.csv

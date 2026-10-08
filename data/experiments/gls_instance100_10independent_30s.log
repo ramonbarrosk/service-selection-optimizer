@@ -1,0 +1,18 @@
+Experimento GLS/GFLS
+Instâncias: 1 | repetições: 10 | orçamentos: 30s por variante
+
+=== Orçamento 30 s ===
+
+Instância 100 | ótimo 101 | inicial 972
+  rep 1 | I=1 S=1 L=0 R=1               custo   104 | GAP 2.97% | rodadas 86981
+  rep 2 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 86909
+  rep 3 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 86905
+  rep 4 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 87163
+  rep 5 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 87150
+  rep 6 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 86730
+  rep 7 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 86430
+  rep 8 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 86430
+  rep 9 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 89580
+  rep 10 | I=1 S=1 L=0 R=1               custo 104.00 | GAP 2.97% | rodadas 91380
+
+CSV salvo em data/experiments/gls_instance100_10independent_30s.csv

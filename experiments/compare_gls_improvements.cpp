@@ -26,7 +26,6 @@ namespace fs = std::filesystem;
 
 namespace {
 
-constexpr double kGlsAlpha = 0.3;
 constexpr int kRoundsPerCycle = 30;
 const std::vector<int> kDifficultInstances = {28, 100, 128, 129, 147};
 
@@ -60,6 +59,9 @@ std::string envString(const char* name, const std::string& fallback) {
     const char* raw = std::getenv(name);
     return raw && *raw ? raw : fallback;
 }
+
+// Escala do lambda da GLS; 0.3 é o valor promovido e SSO_ALPHA permite a varredura.
+const double kGlsAlpha = envDouble("SSO_ALPHA", 0.3);
 
 std::vector<int> selectedInstances() {
     const char* explicitInstances = std::getenv("SSO_INSTANCES");
@@ -503,6 +505,9 @@ int main() {
     const char* articleRaw = std::getenv("SSO_ARTICLE_PROTOCOL");
     const bool articleProtocol = articleRaw && *articleRaw
         && std::string(articleRaw) != "0";
+    const char* independentRaw = std::getenv("SSO_INDEPENDENT_REPETITIONS");
+    const bool independentRepetitions = independentRaw && *independentRaw
+        && std::string(independentRaw) != "0";
     const std::string outputPath = envString(
         "SSO_EXPERIMENT_OUTPUT",
         "data/experiments/gls_improvements_difficult5.csv");
@@ -516,7 +521,7 @@ int main() {
     for (double budget : budgets)
         std::cout << ' ' << budget << "s";
     std::cout << (articleProtocol
-        ? " por variante (orçamento do artigo por instância)\n"
+        ? " por variante (orçamento fixo de 10s por instância)\n"
         : " por variante\n");
 
     std::vector<Row> rows;
@@ -527,20 +532,23 @@ int main() {
       for (int instanceId : experimentInstances) {
         InstanceMatrix matrix = readInstance(instanceId);
         loadOptimum(matrix, instanceId);
-        const double articleBudget = matrix.getOptimalExecTime() > 0.0
-            ? matrix.getOptimalExecTime()
-                / (matrix.getOptimalExecTime() < 2.0 ? 20.0 : 10.0)
-            : budgets.front();
+        const double articleBudget = 10.0;
         const double runBudget = articleProtocol ? articleBudget : budgetSeconds;
-        const Allocation initial = probabilityInitialSolution(matrix);
-        validateIncrementalEvaluation(initial, matrix);
+        const Allocation sharedInitial = probabilityInitialSolution(matrix);
+        validateIncrementalEvaluation(sharedInitial, matrix);
         std::cout << "\nInstância " << instanceId
                   << " | ótimo " << matrix.getOptimalCost()
-                  << " | inicial " << initial.getCurrentCost() << '\n';
+                  << " | inicial " << sharedInitial.getCurrentCost() << '\n';
 
         for (int repetition = 1; repetition <= repetitions; ++repetition) {
             const unsigned seed = static_cast<unsigned>(
                 baseSeed + instanceId * 1009 + repetition * 9176);
+            if (independentRepetitions)
+                RandomUtil::setSeed(seed);
+            const Allocation initial = independentRepetitions
+                ? probabilityInitialSolution(matrix) : sharedInitial;
+            if (independentRepetitions)
+                validateIncrementalEvaluation(initial, matrix);
             for (const Variant& variant : experimentVariants) {
                 const Result result = runVariant(
                     initial, matrix, variant, runBudget);

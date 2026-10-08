@@ -1,5 +1,5 @@
 Experimento GLS/GFLS
-Instâncias: 94 | repetições: 3 | orçamentos: 0.55s por variante (orçamento fixo de 10s por instância)
+Instâncias: 94 | repetições: 3 | orçamentos: 0.55s por variante
 
 === Orçamento 0.55 s ===
 
@@ -24,9 +24,9 @@ Instância 8 | ótimo 101 | inicial 1104.00
   rep 3 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 0.00% | rodadas 30
 
 Instância 11 | ótimo 100 | inicial 1131.00
-  rep 1 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 3960
-  rep 2 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 3960
-  rep 3 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 3960
+  rep 1 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 2.00% | rodadas 1620
+  rep 2 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 2.00% | rodadas 1552
+  rep 3 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 2.00% | rodadas 1470
 
 Instância 13 | ótimo 101 | inicial 1042.00
   rep 1 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 0.00% | rodadas 60
@@ -79,9 +79,9 @@ Instância 25 | ótimo 103 | inicial 1062.00
   rep 3 | I=1 S=1 L=0 R=1               custo 103.00 | GAP 0.00% | rodadas 30
 
 Instância 28 | ótimo 102 | inicial 1085.00
-  rep 1 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 0.00% | rodadas 10500
-  rep 2 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 0.00% | rodadas 10500
-  rep 3 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 0.00% | rodadas 10500
+  rep 1 | I=1 S=1 L=0 R=1               custo 106.00 | GAP 3.92% | rodadas 1530
+  rep 2 | I=1 S=1 L=0 R=1               custo 106.00 | GAP 3.92% | rodadas 1532
+  rep 3 | I=1 S=1 L=0 R=1               custo 106.00 | GAP 3.92% | rodadas 1350
 
 Instância 29 | ótimo 101 | inicial 926.00
   rep 1 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 0.00% | rodadas 90
@@ -299,9 +299,9 @@ Instância 99 | ótimo 100 | inicial 1045.00
   rep 3 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 60
 
 Instância 100 | ótimo 101 | inicial 972.00
-  rep 1 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 38271
-  rep 2 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 38486
-  rep 3 | I=1 S=1 L=0 R=1               custo 105.00 | GAP 3.96% | rodadas 38430
+  rep 1 | I=1 S=1 L=0 R=1               custo 119.00 | GAP 17.82% | rodadas 1011
+  rep 2 | I=1 S=1 L=0 R=1               custo 119.00 | GAP 17.82% | rodadas 900
+  rep 3 | I=1 S=1 L=0 R=1               custo 119.00 | GAP 17.82% | rodadas 960
 
 Instância 101 | ótimo 100 | inicial 1040.00
   rep 1 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 660
@@ -379,14 +379,14 @@ Instância 127 | ótimo 100 | inicial 1039.00
   rep 3 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 60
 
 Instância 128 | ótimo 101 | inicial 1035.00
-  rep 1 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 0.00% | rodadas 10020
-  rep 2 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 0.00% | rodadas 10020
-  rep 3 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 0.00% | rodadas 10020
+  rep 1 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 0.99% | rodadas 2120
+  rep 2 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 0.99% | rodadas 2108
+  rep 3 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 0.99% | rodadas 2062
 
 Instância 129 | ótimo 100 | inicial 1041.00
-  rep 1 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 1920
-  rep 2 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 1920
-  rep 3 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 1920
+  rep 1 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 1919
+  rep 2 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 1.00% | rodadas 1857
+  rep 3 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 1.00% | rodadas 1897
 
 Instância 130 | ótimo 101 | inicial 1097.00
   rep 1 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 0.00% | rodadas 30
@@ -454,9 +454,9 @@ Instância 146 | ótimo 100 | inicial 981.00
   rep 3 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 180
 
 Instância 147 | ótimo 100 | inicial 1083.00
-  rep 1 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 6180
-  rep 2 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 6180
-  rep 3 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 6180
+  rep 1 | I=1 S=1 L=0 R=1               custo 103.00 | GAP 3.00% | rodadas 1561
+  rep 2 | I=1 S=1 L=0 R=1               custo 103.00 | GAP 3.00% | rodadas 1385
+  rep 3 | I=1 S=1 L=0 R=1               custo 102.00 | GAP 2.00% | rodadas 1893
 
 Instância 148 | ótimo 101 | inicial 1077.00
   rep 1 | I=1 S=1 L=0 R=1               custo 101.00 | GAP 0.00% | rodadas 60
@@ -473,4 +473,4 @@ Instância 150 | ótimo 100 | inicial 1009.00
   rep 2 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 180
   rep 3 | I=1 S=1 L=0 R=1               custo 100.00 | GAP 0.00% | rodadas 180
 
-CSV salvo em data/experiments/gls_promoted_article_protocol.csv
+CSV salvo em data/experiments/ablation_0.55s/i1_s1_l0_r1.csv
