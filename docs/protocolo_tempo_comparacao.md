@@ -40,10 +40,10 @@ O ILS#3 é dramaticamente melhor que o ILS#1 — chega perto da GLS, embora aind
 
 ## Artefatos
 
-- Tabela visual (Java ILS#1 × C++ GLS): `data/charts_article_comparison/tabela_comparativa_protocolo_artigo_10s.png`
-- Tabela visual (Java ILS#1 × Java ILS#3 × C++ GLS): `data/charts_article_comparison/tabela_comparativa_ils1_ils3_gls_10s.png`
-- CSV C++: `data/experiments/gls_promoted_article_protocol.csv`
-- Saída Java ILS#1: `data/java_results_raw.txt`
-- Saída Java ILS#3: `data/experiments/java_ils3_10s_raw.txt`
-- Script da tabela 3 vias: `scripts/plot_ils3_comparison.py`
+- Tabela visual (Java ILS#1 × C++ GLS): `experiments/07_protocolo_artigo/charts/article_comparison/tabela_comparativa_protocolo_artigo_10s.png`
+- Tabela visual (Java ILS#1 × Java ILS#3 × C++ GLS): `experiments/07_protocolo_artigo/charts/article_comparison/tabela_comparativa_ils1_ils3_gls_10s.png`
+- CSV C++: `experiments/07_protocolo_artigo/results/gls_promoted_article_protocol.csv`
+- Saída Java ILS#1: `experiments/00_baseline_java/results/java_results_raw.txt`
+- Saída Java ILS#3: `experiments/00_baseline_java/results/java_ils3_10s_raw.txt`
+- Script da tabela 3 vias: `experiments/07_protocolo_artigo/scripts/plot_ils3_comparison.py`
 
