@@ -1,0 +1,17 @@
+## Calibração da GLS (fase 11). Execute por scripts/run_irace.sh, a partir da raiz.
+parameterFile = "parameters.txt"
+configurationsFile = "configurations.txt"
+targetRunner = "./target-runner"
+trainInstancesDir = "../../../data/instances_train"
+trainInstancesFile = "train-instances.txt"
+execDir = "../results/irace"
+logFile = "irace.Rdata"  # relativo ao execDir
+
+## 3.000 execuções de 10 s em 3 processos: cerca de 3 h.
+maxExperiments = 3000
+parallel = 3
+
+## A GLS não usa números aleatórios: a mesma configuração na mesma instância
+## repete o resultado, e o irace não precisa avaliá-la duas vezes.
+deterministic = 1
+seed = 20261029

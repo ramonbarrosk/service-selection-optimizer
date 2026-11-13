@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Chamado pelo irace: <id da configuração> <id da instância> <semente> <instância> <parâmetros...>
+# Roda a GLS por TIME_SECONDS (padrão 10, o protocolo da fase 07) e imprime o GAP
+# para o limite inferior trivial, o valor a minimizar. A semente é ignorada: a GLS
+# é determinística.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+INSTANCE="$4"
+shift 4
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --alpha) export SSO_GLS_ALPHA="$2" ;;
+        --rounds) export SSO_GLS_ROUNDS="$2" ;;
+        --gfls) export SSO_GLS_GFLS="$2" ;;
+        --replacement) export SSO_GLS_REPLACEMENT="$2" ;;
+        --regret) export SSO_GLS_REGRET="$2" ;;
+        --calibrate) export SSO_GLS_CALIBRATE="$2" ;;
+        --maxpen) export SSO_GLS_MAX_PENALIZED="$2" ;;
+        *) echo "Parâmetro desconhecido: $1" >&2; exit 1 ;;
+    esac
+    shift 2
+done
+
+"$ROOT/build/gls-run" "$INSTANCE" "${TIME_SECONDS:-10}" 2>/dev/null

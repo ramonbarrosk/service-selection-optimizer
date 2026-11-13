@@ -7,12 +7,14 @@ DEPFLAGS = -MMD -MP
 TARGET = build/service-selection-optimizer
 GLS_EXPERIMENT_TARGET = build/compare-gls-improvements
 GLS_EXPERIMENT_SOURCE = experiments/06_gls_melhorias/compare_gls_improvements.cpp
+GENERATOR_TARGET = build/generate-instance
+GLS_RUN_TARGET = build/gls-run
 
 GLS_RESULTS = experiments/06_gls_melhorias/results
 GLS_CHARTS = experiments/06_gls_melhorias/charts
 GLS_SCRIPTS = experiments/06_gls_melhorias/scripts
 
-all: $(TARGET)
+all: $(TARGET) $(GENERATOR_TARGET) $(GLS_RUN_TARGET)
 
 $(TARGET): src/main.cpp
 	@mkdir -p build
@@ -22,7 +24,16 @@ $(GLS_EXPERIMENT_TARGET): $(GLS_EXPERIMENT_SOURCE)
 	@mkdir -p build
 	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -MF build/compare-gls-improvements.d -o $@ $<
 
--include build/main.d build/compare-gls-improvements.d
+$(GENERATOR_TARGET): tools/generate_instance.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -MF build/generate-instance.d -o $@ $<
+
+$(GLS_RUN_TARGET): tools/gls_run.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -MF build/gls-run.d -o $@ $<
+
+-include build/main.d build/compare-gls-improvements.d build/generate-instance.d \
+	build/gls-run.d
 
 run: $(TARGET)
 	@./$(TARGET)

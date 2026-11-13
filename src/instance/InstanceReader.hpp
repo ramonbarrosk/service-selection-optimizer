@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -10,12 +11,21 @@
 
 #include "InstanceMatrix.hpp"
 
-// Leitura das instâncias em data/instances e dos logs do método exato em
-// data/Log. Os caminhos são relativos à raiz do repositório.
+// Leitura das instâncias e dos logs do método exato. Por padrão, data/instances
+// e data/Log, relativos à raiz do repositório; SSO_INSTANCE_DIR e SSO_LOG_DIR
+// apontam para outro conjunto, como as instâncias geradas em data/instances_hard.
 
 inline const std::string kInstancePrefix = "Instance_10_10_";
 
-inline std::vector<int> listInstanceIds(const std::string& folder = "data/instances") {
+inline std::string envDir(const char* name, const std::string& fallback) {
+    const char* value = std::getenv(name);
+    return value && *value ? std::string(value) : fallback;
+}
+
+inline std::string instanceDir() { return envDir("SSO_INSTANCE_DIR", "data/instances"); }
+inline std::string logDir() { return envDir("SSO_LOG_DIR", "data/Log"); }
+
+inline std::vector<int> listInstanceIds(const std::string& folder = instanceDir()) {
     std::vector<int> ids;
     for (const auto& entry : std::filesystem::directory_iterator(folder)) {
         if (!entry.is_regular_file())
@@ -30,8 +40,7 @@ inline std::vector<int> listInstanceIds(const std::string& folder = "data/instan
     return ids;
 }
 
-inline InstanceMatrix readInstance(int id) {
-    const std::string path = "data/instances/" + kInstancePrefix + std::to_string(id);
+inline InstanceMatrix readInstanceFile(const std::string& path) {
     std::ifstream file(path);
     if (!file.is_open())
         throw std::runtime_error("Não foi possível abrir: " + path);
@@ -69,14 +78,27 @@ inline InstanceMatrix readInstance(int id) {
     }
     for (int service = 0; service < instance.getNumberOfServices(); ++service)
         instance.setServResourceCapacity(service, instance.getVres());
-    instance.setInstanceName(kInstancePrefix + std::to_string(id));
+    instance.setInstanceName(std::filesystem::path(path).filename().string());
     return instance;
+}
+
+inline InstanceMatrix readInstance(int id) {
+    return readInstanceFile(instanceDir() + "/" + kInstancePrefix + std::to_string(id));
+}
+
+// Limite inferior trivial: cada tarefa no seu serviço mais barato, ignorando
+// capacidade, Smax e SLA. Uma solução viável com esse custo é ótima.
+inline int trivialLowerBound(const InstanceMatrix& instance) {
+    int bound = 0;
+    for (int task = 0; task < instance.getNumberOfTasks(); ++task)
+        bound += static_cast<int>(instance.getMinCostForTask(task));
+    return bound;
 }
 
 // Carrega o custo ótimo e o tempo do método exato. Retorna false se o log não
 // existir ou não trouxer o ótimo; nesse caso a instância fica sem referência.
 inline bool loadReferenceLog(InstanceMatrix& instance, int id) {
-    std::ifstream file("data/Log/" + kInstancePrefix + std::to_string(id));
+    std::ifstream file(logDir() + "/" + kInstancePrefix + std::to_string(id));
     if (!file.is_open())
         return false;
 

@@ -1,0 +1,10 @@
+# Parâmetros da GLS calibrados pelo irace. Cada um vira uma variável SSO_GLS_* no
+# target-runner (veja glsParametersFromEnv em src/search/GlsSolver.hpp).
+# name        switch             type    values
+alpha         "--alpha "         r,log   (0.01, 1.0)
+rounds        "--rounds "        i       (5, 100)
+gfls          "--gfls "          c       (0, 1)
+replacement   "--replacement "   c       (0, 1)
+regret        "--regret "        c       (0, 1)
+calibrate     "--calibrate "     c       (0, 1)
+maxpen        "--maxpen "        i       (0, 3)
