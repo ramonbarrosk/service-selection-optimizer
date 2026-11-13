@@ -1,0 +1,351 @@
+CONFIG algorithm=GLS repetitions=20 timeSeconds=10 alpha=0.3 roundsPerCycle=30
+Executing instance 5
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 11
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 21
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 24
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 28
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 40
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 42
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 51
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 60
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 67
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 100
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 101
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 128
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 129
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 147
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal
+Instance_10_10_5 100 38.78 100 100 0.1861 YES (20/20)
+Instance_10_10_11 100 53.08 100 100 1.0164 YES (20/20)
+Instance_10_10_21 101 1.02 101 101 0.06575 YES (20/20)
+Instance_10_10_24 102 1.81 102 102 0.12965 YES (20/20)
+Instance_10_10_28 102 124.9 102 102 2.6624 YES (20/20)
+Instance_10_10_40 101 3.43 101 101 0.14595 YES (20/20)
+Instance_10_10_42 100 2.14 100 100 0.094 YES (20/20)
+Instance_10_10_51 100 0.53 100 100 0.06825 YES (20/20)
+Instance_10_10_60 100 1.78 100 100 0.0791 YES (20/20)
+Instance_10_10_67 100 1.43 100 100 0.0725 YES (20/20)
+Instance_10_10_100 101 216.78 105 105 10 NO
+Instance_10_10_101 100 74.44 100 100 0.2355 YES (20/20)
+Instance_10_10_128 101 50.13 101 101 2.5092 YES (20/20)
+Instance_10_10_129 100 60.67 100 100 0.56785 YES (20/20)
+Instance_10_10_147 100 80.7 100 100 1.4942 YES (20/20)
+
+MEAN BEST COSTS: 100.8
+REACHED OPTIMALL: 14/15 instances
+INSTANCES THAT REACHED OPTIMAL:
+  Instance_10_10_5
+  Instance_10_10_11
+  Instance_10_10_21
+  Instance_10_10_24
+  Instance_10_10_28
+  Instance_10_10_40
+  Instance_10_10_42
+  Instance_10_10_51
+  Instance_10_10_60
+  Instance_10_10_67
+  Instance_10_10_101
+  Instance_10_10_128
+  Instance_10_10_129
+  Instance_10_10_147
+TOTAL EXECUTION TIME: 6m 26.642s

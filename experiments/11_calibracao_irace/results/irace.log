@@ -1,0 +1,316 @@
+#------------------------------------------------------------------------------
+# irace: An implementation in R of (Elitist) Iterated Racing
+# Version: 4.5.1.d5507ea
+# Copyright (C) 2010-2025
+# Manuel Lopez-Ibanez     <manuel.lopez-ibanez@manchester.ac.uk>
+# Jeremie Dubois-Lacoste
+# Leslie Perez Caceres    <leslie.perez.caceres@ulb.ac.be>
+#
+# This is free software, and you are welcome to redistribute it under certain
+# conditions.  See the GNU General Public License for details. There is NO
+# WARRANTY; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# irace builds upon previous code from the race package:
+#     race: Racing methods for the selection of the best
+#     Copyright (C) 2003 Mauro Birattari
+#------------------------------------------------------------------------------
+# installed at: /home/ramon/R/x86_64-pc-linux-gnu-library/4.3/irace
+# called with: --scenario scenario.txt
+# 2026-10-29 14:34:39 -03: Reading parameter file '/home/ramon/MyProjects/service-selection-optimizer/experiments/11_calibracao_irace/irace/parameters.txt'.
+# 2026-10-29 14:34:40 -03: Read 1 configuration(s) from file '/home/ramon/MyProjects/service-selection-optimizer/experiments/11_calibracao_irace/irace/configurations.txt'
+# 2026-10-29 14:34:40 -03: Initialization
+# Elitist race
+# Elitist new instances: 1
+# Elitist limit: 2
+# nbIterations: 4
+# minNbSurvival: 4
+# nbParameters: 7
+# seed: 20261029
+# confidence level: 0.95
+# budget: 3000
+# mu: 5
+# deterministic: TRUE
+
+# 2026-10-29 14:34:40 -03: Iteration 1 of 4
+# experimentsUsed: 0
+# remainingBudget: 3000
+# currentBudget: 750
+# nbConfigurations: 125
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|x|          1|        125|          1|     0.000000000|        125|00:07:46|   NA|  NA|    NA|
+|x|          2|        125|          1|     0.000000000|        250|00:07:47|+0.76|0.88|0.1662|
+|x|          3|        125|          1|     0.000000000|        375|00:07:46|+0.75|0.83|0.1840|
+|x|          4|        125|          1|     0.000000000|        500|00:07:42|+0.79|0.85|0.1573|
+|-|          5|         40|          1|     0.000000000|        625|00:07:46|+0.03|0.23|0.5986|
+|-|          6|         32|          1|     0.000000000|        665|00:02:37|+0.08|0.23|0.4702|
+|=|          7|         32|          1|     2.613242857|        697|00:02:00|-0.00|0.14|0.5605|
+|=|          8|         32|          1|     2.286587500|        729|00:02:04|+0.05|0.17|0.5847|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:           1    mean value:      2.286587500
+Description of the best-so-far configuration:
+  .ID. alpha rounds gfls replacement regret calibrate maxpen .PARENT.
+1    1   0.3     30    1           1      1         0      0       NA
+
+# 2026-10-29 15:20:11 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+    alpha rounds gfls replacement regret calibrate maxpen
+1  0.3000     30    1           1      1         0      0
+2  0.0967     55    1           1      1         0      0
+6  0.1719     43    1           1      0         1      3
+27 0.8370     58    1           1      1         0      3
+# 2026-10-29 15:20:11 -03: Iteration 2 of 4
+# experimentsUsed: 729
+# remainingBudget: 2271
+# currentBudget: 757
+# nbConfigurations: 87
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|x|          9|         87|          1|     0.000000000|         87|00:05:20|   NA|  NA|    NA|
+|x|          5|         87|          1|     0.000000000|        170|00:05:07|+0.80|0.90|0.1133|
+|x|          1|         87|          1|     0.000000000|        253|00:05:12|+0.87|0.91|0.0755|
+|x|          8|         87|          1|     0.000000000|        336|00:05:12|+0.86|0.89|0.1068|
+|-|          3|         38|          1|     0.000000000|        419|00:05:08|-0.01|0.19|0.3942|
+|=|          7|         38|          1|     3.048783333|        453|00:02:14|-0.01|0.16|0.4940|
+|=|          2|         38|          1|     2.613242857|        487|00:02:14|-0.03|0.12|0.5711|
+|=|          6|         38|          1|     2.286587500|        521|00:02:11|-0.02|0.11|0.4978|
+|=|          4|         38|          1|     2.032522222|        555|00:02:14|-0.02|0.09|0.4413|
+|=|         10|         38|        128|     4.292320000|        593|00:02:24|-0.01|0.09|0.4972|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:         128    mean value:      4.292320000
+Description of the best-so-far configuration:
+    .ID.  alpha rounds gfls replacement regret calibrate maxpen .PARENT.
+128  128 0.2798     50    1           1      1         0      1        2
+
+# 2026-10-29 15:57:33 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+     alpha rounds gfls replacement regret calibrate maxpen
+128 0.2798     50    1           1      1         0      1
+142 0.0649     61    1           1      1         1      0
+27  0.8370     58    1           1      1         0      3
+157 0.0589     51    1           1      0         0      1
+# 2026-10-29 15:57:33 -03: Iteration 3 of 4
+# experimentsUsed: 1322
+# remainingBudget: 1678
+# currentBudget: 839
+# nbConfigurations: 79
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|x|         11|         79|        128|     0.000000000|         79|00:05:02|   NA|  NA|    NA|
+|x|         10|         79|        220|     12.06895000|        154|00:04:34|-0.22|0.39|1.1946|
+|x|          4|         79|        128|     8.210166667|        229|00:04:39|-0.11|0.26|1.0241|
+|x|          3|         79|        128|     6.157625000|        304|00:04:39|+0.03|0.27|0.8668|
+|-|          8|         57|        128|     4.926100000|        379|00:04:38|-0.06|0.16|0.9835|
+|=|          2|         57|        128|     4.105083333|        432|00:03:18|-0.02|0.15|0.9463|
+|=|          7|         57|        128|     6.131885714|        485|00:03:21|-0.02|0.13|0.9649|
+|=|          9|         57|        128|     5.365400000|        538|00:03:18|-0.02|0.11|0.9653|
+|=|          5|         57|        128|     4.769244444|        591|00:03:21|-0.01|0.11|0.9335|
+|=|          6|         57|        128|     4.292320000|        644|00:03:21|+0.00|0.10|0.9233|
+|=|          1|         57|        128|     3.902109091|        697|00:03:18|+0.02|0.11|0.8934|
+|-|         12|         49|        128|     3.576933333|        754|00:03:31|-0.02|0.06|0.5815|
+|=|         13|         49|        128|     3.301784615|        803|00:03:08|-0.02|0.06|0.5360|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:         128    mean value:      3.301784615
+Description of the best-so-far configuration:
+    .ID.  alpha rounds gfls replacement regret calibrate maxpen .PARENT.
+128  128 0.2798     50    1           1      1         0      1        2
+
+# 2026-10-29 16:47:47 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+     alpha rounds gfls replacement regret calibrate maxpen
+128 0.2798     50    1           1      1         0      1
+248 0.1261     40    1           1      1         0      1
+244 0.9271     65    1           1      1         0      3
+259 0.2101     81    1           1      0         0      3
+# 2026-10-29 16:47:47 -03: Iteration 4 of 4
+# experimentsUsed: 2125
+# remainingBudget: 875
+# currentBudget: 875
+# nbConfigurations: 66
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|x|         14|         66|        128|     0.000000000|         66|00:04:02|   NA|  NA|    NA|
+|x|          7|         66|        128|     9.146350000|        128|00:03:51|+0.40|0.70|0.5717|
+|x|          2|         66|        128|     6.097566667|        190|00:03:55|+0.25|0.50|0.7793|
+|x|          8|         66|        128|     4.573175000|        252|00:03:51|+0.26|0.45|0.6902|
+|-|          9|         57|        128|     3.658540000|        314|00:03:54|-0.04|0.17|0.8177|
+|=|          3|         57|        128|     3.048783333|        367|00:03:18|-0.03|0.14|0.6761|
+|=|          6|         57|        128|     2.613242857|        420|00:03:21|-0.03|0.12|0.7228|
+|=|         12|         57|        128|     2.286587500|        473|00:03:21|-0.02|0.11|0.7499|
+|=|         11|         57|        128|     2.032522222|        526|00:03:18|+0.03|0.13|0.7558|
+|-|          4|         51|        128|     1.829270000|        579|00:03:21|-0.02|0.08|0.4987|
+|=|          1|         51|        128|     1.662972727|        626|00:02:57|-0.02|0.08|0.4526|
+|=|          5|         51|        128|     1.524391667|        673|00:02:58|-0.01|0.07|0.4143|
+|=|         13|         51|        128|     1.407130769|        720|00:02:57|-0.01|0.06|0.3820|
+|=|         10|         51|        342|     2.960385714|        767|00:02:58|-0.01|0.06|0.4249|
+|=|         15|         51|        342|     2.763026667|        818|00:03:08|-0.01|0.06|0.3962|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:         342    mean value:      2.763026667
+Description of the best-so-far configuration:
+    .ID.  alpha rounds gfls replacement regret calibrate maxpen .PARENT.
+342  342 0.9971     79    1           1      1         0      3      244
+
+# 2026-10-29 17:39:05 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+     alpha rounds gfls replacement regret calibrate maxpen
+342 0.9971     79    1           1      1         0      3
+128 0.2798     50    1           1      1         0      1
+248 0.1261     40    1           1      1         0      1
+244 0.9271     65    1           1      1         0      3
+# 2026-10-29 17:39:05 -03: Iteration 5 of 5
+# experimentsUsed: 2943
+# remainingBudget: 57
+# currentBudget: 57
+# nbConfigurations: 7
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|x|         16|          7|        342|     1.000000000|          7|00:00:33|   NA|  NA|    NA|
+|x|          7|          7|        342|     9.646350000|         10|00:00:10|+1.00|1.00|0.0000|
+|x|          5|          7|        342|     6.430900000|         13|00:00:13|+1.00|1.00|0.0000|
+|x|          8|          7|        342|     4.823175000|         16|00:00:10|+1.00|1.00|0.0000|
+|=|          3|          7|        342|     3.858540000|         19|00:00:10|+1.00|1.00|0.0000|
+|=|         11|          7|        342|     3.215450000|         22|00:00:10|+1.00|1.00|0.0000|
+|=|          9|          7|        342|     2.756100000|         25|00:00:13|+1.00|1.00|0.0000|
+|=|          1|          7|        342|     2.411587500|         28|00:00:10|+1.00|1.00|0.0000|
+|=|         14|          7|        342|     2.143633333|         31|00:00:10|+1.00|1.00|0.0000|
+|=|          4|          7|        342|     1.929270000|         34|00:00:13|+1.00|1.00|0.0000|
+|=|          2|          7|        342|     1.753881818|         37|00:00:10|+1.00|1.00|0.0000|
+|=|         15|          7|        342|     1.607725000|         40|00:00:10|+1.00|1.00|0.0000|
+|=|         13|          7|        342|     1.484053846|         43|00:00:13|+1.00|1.00|0.0000|
+|=|          6|          7|        342|     1.378050000|         46|00:00:10|+1.00|1.00|0.0000|
+|=|         12|          7|        342|     1.286180000|         49|00:00:10|+1.00|1.00|0.0000|
+|=|         10|          7|        342|     2.652837500|         52|00:00:13|+0.00|0.06|0.0536|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:         342    mean value:      2.652837500
+Description of the best-so-far configuration:
+    .ID.  alpha rounds gfls replacement regret calibrate maxpen .PARENT.
+342  342 0.9971     79    1           1      1         0      3      244
+
+# 2026-10-29 17:42:27 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+     alpha rounds gfls replacement regret calibrate maxpen
+342 0.9971     79    1           1      1         0      3
+128 0.2798     50    1           1      1         0      1
+248 0.1261     40    1           1      1         0      1
+244 0.9271     65    1           1      1         0      3
+# 2026-10-29 17:42:27 -03: Stopped because there is not enough budget left to race more than the minimum (4).
+# You may either increase the budget or set 'minNbSurvival' to a lower value.
+# Iteration: 6
+# nbIterations: 6
+# experimentsUsed: 2995
+# timeUsed: 0
+# remainingBudget: 5
+# currentBudget: 5
+# number of elites: 4
+# nbConfigurations: 4
+# Total CPU user time: 33212.19, CPU sys time: 30.813, Wall-clock time: 11267.94
+# 2026-10-29 17:42:27 -03: Starting post-selection:
+# Configurations selected: 342, 128, 248, 244, 346.
+# Pending instances: 0, 0, 0, 0, 0.
+# 2026-10-29 17:42:28 -03: seed: 20261029
+# Configurations: 5
+# Available experiments: 5
+# minSurvival: 1
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|.|          6|          5|        128|     0.000000000|          0|00:00:00|   NA|  NA|    NA|
+|.|         12|          5|        128|     0.000000000|          0|00:00:00|+1.00|1.00|0.0000|
+|.|          2|          5|        128|     0.000000000|          0|00:00:00|+1.00|1.00|0.0000|
+|.|          3|          5|        128|     0.000000000|          0|00:00:00|+1.00|1.00|0.0000|
+|.|         16|          5|        128|    0.2000000000|          0|00:00:00|+1.00|1.00|0.0000|
+|.|         13|          5|        128|    0.1666666667|          0|00:00:00|+1.00|1.00|0.0000|
+|.|          5|          5|        128|    0.1428571429|          0|00:00:00|+1.00|1.00|0.0000|
+|.|         14|          5|        128|    0.1250000000|          0|00:00:00|+1.00|1.00|0.0000|
+|.|         15|          5|        128|    0.1111111111|          0|00:00:00|+1.00|1.00|0.0000|
+|.|          1|          5|        128|    0.1000000000|          0|00:00:00|+1.00|1.00|0.0000|
+|.|          9|          5|        128|   0.09090909091|          0|00:00:00|+1.00|1.00|0.0000|
+|.|         10|          5|        128|     2.135875000|          0|00:00:00|+0.00|0.08|0.0667|
+|.|         11|          5|        128|     1.971576923|          0|00:00:00|+0.00|0.08|0.0615|
+|.|          7|          5|        128|     3.137371429|          0|00:00:00|+0.00|0.07|0.0571|
+|.|          8|          5|        128|     2.928213333|          0|00:00:00|+0.00|0.07|0.0533|
+|.|          4|          5|        128|     2.745200000|          0|00:00:00|+0.00|0.06|0.0500|
+|=|         17|          5|        342|     2.496788235|          5|00:00:20|+0.00|0.06|0.0471|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:         342    mean value:      2.496788235
+Description of the best-so-far configuration:
+    .ID.  alpha rounds gfls replacement regret calibrate maxpen .PARENT.
+342  342 0.9971     79    1           1      1         0      3      244
+
+# 2026-10-29 17:42:48 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+     alpha rounds gfls replacement regret calibrate maxpen
+342 0.9971     79    1           1      1         0      3
+128 0.2798     50    1           1      1         0      1
+248 0.1261     40    1           1      1         0      1
+244 0.9271     65    1           1      1         0      3
+# Total CPU user time: 33267.82, CPU sys time: 30.878, Wall-clock time: 11288.02
+# Best configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+     alpha rounds gfls replacement regret calibrate maxpen
+342 0.9971     79    1           1      1         0      3
+128 0.2798     50    1           1      1         0      1
+248 0.1261     40    1           1      1         0      1
+244 0.9271     65    1           1      1         0      3
+# Best configurations as commandlines (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+342 --alpha 0.9971 --rounds 79 --gfls 1 --replacement 1 --regret 1 --calibrate 0 --maxpen 3
+128 --alpha 0.2798 --rounds 50 --gfls 1 --replacement 1 --regret 1 --calibrate 0 --maxpen 1
+248 --alpha 0.1261 --rounds 40 --gfls 1 --replacement 1 --regret 1 --calibrate 0 --maxpen 1
+244 --alpha 0.9271 --rounds 65 --gfls 1 --replacement 1 --regret 1 --calibrate 0 --maxpen 3
+
+
+# Testing of elite configurations: 1 
+# Testing iteration configurations: FALSE 
+# 2026-10-29 17:42:48 -03: No test instances, skip testing

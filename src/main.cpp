@@ -3,8 +3,14 @@
 // Protocolo: cada instância roda SSO_REPETITIONS vezes (padrão 3), cada uma com
 // orçamento fixo de SSO_TIME_SECONDS (padrão 10 s), encerrando antes se alcançar
 // o ótimo conhecido. SSO_INSTANCES=1,28,100 restringe as instâncias executadas.
+// SSO_CSV=arquivo.csv grava uma linha por repetição, no formato do ArticleResult Java.
+// SSO_INSTANCE_DIR e SSO_LOG_DIR trocam o conjunto de instâncias. Instâncias sem log
+// do método exato usam o limite inferior trivial como referência: alcançá-lo prova
+// o ótimo, e o GAP passa a ser medido contra esse limite.
+// SSO_GLS_* trocam os parâmetros da GLS (veja glsParametersFromEnv em GlsSolver.hpp).
 
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -69,16 +75,26 @@ int main() {
     const int repetitions = envInt("SSO_REPETITIONS", 3);
     const double budgetSeconds = envDouble("SSO_TIME_SECONDS", 10.0);
     const vector<int> instanceIds = selectedInstances();
+    const char* csvPath = std::getenv("SSO_CSV");
+    std::ofstream csv;
+    if (csvPath && *csvPath) {
+        csv.open(csvPath);
+        if (!csv)
+            throw std::runtime_error(string("Não foi possível abrir ") + csvPath);
+        csv << "instance,repetition,optimum,cost,gap_pct,reached_optimal,time_to_best_ms,elapsed_ms,budget_seconds,reference\n";
+    }
 
+    const GlsParameters parameters = glsParametersFromEnv();
     cout << "CONFIG algorithm=GLS repetitions=" << repetitions
          << " timeSeconds=" << budgetSeconds
-         << " alpha=" << kGlsAlpha
-         << " roundsPerCycle=" << kGlsRoundsPerCycle << endl;
+         << " " << describeGlsParameters(parameters) << endl;
 
     vector<InstanceSummary> summaries;
     for (int id : instanceIds) {
         InstanceMatrix instance = readInstance(id);
-        loadReferenceLog(instance, id);
+        const bool exactReference = loadReferenceLog(instance, id);
+        if (!exactReference)
+            instance.setOptimalCost(trivialLowerBound(instance));
         const Allocation initial = buildInitialSolution(instance);
         const bool hasOptimal = instance.getOptimalCost() > 0;
 
@@ -90,7 +106,9 @@ int main() {
 
         for (int repetition = 0; repetition < repetitions; ++repetition) {
             cout << "r " << repetition << endl;
-            const GlsRunResult run = runGuidedLocalSearch(initial, instance, budgetSeconds);
+            const GlsRunResult run = runGuidedLocalSearch(
+                initial, instance, budgetSeconds, parameters.options,
+                parameters.alpha, parameters.roundsPerCycle);
             const double cost = run.best.getCurrentCost();
             const bool optimal = hasOptimal && cost <= instance.getOptimalCost();
 
@@ -103,6 +121,14 @@ int main() {
             summary.meanTimeToBestMs += timeToBestMs / repetitions;
             if (optimal)
                 ++summary.reachedOptimal;
+            if (csv.is_open()) {
+                const double optimum = instance.getOptimalCost();
+                csv << id << "," << repetition + 1 << "," << instance.getOptimalCost() << ","
+                    << cost << "," << 100.0 * (cost - optimum) / optimum << ","
+                    << (optimal ? 1 : 0) << "," << timeToBestMs << "," << run.elapsedMs << ","
+                    << budgetSeconds << "," << (exactReference ? "exact" : "lower_bound")
+                    << std::endl;
+            }
         }
         summaries.push_back(summary);
     }

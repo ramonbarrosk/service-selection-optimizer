@@ -1,0 +1,3 @@
+# Configuração atual (fases 06 a 10), avaliada desde a primeira corrida.
+alpha  rounds  gfls  replacement  regret  calibrate  maxpen
+0.3    30      1     1            1       0          0

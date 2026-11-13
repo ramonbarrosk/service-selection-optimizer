@@ -21,10 +21,14 @@ Os scripts devem ser executados a partir da raiz do repositório.
 | [`06_gls_melhorias`](06_gls_melhorias) | set/2026 | Quais melhorias tornam a GLS mais forte? | Fatorial 2⁴ que definiu a variante promovida `I1 S1 L0 R1`. |
 | [`07_protocolo_artigo`](07_protocolo_artigo) | set/2026 | Como a GLS se compara ao Java no protocolo do artigo? | Com 10 s fixos: GLS 93/94 ótimos, Java ILS#1 0/94, ILS#3 86/94. |
 | [`08_ablacao_gls`](08_ablacao_gls) | out/2026 | Qual a contribuição de cada melhoria nas 94 instâncias? | Ablação completa, varredura de α e diagnóstico da instância 100. |
+| [`09_teste_estatistico`](09_teste_estatistico) | out/2026 | A diferença ILS#3 × GLS nas instâncias difíceis é significativa? | Wilcoxon pareado sobre o custo médio por instância (20 repetições): GLS melhor nas 12 instâncias com diferença, p = 4,9e-4. |
+| [`10_instancias_dificeis`](10_instancias_dificeis) | out/2026 | Como os métodos se comparam em instâncias novas e mais difíceis? | Gerador com semente (`tools/generate_instance.cpp`) e 75 instâncias em 5 perfis em `data/instances_hard`. |
+| [`11_calibracao_irace`](11_calibracao_irace) | out/2026 | Os parâmetros da GLS estão bem escolhidos? | Calibração com o irace em 50 instâncias de treino e validação nos dois conjuntos de teste. |
+| [`12_ils_melhorado`](12_ils_melhorado) | nov/2026 | O ILS#3 com avaliação incremental e substituição de serviço alcança a GLS? | Não nas instâncias de referência nem nos perfis T. No C50, o ILS corrigido e melhorado empata com a GLS (7 × 8, p = 0,67). |
 
 ## O que ainda roda na versão atual
 
-Somente as fases **06, 07 e 08** usam o código atual da GLS. O experimento C++ fica em
+Somente as fases **06 a 12** usam o código atual da GLS. O experimento C++ fica em
 `06_gls_melhorias/compare_gls_improvements.cpp` e é compilado com
 `make experiment-gls-improvements`. Os alvos `make run-gls-*` reproduzem os experimentos
 da fase 06, e `make run-gls-ablation` reproduz a ablação da fase 08.

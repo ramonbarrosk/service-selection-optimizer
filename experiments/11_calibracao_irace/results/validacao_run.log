@@ -1,0 +1,5 @@
+make: 'build/service-selection-optimizer' is up to date.
+Calibrada: SSO_GLS_ALPHA=0.9971 SSO_GLS_ROUNDS=79 SSO_GLS_GFLS=1 SSO_GLS_REPLACEMENT=1 SSO_GLS_REGRET=1 SSO_GLS_CALIBRATE=0 SSO_GLS_MAX_PENALIZED=3
+Conjunto original: atual e calibrada em paralelo
+Conjunto hard: atual e calibrada em paralelo
+Concluído. Agora execute: python3 experiments/11_calibracao_irace/scripts/analyze_validacao.py
