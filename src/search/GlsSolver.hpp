@@ -86,12 +86,15 @@ inline double glsNowMs() {
 }
 
 // Executa ciclos da GLS até esgotar o orçamento ou alcançar o ótimo conhecido.
+// startMs (glsNowMs) marca o início do orçamento; passe o instante anterior à
+// construção da solução inicial para que ela conte no tempo. Negativo = agora.
 inline GlsRunResult runGuidedLocalSearch(
         const Allocation& initial, const InstanceMatrix& matrix,
         double budgetSeconds,
         const GuidedLocalSearchOptions& options = GuidedLocalSearchOptions{},
-        double alpha = kGlsAlpha, int roundsPerCycle = kGlsRoundsPerCycle) {
-    const double start = glsNowMs();
+        double alpha = kGlsAlpha, int roundsPerCycle = kGlsRoundsPerCycle,
+        double startMs = -1.0) {
+    const double start = startMs >= 0.0 ? startMs : glsNowMs();
     const double deadline = start + budgetSeconds * 1000.0;
     Allocation current = initial;
     GlsRunResult result;
@@ -115,4 +118,18 @@ inline GlsRunResult runGuidedLocalSearch(
     result.elapsedMs = glsNowMs() - start;
     result.stats = guidedSearcher.stats();
     return result;
+}
+
+// Execução completa: a construção da solução inicial entra no orçamento e nos tempos,
+// como no ILS Java, que constrói a solução inicial dentro de cada repetição.
+template <typename BuildInitial>
+inline GlsRunResult runGuidedLocalSearchFromScratch(
+        BuildInitial&& buildInitial, const InstanceMatrix& matrix,
+        double budgetSeconds,
+        const GuidedLocalSearchOptions& options = GuidedLocalSearchOptions{},
+        double alpha = kGlsAlpha, int roundsPerCycle = kGlsRoundsPerCycle) {
+    const double start = glsNowMs();
+    const Allocation initial = buildInitial(matrix);
+    return runGuidedLocalSearch(initial, matrix, budgetSeconds, options, alpha,
+                                roundsPerCycle, start);
 }

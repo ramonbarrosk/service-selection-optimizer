@@ -23,8 +23,8 @@ int main(int argc, char* argv[]) {
         const double budgetSeconds = std::stod(argv[2]);
         const InstanceMatrix instance = readInstanceFile(argv[1]);
         const int bound = trivialLowerBound(instance);
-        const GlsRunResult run = runGuidedLocalSearch(
-            buildInitialSolution(instance), instance, budgetSeconds, parameters.options,
+        const GlsRunResult run = runGuidedLocalSearchFromScratch(
+            buildInitialSolution, instance, budgetSeconds, parameters.options,
             parameters.alpha, parameters.roundsPerCycle);
         const double cost = run.best.getCurrentCost();
         std::cerr << "cost=" << cost << " lower_bound=" << bound << "\n";
