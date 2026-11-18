@@ -1,0 +1,267 @@
+CONFIG ils=3 alpha=0.2 condition=BestImprovement neighborhoodStructure=MOVE incremental=true replacement=true keepBest=true fixedExecTimePerRepetition=10.0 repetitions=20 instances=12
+Executing instance 60
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 67
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 81
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 76
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 77
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 73
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 63
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 64
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 65
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 74
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 75
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 61
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost |  Mean time to Best 
+Instance_10_10_60 100 1.78 100.0 100.0 0.09145 
+Instance_10_10_67 100 1.43 100.0 100.0 0.029 
+Instance_10_10_81 101 1.89 101.24999999999997 101.0 4.71345 
+Instance_10_10_76 100 0.51 100.0 100.0 0.1085 
+Instance_10_10_77 103 1.62 103.00000000000003 103.0 1.0854499999999998 
+Instance_10_10_73 102 1.03 101.99999999999997 102.0 2.44135 
+Instance_10_10_63 100 0.53 100.0 100.0 0.0274 
+Instance_10_10_64 100 0.52 100.0 100.0 0.028399999999999998 
+Instance_10_10_65 100 1.11 100.05 100.0 3.3202000000000003 
+Instance_10_10_74 100 0.96 100.0 100.0 0.024249999999999997 
+Instance_10_10_75 100 0.51 100.0 100.0 0.019149999999999997 
+Instance_10_10_61 101 1.66 100.99999999999997 101.0 2.24005 
+MEAN BEST COSTS: 100.58333333333333

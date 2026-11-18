@@ -1,0 +1,94 @@
+CONFIG algorithm=GLS repetitions=3 timeSeconds=10 alpha=0.997100 roundsPerCycle=79 gfls=1 replacement=1 regret=1 calibrate=0 maxPenalized=3
+Executing instance 1201
+r 0
+r 1
+r 2
+Executing instance 1202
+r 0
+r 1
+r 2
+Executing instance 1203
+r 0
+r 1
+r 2
+Executing instance 1204
+r 0
+r 1
+r 2
+Executing instance 1205
+r 0
+r 1
+r 2
+Executing instance 1206
+r 0
+r 1
+r 2
+Executing instance 1207
+r 0
+r 1
+r 2
+Executing instance 1208
+r 0
+r 1
+r 2
+Executing instance 1209
+r 0
+r 1
+r 2
+Executing instance 1210
+r 0
+r 1
+r 2
+Executing instance 1211
+r 0
+r 1
+r 2
+Executing instance 1212
+r 0
+r 1
+r 2
+Executing instance 1213
+r 0
+r 1
+r 2
+Executing instance 1214
+r 0
+r 1
+r 2
+Executing instance 1215
+r 0
+r 1
+r 2
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal
+Instance_10_10_1201 101 70.21 101 101 0.422 YES (3/3)
+Instance_10_10_1202 100 62.54 100 100 1.46567 YES (3/3)
+Instance_10_10_1203 100 56.04 100 100 0.891333 YES (3/3)
+Instance_10_10_1204 101 101.11 101 101 2.90333 YES (3/3)
+Instance_10_10_1205 100 7.53 100 100 0.497 YES (3/3)
+Instance_10_10_1206 101 46.67 101 101 0.74 YES (3/3)
+Instance_10_10_1207 100 1.18 100 100 0.153667 YES (3/3)
+Instance_10_10_1208 100 45.94 101 101 10 NO
+Instance_10_10_1209 102 35.56 102 102 0.458 YES (3/3)
+Instance_10_10_1210 101 2.13 101 101 0.273667 YES (3/3)
+Instance_10_10_1211 100 95.12 103 103 10 NO
+Instance_10_10_1212 100 28.17 100 100 0.142667 YES (3/3)
+Instance_10_10_1213 101 23.41 101 101 1.46033 YES (3/3)
+Instance_10_10_1214 100 62.62 101 101 10 NO
+Instance_10_10_1215 100 78.82 100 100 2.83767 YES (3/3)
+
+MEAN BEST COSTS: 100.8
+REACHED OPTIMALL: 12/15 instances
+INSTANCES THAT REACHED OPTIMAL:
+  Instance_10_10_1201
+  Instance_10_10_1202
+  Instance_10_10_1203
+  Instance_10_10_1204
+  Instance_10_10_1205
+  Instance_10_10_1206
+  Instance_10_10_1207
+  Instance_10_10_1209
+  Instance_10_10_1210
+  Instance_10_10_1212
+  Instance_10_10_1213
+  Instance_10_10_1215
+TOTAL EXECUTION TIME: 2m 6.801s

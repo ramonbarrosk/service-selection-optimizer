@@ -1,0 +1,333 @@
+CONFIG ils=3 alpha=0.2 condition=BestImprovement neighborhoodStructure=MOVE incremental=true replacement=true keepBest=false fixedExecTimePerRepetition=10.0 repetitions=20 instances=15
+Executing instance 1512
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1504
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1508
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1501
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1509
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1507
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1505
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1502
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1515
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1513
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1514
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1503
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1510
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1506
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Executing instance 1511
+r 0
+r 1
+r 2
+r 3
+r 4
+r 5
+r 6
+r 7
+r 8
+r 9
+r 10
+r 11
+r 12
+r 13
+r 14
+r 15
+r 16
+r 17
+r 18
+r 19
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost |  Mean time to Best 
+Instance_10_10_1512 229 1.32 235.6 233.0 10.10555 
+Instance_10_10_1504 155 0.0 214.4 208.0 10.03935 
+Instance_10_10_1508 160 0.0 452.65 442.0 10.10675 
+Instance_10_10_1501 167 0.97 168.9 168.0 10.098849999999999 
+Instance_10_10_1509 187 0.0 263.40000000000003 257.0 10.06875 
+Instance_10_10_1507 262 1.55 271.4000000000001 266.0 10.072400000000002 
+Instance_10_10_1505 302 2.4 369.75000000000006 355.0 10.0719 
+Instance_10_10_1502 186 0.0 346.6499999999999 334.0 10.034149999999999 
+Instance_10_10_1515 163 0.0 318.04999999999995 309.0 10.13905 
+Instance_10_10_1513 173 0.0 211.1 209.0 10.03935 
+Instance_10_10_1514 235 1.85 247.9 243.0 10.0446 
+Instance_10_10_1503 201 0.95 204.04999999999998 202.0 10.0155 
+Instance_10_10_1510 208 1.18 214.2 212.0 10.0137 
+Instance_10_10_1506 208 0.0 348.15000000000003 342.0 10.04675 
+Instance_10_10_1511 234 1.11 242.44999999999996 240.0 10.0173 
+MEAN BEST COSTS: 268.0

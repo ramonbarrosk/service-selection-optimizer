@@ -95,7 +95,6 @@ int main() {
         const bool exactReference = loadReferenceLog(instance, id);
         if (!exactReference)
             instance.setOptimalCost(trivialLowerBound(instance));
-        const Allocation initial = buildInitialSolution(instance);
         const bool hasOptimal = instance.getOptimalCost() > 0;
 
         InstanceSummary summary;
@@ -106,8 +105,9 @@ int main() {
 
         for (int repetition = 0; repetition < repetitions; ++repetition) {
             cout << "r " << repetition << endl;
-            const GlsRunResult run = runGuidedLocalSearch(
-                initial, instance, budgetSeconds, parameters.options,
+            // A construção inicial é refeita e cronometrada em cada repetição.
+            const GlsRunResult run = runGuidedLocalSearchFromScratch(
+                buildInitialSolution, instance, budgetSeconds, parameters.options,
                 parameters.alpha, parameters.roundsPerCycle);
             const double cost = run.best.getCurrentCost();
             const bool optimal = hasOptimal && cost <= instance.getOptimalCost();

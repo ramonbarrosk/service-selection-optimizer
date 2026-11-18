@@ -25,6 +25,8 @@ Os scripts devem ser executados a partir da raiz do repositório.
 | [`10_instancias_dificeis`](10_instancias_dificeis) | out/2026 | Como os métodos se comparam em instâncias novas e mais difíceis? | Gerador com semente (`tools/generate_instance.cpp`) e 75 instâncias em 5 perfis em `data/instances_hard`. |
 | [`11_calibracao_irace`](11_calibracao_irace) | out/2026 | Os parâmetros da GLS estão bem escolhidos? | Calibração com o irace em 50 instâncias de treino e validação nos dois conjuntos de teste. |
 | [`12_ils_melhorado`](12_ils_melhorado) | nov/2026 | O ILS#3 com avaliação incremental e substituição de serviço alcança a GLS? | Não nas instâncias de referência nem nos perfis T. No C50, o ILS corrigido e melhorado empata com a GLS (7 × 8, p = 0,67). |
+| [`13_calibrada_20exec`](13_calibrada_20exec) | nov/2026 | Como a GLS calibrada pelo irace se compara ao ILS com 20 execuções, contando a construção inicial no tempo? | Base do capítulo de resultados. Nas 94 de referência, GLS 90/94 ótimos contra 20/94 do ILS em 0,55 s, e 93/94 contra 87/94 em 10 s, sem nenhuma instância pior (Wilcoxon p < 1e-22). |
+| [`14_ils_cpp`](14_ils_cpp) | nov/2026 | Quanto da diferença ILS × GLS vem da linguagem? | Porte do ILS#3 para C++ (`tools/ils_run.cpp`), validado contra o Java (custos sem diferença significativa, cerca de 3,3× mais rápido). O ILS em C++ melhora sobre o Java, mas a GLS não perde em nenhuma instância. |
 
 ## O que ainda roda na versão atual
 

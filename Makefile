@@ -9,12 +9,13 @@ GLS_EXPERIMENT_TARGET = build/compare-gls-improvements
 GLS_EXPERIMENT_SOURCE = experiments/06_gls_melhorias/compare_gls_improvements.cpp
 GENERATOR_TARGET = build/generate-instance
 GLS_RUN_TARGET = build/gls-run
+ILS_RUN_TARGET = build/ils-run
 
 GLS_RESULTS = experiments/06_gls_melhorias/results
 GLS_CHARTS = experiments/06_gls_melhorias/charts
 GLS_SCRIPTS = experiments/06_gls_melhorias/scripts
 
-all: $(TARGET) $(GENERATOR_TARGET) $(GLS_RUN_TARGET)
+all: $(TARGET) $(GENERATOR_TARGET) $(GLS_RUN_TARGET) $(ILS_RUN_TARGET)
 
 $(TARGET): src/main.cpp
 	@mkdir -p build
@@ -32,8 +33,13 @@ $(GLS_RUN_TARGET): tools/gls_run.cpp
 	@mkdir -p build
 	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -MF build/gls-run.d -o $@ $<
 
+# Porte fiel do ILS#3 do Java (fase 14).
+$(ILS_RUN_TARGET): tools/ils_run.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -MF build/ils-run.d -o $@ $<
+
 -include build/main.d build/compare-gls-improvements.d build/generate-instance.d \
-	build/gls-run.d
+	build/gls-run.d build/ils-run.d
 
 run: $(TARGET)
 	@./$(TARGET)

@@ -1,0 +1,21 @@
+make: 'build/service-selection-optimizer' is up to date.
+make: Nothing to be done for 'experiment-gls-improvements'.
+GLS calibrada: SSO_GLS_ALPHA=0.9971 SSO_GLS_ROUNDS=79 SSO_GLS_GFLS=1 SSO_GLS_REPLACEMENT=1 SSO_GLS_REGRET=1 SSO_GLS_CALIBRATE=0 SSO_GLS_MAX_PENALIZED=3
+16 jobs na fila
+[núcleo 0] ils_hard_10s_000 1101-1115 em 2921 s
+[núcleo 1] ils_hard_10s_000 1201-1215 em 3031 s
+[núcleo 0] ils_hard_10s_000 1301-1315 em 3040 s
+[núcleo 1] ils_hard_10s_000 1401-1415 em 3046 s
+[núcleo 1] ils_ref_10s_000 1-22 em 2287 s
+[núcleo 0] ils_hard_10s_000 1501-1515 em 3132 s
+[núcleo 1] ils_ref_10s_000 23-42 em 2254 s
+[núcleo 0] ils_ref_10s_000 43-58 em 2301 s
+[núcleo 1] ils_ref_10s_000 60-81 em 2023 s
+[núcleo 0] ils_ref_10s_000 82-100 em 2353 s
+[núcleo 1] ils_ref_10s_000 101-123 em 2231 s
+[núcleo 0] ils_ref_10s_000 124-138 em 2094 s
+[núcleo 1] ils_ref_10s_000 141-150 em 1985 s
+[núcleo 0] ils_ref_0.55s_000 1-150 em 2011 s
+[núcleo 1] ils_ref_0.55s_001 1-150 em 1971 s
+[núcleo 0] ils_ref_0.55s_010 1-150 em 1140 s
+Bateria concluída. Agora execute: python3 experiments/13_calibrada_20exec/scripts/merge_results.py

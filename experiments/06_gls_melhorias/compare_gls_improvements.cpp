@@ -51,7 +51,14 @@ std::string envString(const char* name, const std::string& fallback) {
 }
 
 // Escala do lambda da GLS; o padrão é o valor promovido e SSO_ALPHA permite a varredura.
-const double kExperimentAlpha = envDouble("SSO_ALPHA", kGlsAlpha);
+// α, rodadas por ciclo e características penalizadas por rodada vêm das mesmas
+// variáveis da calibração (SSO_GLS_ALPHA, SSO_GLS_ROUNDS, SSO_GLS_MAX_PENALIZED);
+// SSO_ALPHA continua aceito por compatibilidade com os scripts antigos.
+const double kExperimentAlpha = envDouble(
+    "SSO_GLS_ALPHA", envDouble("SSO_ALPHA", kGlsAlpha));
+const int kExperimentRounds = envInt("SSO_GLS_ROUNDS", kGlsRoundsPerCycle);
+// -1: mantém o valor de cada variante.
+const int kExperimentMaxPenalized = envInt("SSO_GLS_MAX_PENALIZED", -1);
 
 std::vector<int> selectedInstances() {
     const char* explicitInstances = std::getenv("SSO_INSTANCES");
@@ -198,10 +205,14 @@ struct Result {
     GuidedLocalSearchStats stats;
 };
 
-Result runVariant(const Allocation& initial, const InstanceMatrix& matrix,
-                  const Variant& variant, double budgetSeconds) {
-    const GlsRunResult run = runGuidedLocalSearch(
-        initial, matrix, budgetSeconds, variant.options, kExperimentAlpha);
+Result runVariant(const InstanceMatrix& matrix, const Variant& variant,
+                  double budgetSeconds) {
+    GuidedLocalSearchOptions options = variant.options;
+    if (kExperimentMaxPenalized >= 0)
+        options.maximumPenalizedFeatures = kExperimentMaxPenalized;
+    const GlsRunResult run = runGuidedLocalSearchFromScratch(
+        buildInitialSolution, matrix, budgetSeconds, options, kExperimentAlpha,
+        kExperimentRounds);
     return {run.best.getCurrentCost(), run.elapsedMs, run.timeToBestMs,
             isFeasible(run.best, matrix), run.stats};
 }
@@ -322,8 +333,8 @@ int main() {
         loadOptimum(matrix, instanceId);
         const double articleBudget = 10.0;
         const double runBudget = articleProtocol ? articleBudget : budgetSeconds;
-        // A construção inicial é determinística: todas as repetições e variantes
-        // partem da mesma solução.
+        // A construção inicial é determinística; cada execução a refaz dentro do
+        // orçamento. Esta cópia serve só para a validação e o registro do custo inicial.
         const Allocation initial = buildInitialSolution(matrix);
         validateIncrementalEvaluation(initial, matrix);
         std::cout << "\nInstância " << instanceId
@@ -334,8 +345,7 @@ int main() {
             const unsigned seed = static_cast<unsigned>(
                 baseSeed + instanceId * 1009 + repetition * 9176);
             for (const Variant& variant : experimentVariants) {
-                const Result result = runVariant(
-                    initial, matrix, variant, runBudget);
+                const Result result = runVariant(matrix, variant, runBudget);
                 rows.push_back({
                     instanceId, repetition, seed, matrix.getOptimalCost(),
                     runBudget, initial.getCurrentCost(), variant, result

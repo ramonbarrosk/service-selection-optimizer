@@ -1,0 +1,84 @@
+CONFIG algorithm=GLS repetitions=3 timeSeconds=10 alpha=0.997100 roundsPerCycle=79 gfls=1 replacement=1 regret=1 calibrate=0 maxPenalized=3
+Executing instance 1501
+r 0
+r 1
+r 2
+Executing instance 1502
+r 0
+r 1
+r 2
+Executing instance 1503
+r 0
+r 1
+r 2
+Executing instance 1504
+r 0
+r 1
+r 2
+Executing instance 1505
+r 0
+r 1
+r 2
+Executing instance 1506
+r 0
+r 1
+r 2
+Executing instance 1507
+r 0
+r 1
+r 2
+Executing instance 1508
+r 0
+r 1
+r 2
+Executing instance 1509
+r 0
+r 1
+r 2
+Executing instance 1510
+r 0
+r 1
+r 2
+Executing instance 1511
+r 0
+r 1
+r 2
+Executing instance 1512
+r 0
+r 1
+r 2
+Executing instance 1513
+r 0
+r 1
+r 2
+Executing instance 1514
+r 0
+r 1
+r 2
+Executing instance 1515
+r 0
+r 1
+r 2
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal
+Instance_10_10_1501 167 0.97 167 167 1.48833 YES (3/3)
+Instance_10_10_1502 186 0 323 323 10.0007 NO
+Instance_10_10_1503 201 0.95 201 201 2.76467 YES (3/3)
+Instance_10_10_1504 155 0 202 202 10 NO
+Instance_10_10_1505 302 2.4 315 315 10 NO
+Instance_10_10_1506 208 0 333.667 332 10 NO
+Instance_10_10_1507 262 1.55 268 268 10 NO
+Instance_10_10_1508 160 0 416 416 10 NO
+Instance_10_10_1509 187 0 254 254 10 NO
+Instance_10_10_1510 208 1.18 210 210 10.002 NO
+Instance_10_10_1511 234 1.11 237 237 10 NO
+Instance_10_10_1512 229 1.32 233 233 10 NO
+Instance_10_10_1513 173 0 203 203 10 NO
+Instance_10_10_1514 235 1.85 241 241 10 NO
+Instance_10_10_1515 163 0 290 290 10 NO
+
+MEAN BEST COSTS: 259.467
+REACHED OPTIMALL: 2/15 instances
+INSTANCES THAT REACHED OPTIMAL:
+  Instance_10_10_1501
+  Instance_10_10_1503
+TOTAL EXECUTION TIME: 6m 42.827s

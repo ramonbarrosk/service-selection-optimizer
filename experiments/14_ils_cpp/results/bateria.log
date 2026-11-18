@@ -1,0 +1,17 @@
+15 jobs na fila
+[núcleo 0] cpp_hard_10s 1101-1115 em 2760 s
+[núcleo 2] cpp_hard_10s 1201-1215 em 2890 s
+[núcleo 1] cpp_hard_10s 1301-1315 em 2949 s
+[núcleo 3] cpp_hard_10s 1401-1415 em 2996 s
+[núcleo 2] cpp_ref_10s 1-22 em 1046 s
+[núcleo 3] cpp_ref_10s 43-58 em 991 s
+[núcleo 1] cpp_ref_10s 23-42 em 1061 s
+[núcleo 2] cpp_ref_10s 60-81 em 809 s
+[núcleo 1] cpp_ref_10s 101-123 em 980 s
+[núcleo 3] cpp_ref_10s 82-100 em 1067 s
+[núcleo 3] cpp_ref_0.55s 1-77 em 656 s
+[núcleo 0] cpp_hard_10s 1501-1515 em 3109 s
+[núcleo 2] cpp_ref_10s 124-138 em 1132 s
+[núcleo 1] cpp_ref_10s 141-150 em 940 s
+[núcleo 3] cpp_ref_0.55s 81-150 em 612 s
+Bateria concluída: resultados em /home/ramon/MyProjects/service-selection-optimizer/experiments/14_ils_cpp/results/raw/..

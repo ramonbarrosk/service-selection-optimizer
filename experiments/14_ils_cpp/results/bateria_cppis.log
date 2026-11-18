@@ -1,0 +1,17 @@
+15 jobs na fila
+[núcleo 0] cppis_hard_10s 1101-1115 em 2732 s
+[núcleo 1] cppis_hard_10s 1201-1215 em 2905 s
+[núcleo 3] cppis_hard_10s 1301-1315 em 2967 s
+[núcleo 2] cppis_hard_10s 1401-1415 em 3017 s
+[núcleo 2] cppis_ref_10s 43-58 em 395 s
+[núcleo 1] cppis_ref_10s 1-22 em 719 s
+[núcleo 3] cppis_ref_10s 23-42 em 672 s
+[núcleo 2] cppis_ref_10s 60-81 em 408 s
+[núcleo 1] cppis_ref_10s 82-100 em 583 s
+[núcleo 3] cppis_ref_10s 101-123 em 569 s
+[núcleo 2] cppis_ref_10s 124-138 em 749 s
+[núcleo 1] cppis_ref_10s 141-150 em 520 s
+[núcleo 3] cppis_ref_0.55s 1-77 em 557 s
+[núcleo 2] cppis_ref_0.55s 81-150 em 562 s
+[núcleo 0] cppis_hard_10s 1501-1515 em 3009 s
+Bateria concluída: resultados em /home/ramon/MyProjects/service-selection-optimizer/experiments/14_ils_cpp/results/raw/..

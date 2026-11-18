@@ -1,0 +1,93 @@
+CONFIG algorithm=GLS repetitions=3 timeSeconds=10 alpha=0.997100 roundsPerCycle=79 gfls=1 replacement=1 regret=1 calibrate=0 maxPenalized=3
+Executing instance 1401
+r 0
+r 1
+r 2
+Executing instance 1402
+r 0
+r 1
+r 2
+Executing instance 1403
+r 0
+r 1
+r 2
+Executing instance 1404
+r 0
+r 1
+r 2
+Executing instance 1405
+r 0
+r 1
+r 2
+Executing instance 1406
+r 0
+r 1
+r 2
+Executing instance 1407
+r 0
+r 1
+r 2
+Executing instance 1408
+r 0
+r 1
+r 2
+Executing instance 1409
+r 0
+r 1
+r 2
+Executing instance 1410
+r 0
+r 1
+r 2
+Executing instance 1411
+r 0
+r 1
+r 2
+Executing instance 1412
+r 0
+r 1
+r 2
+Executing instance 1413
+r 0
+r 1
+r 2
+Executing instance 1414
+r 0
+r 1
+r 2
+Executing instance 1415
+r 0
+r 1
+r 2
+Instance | Optimal Cost | Optimal Time | Mean Best Cost | Best Cost | Mean time to Best | Reached Optimal
+Instance_10_10_1401 100 61.05 100 100 1.38733 YES (3/3)
+Instance_10_10_1402 100 54.06 100 100 0.865667 YES (3/3)
+Instance_10_10_1403 101 91.62 101 101 2.86767 YES (3/3)
+Instance_10_10_1404 101 41.3 101 101 0.747333 YES (3/3)
+Instance_10_10_1405 100 40.35 101 101 10 NO
+Instance_10_10_1406 102 30.28 102 102 0.468667 YES (3/3)
+Instance_10_10_1407 100 85.25 103 103 10 NO
+Instance_10_10_1408 101 22.43 101 101 1.44467 YES (3/3)
+Instance_10_10_1409 100 56.65 101 101 10 NO
+Instance_10_10_1410 100 73.93 100 100 2.29833 YES (3/3)
+Instance_10_10_1411 100 37.46 100 100 0.251333 YES (3/3)
+Instance_10_10_1412 100 50.17 100 100 0.151 YES (3/3)
+Instance_10_10_1413 100 14.82 100 100 0.616 YES (3/3)
+Instance_10_10_1414 100 75.51 100 100 1.66633 YES (3/3)
+Instance_10_10_1415 102 72.19 103 103 10 NO
+
+MEAN BEST COSTS: 100.867
+REACHED OPTIMALL: 11/15 instances
+INSTANCES THAT REACHED OPTIMAL:
+  Instance_10_10_1401
+  Instance_10_10_1402
+  Instance_10_10_1403
+  Instance_10_10_1404
+  Instance_10_10_1406
+  Instance_10_10_1408
+  Instance_10_10_1410
+  Instance_10_10_1411
+  Instance_10_10_1412
+  Instance_10_10_1413
+  Instance_10_10_1414
+TOTAL EXECUTION TIME: 2m 38.361s
